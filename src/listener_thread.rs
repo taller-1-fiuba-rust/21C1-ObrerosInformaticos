@@ -19,7 +19,7 @@ impl ListenerThread {
 
     pub fn run(&self) {
         let listener = TcpListener::bind(&self.addr).unwrap();
-
+        println!("Listening...");
         for stream in listener.incoming() {
             let stream = stream.unwrap();
             self.pool.spawn(|| {
