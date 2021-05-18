@@ -1,4 +1,6 @@
-use threadpool;
+use std::net::TcpStream;
+use std::net::TcpListener;
+use crate::threadpool::ThreadPool;
 
 pub struct ListenerThread {
     pool: ThreadPool,
@@ -15,13 +17,13 @@ impl ListenerThread {
         }
     }
 
-    fn run(&self) {
+    pub fn run(&self) {
         let listener = TcpListener::bind(&self.addr).unwrap();
 
         for stream in listener.incoming() {
             let stream = stream.unwrap();
-            pool.spawn(|| {
-                &self.handle_connection(stream);
+            self.pool.spawn(|| {
+                ListenerThread::handle_connection(stream);
             });
         }
     }
