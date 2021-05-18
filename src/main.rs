@@ -1,3 +1,8 @@
+mod server;
+mod listener_thread;
+mod threadpool;
+
 fn main() {
-    println!("Hello, world!");
+    let server = server::Server::new();
+    //server.run();
 }
