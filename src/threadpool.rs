@@ -102,3 +102,31 @@ impl Worker {
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::mpsc::channel;
+
+    #[test]
+    fn execute_jobs() {
+        let thread_count = 4;
+        let job_count = thread_count * 5;
+        let pool = ThreadPool::new(thread_count);
+        let (tx, rx) = channel();
+
+        for _ in 0..job_count {
+            let t = tx.clone();
+            pool.spawn(move || {
+                t.send(1).unwrap();
+            });
+        }
+
+        let mut count = 0;
+        for _ in 0..job_count {
+            count += rx.recv().unwrap();
+        }
+
+        assert_eq!(count, job_count);
+    }
+}
