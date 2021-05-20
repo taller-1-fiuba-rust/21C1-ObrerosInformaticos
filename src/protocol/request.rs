@@ -1,6 +1,6 @@
-use crate::types::ArrayParser;
-use crate::types::ProtocolParser;
-use crate::command::Command;
+use crate::protocol::parser::array::ArrayParser;
+use crate::protocol::parser::ProtocolParser;
+use crate::protocol::command::Command;
 
 pub struct Request {
     parser: ArrayParser
@@ -28,7 +28,6 @@ impl Request {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn parse_simple_request() {

@@ -1,5 +1,7 @@
+use crate::protocol::parser::ProtocolParser;
+use crate::protocol::types::ProtocolType;
 
-struct IntegerParser {
+pub struct IntegerParser {
     data: u32
 }
 
@@ -27,6 +29,8 @@ impl ProtocolParser for IntegerParser {
 
 #[cfg(test)]
 mod tests {
+
+    use super::*;
 
     #[test]
     fn test_parse_integer() {

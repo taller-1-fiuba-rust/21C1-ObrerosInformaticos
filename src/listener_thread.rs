@@ -1,5 +1,5 @@
 use crate::threadpool::ThreadPool;
-use crate::request::Request;
+use crate::protocol::request::Request;
 use std::net::TcpListener;
 use std::io::prelude::*;
 use std::io::BufReader;

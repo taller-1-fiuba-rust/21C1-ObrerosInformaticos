@@ -1,5 +1,7 @@
+use crate::protocol::parser::ProtocolParser;
+use crate::protocol::types::ProtocolType;
 
-struct SimpleStringParser {
+pub struct SimpleStringParser {
     data: String
 }
 
@@ -25,7 +27,7 @@ impl ProtocolParser for SimpleStringParser {
     }
 }
 
-struct BulkStringParser {
+pub struct BulkStringParser {
     data: String,
     length: usize
 }

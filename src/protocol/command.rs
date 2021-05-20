@@ -1,4 +1,4 @@
-use crate::types::ProtocolType;
+use crate::protocol::types::ProtocolType;
 
 pub struct Command {
     symbol: String,
