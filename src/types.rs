@@ -7,24 +7,24 @@ pub enum ProtocolType {
 
 impl ProtocolType {
     pub fn array(self) -> Vec<ProtocolType> {
-        if let ProtocolType::Array(a) = self {
-            a
+        if let ProtocolType::Array(vec) = self {
+            vec
         } else {
             panic!("Type is not array")
         }
     }
 
     pub fn integer(&self) -> u32{
-        if let ProtocolType::Integer(a) = *self {
-            a
+        if let ProtocolType::Integer(int) = *self {
+            int
         } else {
             panic!("Type is not integer")
         }
     }
 
     pub fn string(self) -> String {
-        if let ProtocolType::String(a) = self {
-            a
+        if let ProtocolType::String(str) = self {
+            str
         } else {
             panic!("Type is not string")
         }
