@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn test_run() {
-        let addr = "127.0.0.1:34254".to_string();
+        let addr = "localhost:25565".to_string();
         let mut server = Server::new(addr.clone());
         server.run();
 
