@@ -231,6 +231,22 @@ mod tests {
         assert_eq!(result, "OK");
     }
 
+    #[test]
+    fn test_parse_bulk_string() {
+        let mut parser = BulkStringParser::new();
+
+        assert!(!parser.feed(&"$22\r\n".to_string()));
+        assert!(parser.feed(&"Hi! I am a Bulk String\r\n".to_string()));
+
+        let result = parser.build().clone().string();
+        assert_eq!(result, "Hi! I am a Bulk String");
+    }
+
+    #[test]
+    fn test_parse_error() {
+
+    }
+
     fn parse_array(lines: Vec<&str>) -> Vec<ProtocolType> {
         let mut parser = ArrayParser::new();
         for line in lines {
