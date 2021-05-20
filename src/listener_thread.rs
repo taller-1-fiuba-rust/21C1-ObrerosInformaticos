@@ -20,7 +20,7 @@ impl ListenerThread {
 
     pub fn run(&self) {
         let listener = TcpListener::bind(&self.addr).unwrap();
-        println!("Listening...");
+        println!("REDIS server started on address '{}'...", self.addr);
         for stream in listener.incoming() {
             let stream = stream.unwrap();
             self.pool.spawn(|| {
@@ -31,17 +31,26 @@ impl ListenerThread {
 
     fn handle_connection(mut stream: TcpStream) {
         let mut request = Request::new();
-        let mut line = String::new();
-        let mut reader = BufReader::new(stream.try_clone().unwrap());
+        let reader = BufReader::new(stream.try_clone().unwrap());
 
-        while reader.read_line(&mut line).unwrap() > 0 {
-            request.feed(&line);
+        for line in reader.lines() {
+            let l = line.unwrap();
+            println!("Message '{}'", &l);
+            let formatted = format!("{}\r\n", &l);
+            match request.feed(&formatted) {
+                Err(e) => println!("{}", e),
+                _ => {}
+            }
         }
 
-        let _command = request.build();
+        let command = request.build();
+
+        println!("Recieved command '{} {}'", command.name(), command.arguments().iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" "));
+
         let response = ResponseBuilder::new();
-        // execute(request.command, &mut response);
+        // execute_command(request.command, &mut response);
         let response_str = response.serialize();
+
         stream.write_all(response_str.as_bytes()).unwrap();
     }
 }
