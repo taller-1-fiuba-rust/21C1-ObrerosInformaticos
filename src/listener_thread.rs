@@ -1,5 +1,8 @@
 use crate::threadpool::ThreadPool;
+use crate::protocol::request::Request;
 use std::net::TcpListener;
+use std::io::prelude::*;
+use std::io::BufReader;
 use std::net::TcpStream;
 
 pub struct ListenerThread {
@@ -25,7 +28,25 @@ impl ListenerThread {
         }
     }
 
-    fn handle_connection(_stream: TcpStream) {
-        println!("Client received");
+    fn handle_connection(mut stream: TcpStream) {
+
+        /*
+         * Redis supports strings up to 512mb of size. Therefore we feed the parser line by line in order
+         * to avoid storing all the strings.
+         */
+        let request = Request::new();
+        let mut line = String::new();
+        let mut reader = BufReader::new(stream.try_clone().unwrap());
+
+        while reader.read_line(&mut line).unwrap() > 0 {
+            request.feed(&line);
+        }
+
+        let command = request.build();
+        // esto desp
+        // let result = execute(request.command);
+        // let response = Response::new(result);
+        // let response_str = response.serialize();
+        // stream.write...
     }
 }
