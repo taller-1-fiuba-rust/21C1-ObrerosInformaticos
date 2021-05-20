@@ -25,22 +25,34 @@ impl ProtocolParser for ArrayParser {
         '*'
     }
 
-    fn feed(&mut self, line: &str) -> bool {
+    fn feed(&mut self, line: &str) -> Result<bool, String> {
         let symbol = line.chars().next().unwrap();
         if ParserFactory::has_symbol(symbol) {
             if symbol == self.get_prefix() && !self.parsed_header {
                 let len = line.len();
-                self.count = line[1..len - 2].parse().unwrap();
-                self.parsed_header = true;
-                return false;
+                //println!("Line: {}, {}", line[1..len - 2].to_string(), line[1..len - 2].to_string().chars().count());
+                let slice = line[1..len - 2].to_string();
+                return match slice.parse() {
+                    Ok(val) => {
+                        self.count = val;
+                        self.parsed_header = true;
+                        Ok(false)
+                    },
+                    Err(_) => Err(format!("Invalid array length '{}' received.", slice))
+                };
             } else if self.last_parser_completed {
                 let parser = ParserFactory::create(symbol);
                 self.parsers.push(parser.unwrap());
             }
         }
         let len = self.parsers.len();
-        self.last_parser_completed = self.parsers[len - 1].feed(line);
-        self.last_parser_completed && len == self.count as usize
+        match self.parsers[len - 1].feed(line) {
+            Ok(val) => {
+                self.last_parser_completed = val;
+                Ok(self.last_parser_completed && len == self.count as usize)
+            },
+            Err(e) => Err(e)
+        }
     }
 
     fn build(&self) -> ProtocolType {
@@ -61,7 +73,7 @@ mod tests {
     fn parse_array(lines: Vec<&str>) -> Vec<ProtocolType> {
         let mut parser = ArrayParser::new();
         for line in lines {
-            parser.feed(&line.to_string());
+            parser.feed(&line.to_string()).unwrap();
         }
         parser.build().array()
     }
