@@ -29,20 +29,3 @@ impl Server {
         real_handle.join().unwrap();
     }
 }
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    use std::net::TcpStream;
-
-    #[test]
-    fn test_run() {
-        let addr = "localhost:25565".to_string();
-        let mut server = Server::new(addr.clone());
-        server.run();
-
-        let result = TcpStream::connect(&addr);
-        assert!(result.is_ok());
-    }
-}
