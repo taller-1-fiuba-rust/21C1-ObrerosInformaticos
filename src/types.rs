@@ -1,12 +1,35 @@
-enum ProtocolType {
+#[derive(Clone)]
+pub enum ProtocolType {
     String(String),
     Integer(u32),
-    Array(Vec<ProtocolType>),
-    Mixed(MixedType)
+    Array(Vec<ProtocolType>)
 }
 
-impl SimpleString {
-    pub fn new(data: String) -> Self {
+impl ProtocolType {
+    pub fn array(self) -> Vec<ProtocolType> {
+        if let ProtocolType::Array(a) = self {
+            a
+        } else {
+            panic!("Type is not array")
+        }
+    }
+
+    pub fn integer(&self) -> u32{
+        if let ProtocolType::Integer(a) = *self {
+            a
+        } else {
+            panic!("Type is not integer")
+        }
+    }
+
+    pub fn string(self) -> String {
+        if let ProtocolType::String(a) = self {
+            a
+        } else {
+            panic!("Type is not string")
+        }
+    }
+}
 
     }
 }
