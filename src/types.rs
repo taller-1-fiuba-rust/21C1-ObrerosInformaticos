@@ -151,6 +151,7 @@ impl ParserFactory {
                 Box::new(IntegerParser::new()),
                 Box::new(SimpleStringParser::new()),
                 Box::new(ArrayParser::new()),
+                Box::new(BulkStringParser::new()),
             ];
         for option in options {
             if option.get_prefix() == symbol {
