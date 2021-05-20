@@ -29,6 +29,12 @@ impl DataStorage {
 		};
     }
 
+    //TODO: Cuando se implementen los comandos hay que hacer funciones que eliminen o solo el primer valor
+    // del vector o el ultimo dada una clave. Aca solo se borra la clave con todo lo que contiene.
+    pub fn delete_key(&mut self, key: &str){
+    	self.data.remove(key);
+    }
+
     pub fn get_value(&self, key: &str) -> Option<&Value> {
     	self.data.get(key)
     }
@@ -95,6 +101,25 @@ mod tests {
 
     	assert_eq!(a, *b);
     }
+
+    #[test]
+    #[should_panic]
+    fn test_delete_data(){
+
+    	let mut data_storage = DataStorage::new();
+    	let key = String::from("Daniela");
+    	let value = String::from("hola");
+
+    	data_storage.add_key_value(&key, Value::String(value));
+
+    	data_storage.delete_key(&key);
+
+    	if let Value::String(a) = data_storage.get_value(&key).unwrap() {
+    		a
+    	} else {
+    		panic!("Value not found in storage")
+    	};
+    } 
 
 }
 
