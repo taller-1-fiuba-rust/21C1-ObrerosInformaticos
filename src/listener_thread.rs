@@ -29,11 +29,6 @@ impl ListenerThread {
     }
 
     fn handle_connection(stream: TcpStream) {
-
-        /*
-         * Redis supports strings up to 512mb of size. Therefore we feed the parser line by line in order
-         * to avoid storing all the strings.
-         */
         let mut request = Request::new();
         let mut line = String::new();
         let mut reader = BufReader::new(stream.try_clone().unwrap());
