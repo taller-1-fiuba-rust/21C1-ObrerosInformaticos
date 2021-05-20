@@ -166,6 +166,20 @@ impl ParserFactory {
 
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_integer() {
+        let sample = ":54\r\n".to_string();
+        let mut parser = IntegerParser::new();
+
+        assert!(parser.feed(&sample));
+
+        let result = parser.build().integer();
+        assert_eq!(result, 54);
+    }
         }
     }
 }
