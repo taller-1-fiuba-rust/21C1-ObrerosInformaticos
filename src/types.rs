@@ -31,6 +31,11 @@ impl ProtocolType {
     }
 }
 
+pub trait ProtocolParser {
+    fn get_prefix(&self) -> char;
+    fn feed(&mut self, line: &String) -> bool;
+    fn build(&self) -> ProtocolType;
+}
     }
 }
 
