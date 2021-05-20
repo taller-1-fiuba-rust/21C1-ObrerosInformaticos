@@ -18,10 +18,10 @@ impl ProtocolParser for SimpleStringParser {
         '+'
     }
 
-    fn feed(&mut self, line: &str) -> bool {
+    fn feed(&mut self, line: &str) -> Result<bool, String> {
         let l = line.len();
         self.data = line[1..l - 2].to_string();
-        true
+        Ok(true)
     }
 
     fn build(&self) -> ProtocolType {
@@ -48,16 +48,22 @@ impl ProtocolParser for BulkStringParser {
         '$'
     }
 
-    fn feed(&mut self, line: &str) -> bool {
+    fn feed(&mut self, line: &str) -> Result<bool, String> {
         let len = line.len();
         assert!(len > 0);
         let symbol = line.chars().next().unwrap();
         if symbol == self.get_prefix() {
-            self.length = line[1..len - 2].parse().unwrap();
-            false
+            let slice_result = line[1..len - 2].to_string();
+            match slice_result.parse() {
+                Ok(val) => {
+                    self.length = val;
+                    Ok(false)
+                },
+                Err(_) => Err(format!("Invalid '{}' length received.", slice_result))
+            }
         } else {
             self.data = line[0..self.length].to_string();
-            true
+            Ok(true)
         }
     }
 
@@ -76,7 +82,7 @@ mod tests {
         let sample = "+OK\r\n".to_string();
         let mut parser = SimpleStringParser::new();
 
-        assert!(parser.feed(&sample));
+        assert!(parser.feed(&sample).unwrap());
 
         let result = parser.build().clone().string();
         assert_eq!(result, "OK");
@@ -86,8 +92,8 @@ mod tests {
     fn test_parse_bulk_string() {
         let mut parser = BulkStringParser::new();
 
-        assert!(!parser.feed(&"$22\r\n".to_string()));
-        assert!(parser.feed(&"Hi! I am a Bulk String\r\n".to_string()));
+        assert!(!parser.feed(&"$22\r\n".to_string()).unwrap());
+        assert!(parser.feed(&"Hi! I am a Bulk String\r\n".to_string()).unwrap());
 
         let result = parser.build().clone().string();
         assert_eq!(result, "Hi! I am a Bulk String");
