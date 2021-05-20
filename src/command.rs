@@ -1,10 +1,15 @@
-struct Command {
+use crate::types::ProtocolType;
+
+pub struct Command {
     symbol: String,
-    arguments: Vec<MixedType>
+    arguments: Vec<ProtocolType>
 }
 
 impl Command {
-    pub fn new() -> Self {
-        Command {}
+    pub fn new(symbol: String, arguments: Vec<ProtocolType>) -> Self {
+        Command {
+            symbol,
+            arguments
+        }
     }
 }
