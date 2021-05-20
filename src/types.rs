@@ -180,6 +180,17 @@ mod tests {
         let result = parser.build().integer();
         assert_eq!(result, 54);
     }
+
+    #[test]
+    fn test_parse_simple_string() {
+        let sample = "+OK\r\n".to_string();
+        let mut parser = SimpleStringParser::new();
+
+        assert!(parser.feed(&sample));
+
+        let result = parser.build().clone().string();
+        assert_eq!(result, "OK");
+    }
         }
     }
 }
