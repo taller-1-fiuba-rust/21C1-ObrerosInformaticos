@@ -109,7 +109,7 @@ mod tests {
     use std::sync::mpsc::channel;
 
     #[test]
-    fn execute_jobs() {
+    fn test_execute_jobs() {
         let thread_count = 4;
         let job_count = thread_count * 5;
         let pool = ThreadPool::new(thread_count);
@@ -128,5 +128,11 @@ mod tests {
         }
 
         assert_eq!(count, job_count);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_empty_threadpool() {
+        ThreadPool::new(0);
     }
 }
