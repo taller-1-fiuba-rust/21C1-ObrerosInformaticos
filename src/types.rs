@@ -191,6 +191,41 @@ mod tests {
         let result = parser.build().clone().string();
         assert_eq!(result, "OK");
     }
+
+    fn parse_array(lines: Vec<&str>) -> Vec<ProtocolType> {
+        let mut parser = ArrayParser::new();
+        for line in lines {
+            parser.feed(&line.to_string());
         }
+        parser.build().array()
+    }
+
+    #[test]
+    fn test_parse_array() {
+        let lines = vec!["*2\r\n", ":3\r\n", ":42\r\n"];
+        let result = parse_array(lines);
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].integer(), 3);
+        assert_eq!(result[1].integer(), 42);
+    }
+
+    #[test]
+    fn test_parse_mixed_array() {
+        let lines = vec!["*2\r\n", ":3\r\n", "+OK\r\n"];
+        let result = parse_array(lines);
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].integer(), 3);
+        assert_eq!(result[1].clone().string(), "OK");
+    }
+
+    #[test]
+    fn parse_nested_array() {
+        let lines = vec!["*2\r\n", ":2\r\n", "*1\r\n", ":4\r\n"];
+        let result = parse_array(lines);
+
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].integer(), 2);
+        let nested_arr = result[1].clone().array();
+        assert_eq!(nested_arr[0].integer(), 4);
     }
 }
