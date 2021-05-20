@@ -16,10 +16,16 @@ impl ProtocolParser for IntegerParser {
         ':'
     }
 
-    fn feed(&mut self, line: &str) -> bool {
+    fn feed(&mut self, line: &str) -> Result<bool, String> {
         let len = line.len();
-        self.data = line[1..len - 2].parse().unwrap();
-        true
+        let slice_result = line[1..len - 2].to_string();
+        match slice_result.parse() {
+            Ok(val) => {
+                self.data = val;
+                Ok(true)
+            },
+            Err(_) => Err(format!("Invalid '{}' integer received.", slice_result))
+        }
     }
 
     fn build(&self) -> ProtocolType {
@@ -37,7 +43,7 @@ mod tests {
         let sample = ":54\r\n".to_string();
         let mut parser = IntegerParser::new();
 
-        assert!(parser.feed(&sample));
+        assert!(parser.feed(&sample).unwrap());
 
         let result = parser.build().integer();
         assert_eq!(result, 54);
