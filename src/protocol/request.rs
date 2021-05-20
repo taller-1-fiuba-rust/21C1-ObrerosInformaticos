@@ -28,19 +28,21 @@ impl Request {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
 
     #[test]
-    fn parse_simple_request() {
-        /*
-        let sample_request = "*2\r\n$4\r\nLLEN\r\n$6\r\nmylist\r\n".to_string();
-        let lines = sample_request.split("\r\n");
+    fn test_parse_simple_request() {
+        let sample_request = vec!["*2\r\n", "$4\r\n", "LLEN\r\n", "$6\r\n", "mylist\r\n"];
         let mut request = Request::new();
 
-        for line in lines {
-            request.feed(&line);
+        for line in sample_request {
+            request.feed(&line.to_string());
         }
 
-        let command = request.build();*/
-        //assert_eq!(command);
+        let command = request.build();
+        assert_eq!(command.name(), "LLEN".to_string());
+        let args = command.arguments();
+        assert_eq!(args.len(), 1);
+        assert_eq!(args[0].clone().string(), "mylist");
     }
 }

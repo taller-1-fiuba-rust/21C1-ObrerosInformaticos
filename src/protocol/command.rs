@@ -12,4 +12,12 @@ impl Command {
             arguments
         }
     }
+
+    pub fn name(&self) -> String {
+        self.symbol.clone()
+    }
+
+    pub fn arguments(&self) -> Vec<ProtocolType> {
+        self.arguments.clone()
+    }
 }
