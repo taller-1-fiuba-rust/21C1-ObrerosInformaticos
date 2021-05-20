@@ -2,7 +2,7 @@ use crate::protocol::parser::ProtocolParser;
 use crate::protocol::types::ProtocolType;
 
 pub struct IntegerParser {
-    data: u32
+    data: i32
 }
 
 impl IntegerParser {

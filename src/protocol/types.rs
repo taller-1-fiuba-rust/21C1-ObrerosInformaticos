@@ -1,7 +1,7 @@
 #[derive(Clone)]
 pub enum ProtocolType {
     String(String),
-    Integer(u32),
+    Integer(i32),
     Array(Vec<ProtocolType>)
 }
 
@@ -14,7 +14,7 @@ impl ProtocolType {
         }
     }
 
-    pub fn integer(&self) -> u32{
+    pub fn integer(&self) -> i32{
         if let ProtocolType::Integer(int) = *self {
             int
         } else {
