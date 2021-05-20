@@ -29,6 +29,17 @@ impl ProtocolType {
             panic!("Type is not string")
         }
     }
+
+    pub fn serialize(&self) -> String {
+        match self {
+            ProtocolType::Array(vec) =>
+                format!("*{}\r\n{}", vec.len(), vec.iter().map(|x| x.serialize()).collect::<Vec<_>>().join("")),
+            ProtocolType::String(str) =>
+                format!("${}\r\n{}\r\n", str.len(), str),
+            ProtocolType::Integer(int) =>
+                format!(":{}\r\n", int.to_string()),
+        }
+    }
 }
 
 #[cfg(test)]
