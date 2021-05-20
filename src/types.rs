@@ -91,6 +91,8 @@ impl ProtocolParser for IntegerParser {
 
 pub struct ArrayParser {
     count: u32,
+    parsed_header: bool,
+    last_parser_completed: bool,
     parsers: Vec<Box<dyn ProtocolParser>>,
 }
 
@@ -98,6 +100,8 @@ impl ArrayParser {
     pub fn new() -> Self {
         ArrayParser {
             count: 0,
+            parsed_header: false,
+            last_parser_completed: true,
             parsers: Vec::new()
         }
     }
@@ -111,17 +115,21 @@ impl ProtocolParser for ArrayParser {
     fn feed(&mut self, line: &String) -> bool {
         let symbol = line.chars().nth(0).unwrap();
         if ParserFactory::has_symbol(symbol) {
-            if symbol == self.get_prefix() {
+            if symbol == self.get_prefix() && !self.parsed_header {
                 let len = line.len();
                 self.count = line[1..len - 2].parse().unwrap();
+                self.parsed_header = true;
                 return false;
             } else {
-                let parser = ParserFactory::create(symbol);
-                self.parsers.push(parser.unwrap());
+                if self.last_parser_completed {
+                    let parser = ParserFactory::create(symbol);
+                    self.parsers.push(parser.unwrap());
+                }
             }
         }
         let len = self.parsers.len();
-        return self.parsers[len - 1].feed(line) && len == self.count as usize;
+        self.last_parser_completed = self.parsers[len - 1].feed(line);
+        self.last_parser_completed && len == self.count as usize
     }
 
     fn build(&self) -> ProtocolType {
@@ -139,7 +147,11 @@ struct ParserFactory;
 
 impl ParserFactory {
     fn create(symbol: char) -> Option<Box<dyn ProtocolParser>> {
-        let options: Vec<Box<dyn ProtocolParser>> = vec![Box::new(IntegerParser::new()), Box::new(SimpleStringParser::new()), Box::new(ArrayParser::new())];
+        let options: Vec<Box<dyn ProtocolParser>> = vec![
+                Box::new(IntegerParser::new()),
+                Box::new(SimpleStringParser::new()),
+                Box::new(ArrayParser::new()),
+            ];
         for option in options {
             if option.get_prefix() == symbol {
                 return Some(option);
