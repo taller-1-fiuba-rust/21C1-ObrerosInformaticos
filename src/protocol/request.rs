@@ -32,7 +32,16 @@ mod tests {
 
     #[test]
     fn parse_simple_request() {
-        //let sample_request = "+OK\r\n".to_string();
-        //let request = Request::new(sample_request);
+        /*
+        let sample_request = "*2\r\n$4\r\nLLEN\r\n$6\r\nmylist\r\n".to_string();
+        let lines = sample_request.split("\r\n");
+        let mut request = Request::new();
+
+        for line in lines {
+            request.feed(&line);
+        }
+
+        let command = request.build();*/
+        //assert_eq!(command);
     }
 }
