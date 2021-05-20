@@ -89,21 +89,52 @@ impl ProtocolParser for IntegerParser {
     }
 }
 
+pub struct ArrayParser {
+    count: u32,
+    parsers: Vec<Box<dyn ProtocolParser>>,
+}
+
+impl ArrayParser {
+    pub fn new() -> Self {
+        ArrayParser {
+            count: 0,
+            parsers: Vec::new()
+        }
     }
 }
 
-impl ProtocolType for SimpleString {
-    fn get_prefix() -> String {
-        "+".to_string()
+impl ProtocolParser for ArrayParser {
+    fn get_prefix(&self) -> char {
+        return '*';
     }
 
-    fn parse(data: String) -> Self {
-        assert!(data[0] == Self::get_prefix());
-        let i = 1;
-        while i < data.len() && data[i] != '\r' {
-
+    fn feed(&mut self, line: &String) -> bool {
+        let symbol = line.chars().nth(0).unwrap();
+        if ParserFactory::has_symbol(symbol) {
+            if symbol == self.get_prefix() {
+                let len = line.len();
+                self.count = line[1..len - 2].parse().unwrap();
+                return false;
+            } else {
+                let parser = ParserFactory::create(symbol);
+                self.parsers.push(parser.unwrap());
+            }
         }
-        SimpleString {
+        let len = self.parsers.len();
+        return self.parsers[len - 1].feed(line) && len == self.count as usize;
+    }
+
+    fn build(&self) -> ProtocolType {
+        assert_eq!(self.count, self.parsers.len() as u32);
+
+        let mut data = Vec::new();
+        for parser in &self.parsers {
+            data.push(parser.build());
+        }
+        return ProtocolType::Array(data);
+    }
+}
+
 
         }
     }
