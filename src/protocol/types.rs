@@ -4,6 +4,7 @@ pub enum ProtocolType {
     Integer(i32),
     Array(Vec<ProtocolType>),
 }
+
 #[allow(dead_code)]
 impl ProtocolType {
     pub fn array(self) -> Vec<ProtocolType> {
@@ -42,6 +43,22 @@ impl ProtocolType {
             ),
             ProtocolType::String(str) => format!("${}\r\n{}\r\n", str.len(), str),
             ProtocolType::Integer(int) => format!(":{}\r\n", int.to_string()),
+        }
+    }
+}
+
+impl ToString for ProtocolType {
+    fn to_string(&self) -> String {
+        match self {
+            ProtocolType::Array(vec) => format!(
+                "[{}]",
+                vec.iter()
+                    .map(|x| x.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            ProtocolType::String(str) => str.clone(),
+            ProtocolType::Integer(int) => int.to_string(),
         }
     }
 }

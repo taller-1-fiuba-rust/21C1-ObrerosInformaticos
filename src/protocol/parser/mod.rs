@@ -9,7 +9,7 @@ use crate::protocol::types::ProtocolType;
 
 pub trait ProtocolParser {
     fn get_prefix(&self) -> char;
-    fn feed(&mut self, line: &str) -> bool;
+    fn feed(&mut self, line: &str) -> Result<bool, String>;
     fn build(&self) -> ProtocolType;
 }
 

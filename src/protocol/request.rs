@@ -13,8 +13,11 @@ impl Request {
         }
     }
 
-    pub fn feed(&mut self, line: &str) {
-        self.parser.feed(line);
+    pub fn feed(&mut self, line: &str) -> Result<(), String> {
+        match self.parser.feed(line) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e)
+        }
     }
 
     pub fn build(&self) -> Command {
@@ -35,7 +38,7 @@ mod tests {
         let mut request = Request::new();
 
         for line in sample_request {
-            request.feed(&line.to_string());
+            request.feed(&line.to_string()).unwrap();
         }
 
         let command = request.build();
