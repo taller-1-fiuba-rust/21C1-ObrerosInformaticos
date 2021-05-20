@@ -62,6 +62,33 @@ impl ProtocolParser for SimpleStringParser {
         return ProtocolType::String(self.data.clone());
     }
 }
+
+struct IntegerParser {
+    data: u32
+}
+
+impl IntegerParser {
+    pub fn new() -> Self {
+        IntegerParser { data: 0 }
+    }
+}
+
+impl ProtocolParser for IntegerParser {
+    fn get_prefix(&self) -> char {
+        return ':';
+    }
+
+    fn feed(&mut self, line: &String) -> bool {
+        let len = line.len();
+        self.data = line[1..len - 2].parse().unwrap();
+        return true;
+    }
+
+    fn build(&self) -> ProtocolType {
+        return ProtocolType::Integer(self.data);
+    }
+}
+
     }
 }
 
