@@ -22,22 +22,20 @@ impl ArrayParser {
 
 impl ProtocolParser for ArrayParser {
     fn get_prefix(&self) -> char {
-        return '*';
+        '*'
     }
 
-    fn feed(&mut self, line: &String) -> bool {
-        let symbol = line.chars().nth(0).unwrap();
+    fn feed(&mut self, line: &str) -> bool {
+        let symbol = line.chars().next().unwrap();
         if ParserFactory::has_symbol(symbol) {
             if symbol == self.get_prefix() && !self.parsed_header {
                 let len = line.len();
                 self.count = line[1..len - 2].parse().unwrap();
                 self.parsed_header = true;
                 return false;
-            } else {
-                if self.last_parser_completed {
-                    let parser = ParserFactory::create(symbol);
-                    self.parsers.push(parser.unwrap());
-                }
+            } else if self.last_parser_completed {
+                let parser = ParserFactory::create(symbol);
+                self.parsers.push(parser.unwrap());
             }
         }
         let len = self.parsers.len();
@@ -52,7 +50,7 @@ impl ProtocolParser for ArrayParser {
         for parser in &self.parsers {
             data.push(parser.build());
         }
-        return ProtocolType::Array(data);
+        ProtocolType::Array(data)
     }
 }
 

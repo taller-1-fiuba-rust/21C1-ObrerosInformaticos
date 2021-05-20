@@ -15,17 +15,17 @@ impl SimpleStringParser {
 
 impl ProtocolParser for SimpleStringParser {
     fn get_prefix(&self) -> char {
-        return '+';
+        '+'
     }
 
-    fn feed(&mut self, line: &String) -> bool {
+    fn feed(&mut self, line: &str) -> bool {
         let l = line.len();
         self.data = line[1..l - 2].to_string();
-        return true;
+        true
     }
 
     fn build(&self) -> ProtocolType {
-        return ProtocolType::String(self.data.clone());
+        ProtocolType::String(self.data.clone())
     }
 }
 
@@ -45,25 +45,25 @@ impl BulkStringParser {
 
 impl ProtocolParser for BulkStringParser {
     fn get_prefix(&self) -> char {
-        return '$';
+        '$'
     }
 
-    fn feed(&mut self, line: &String) -> bool {
+    fn feed(&mut self, line: &str) -> bool {
         let len = line.len();
         assert!(len > 0);
-        let symbol = line.chars().nth(0).unwrap();
-        return if symbol == self.get_prefix() {
+        let symbol = line.chars().next().unwrap();
+        if symbol == self.get_prefix() {
             self.length = line[1..len - 2].parse().unwrap();
             false
         } else {
             self.data = line[0..self.length].to_string();
             true
-        };
+        }
     }
 
     fn build(&self) -> ProtocolType {
         assert_eq!(self.length, self.data.len());
-        return ProtocolType::String(self.data.clone());
+        ProtocolType::String(self.data.clone())
     }
 }
 

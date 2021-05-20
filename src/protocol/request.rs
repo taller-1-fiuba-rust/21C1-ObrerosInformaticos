@@ -13,7 +13,7 @@ impl Request {
         }
     }
 
-    pub fn feed(&mut self, line: &String) {
+    pub fn feed(&mut self, line: &str) {
         self.parser.feed(line);
     }
 

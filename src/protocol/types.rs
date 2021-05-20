@@ -4,7 +4,7 @@ pub enum ProtocolType {
     Integer(i32),
     Array(Vec<ProtocolType>),
 }
-
+#[allow(dead_code)]
 impl ProtocolType {
     pub fn array(self) -> Vec<ProtocolType> {
         if let ProtocolType::Array(vec) = self {

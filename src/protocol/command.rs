@@ -1,10 +1,12 @@
 use crate::protocol::types::ProtocolType;
 
+#[allow(dead_code)]
 pub struct Command {
     symbol: String,
     arguments: Vec<ProtocolType>,
 }
 
+#[allow(dead_code)]
 impl Command {
     pub fn new(symbol: String, arguments: Vec<ProtocolType>) -> Self {
         Command { symbol, arguments }
@@ -18,5 +20,3 @@ impl Command {
         self.arguments.clone()
     }
 }
-
-pub struct CommandResult {}

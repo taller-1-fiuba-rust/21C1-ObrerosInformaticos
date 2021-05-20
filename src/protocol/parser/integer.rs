@@ -13,17 +13,17 @@ impl IntegerParser {
 
 impl ProtocolParser for IntegerParser {
     fn get_prefix(&self) -> char {
-        return ':';
+        ':'
     }
 
-    fn feed(&mut self, line: &String) -> bool {
+    fn feed(&mut self, line: &str) -> bool {
         let len = line.len();
         self.data = line[1..len - 2].parse().unwrap();
-        return true;
+        true
     }
 
     fn build(&self) -> ProtocolType {
-        return ProtocolType::Integer(self.data);
+        ProtocolType::Integer(self.data)
     }
 }
 

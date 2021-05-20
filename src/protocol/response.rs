@@ -11,6 +11,7 @@ impl ResponseBuilder {
         }
     }
 
+    #[allow(dead_code)]
     pub fn add(&mut self, val: ProtocolType) {
         self.results.push(val);
     }

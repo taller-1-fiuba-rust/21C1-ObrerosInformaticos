@@ -39,7 +39,7 @@ impl ListenerThread {
         }
 
         let _command = request.build();
-        let mut response = ResponseBuilder::new();
+        let response = ResponseBuilder::new();
         // execute(request.command, &mut response);
         let response_str = response.serialize();
         stream.write_all(response_str.as_bytes()).unwrap();
