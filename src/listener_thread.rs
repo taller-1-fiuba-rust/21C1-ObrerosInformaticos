@@ -1,6 +1,6 @@
-use std::net::TcpStream;
-use std::net::TcpListener;
 use crate::threadpool::ThreadPool;
+use std::net::TcpListener;
+use std::net::TcpStream;
 
 pub struct ListenerThread {
     pool: ThreadPool,
@@ -11,10 +11,7 @@ impl ListenerThread {
     pub fn new(addr: String) -> Self {
         let pool = ThreadPool::new(32);
 
-        ListenerThread {
-            pool,
-            addr
-        }
+        ListenerThread { pool, addr }
     }
 
     pub fn run(&self) {
@@ -27,7 +24,6 @@ impl ListenerThread {
             });
         }
     }
-
 
     fn handle_connection(_stream: TcpStream) {
         println!("Client received");

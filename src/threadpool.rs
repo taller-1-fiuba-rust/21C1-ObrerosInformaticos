@@ -1,7 +1,7 @@
-use std::thread;
 use std::sync::mpsc;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::thread;
 
 pub trait FnBox {
     fn call_box(self: Box<Self>);
@@ -13,7 +13,7 @@ impl<F: FnOnce()> FnBox for F {
     }
 }
 
-type Job = Box< dyn FnBox + Send + 'static>;
+type Job = Box<dyn FnBox + Send + 'static>;
 
 pub enum Message {
     NewJob(Job),
@@ -26,46 +26,39 @@ pub struct ThreadPool {
 }
 
 impl ThreadPool {
-
     pub fn new(size: usize) -> ThreadPool {
-    	assert!(size > 0);
+        assert!(size > 0);
 
-    	let (sender, receiver) = mpsc::channel();
+        let (sender, receiver) = mpsc::channel();
 
-    	let receiver = Arc::new(Mutex::new(receiver));
+        let receiver = Arc::new(Mutex::new(receiver));
 
-    	let mut workers = Vec::with_capacity(size);
+        let mut workers = Vec::with_capacity(size);
 
         for _ in 0..size {
             workers.push(Worker::new(Arc::clone(&receiver)));
         }
 
-        ThreadPool {
-            workers,
-            sender,
-        }
+        ThreadPool { workers, sender }
     }
 
     pub fn spawn<F>(&self, f: F)
-        where
-            F: FnOnce() + Send + 'static
+    where
+        F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
 
         self.sender.send(Message::NewJob(job)).unwrap();
-
     }
 }
 
 impl Drop for ThreadPool {
     fn drop(&mut self) {
-
         for _ in &mut self.workers {
             self.sender.send(Message::Terminate).unwrap();
         }
 
         for worker in &mut self.workers {
-
             if let Some(thread) = worker.thread.take() {
                 thread.join().unwrap();
             }
@@ -74,33 +67,28 @@ impl Drop for ThreadPool {
 }
 
 pub struct Worker {
-	thread: Option<thread::JoinHandle<()>>,
+    thread: Option<thread::JoinHandle<()>>,
 }
 
 impl Worker {
-	pub fn new(receiver: Arc<Mutex<mpsc::Receiver<Message>>>) -> Worker {
+    pub fn new(receiver: Arc<Mutex<mpsc::Receiver<Message>>>) -> Worker {
+        let thread = thread::spawn(move || loop {
+            let message = receiver.lock().unwrap().recv().unwrap();
 
-		let thread = thread::spawn(move ||{
-            loop {
-                let message = receiver.lock().unwrap().recv().unwrap();
-
-                match message {
-                    Message::NewJob(job) => {
-
-                        job.call_box();
-                    },
-                    Message::Terminate => {
-
-                        break;
-                    },
+            match message {
+                Message::NewJob(job) => {
+                    job.call_box();
+                }
+                Message::Terminate => {
+                    break;
                 }
             }
         });
 
-		Worker {
-			thread: Some(thread),
-		}
-	}
+        Worker {
+            thread: Some(thread),
+        }
+    }
 }
 
 #[cfg(test)]

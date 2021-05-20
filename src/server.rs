@@ -1,19 +1,15 @@
-use std::thread;
 use crate::listener_thread::ListenerThread;
+use std::thread;
 use std::thread::JoinHandle;
-
 
 pub struct Server {
     addr: String,
-    handle: Option<JoinHandle<()>>
+    handle: Option<JoinHandle<()>>,
 }
 
 impl Server {
     pub fn new(addr: String) -> Self {
-        Server {
-            addr,
-            handle: None
-        }
+        Server { addr, handle: None }
     }
 
     pub fn run(&mut self) {
@@ -50,4 +46,3 @@ mod tests {
         assert!(result.is_ok());
     }
 }
-

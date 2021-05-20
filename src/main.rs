@@ -1,5 +1,5 @@
-mod server;
 mod listener_thread;
+mod server;
 mod threadpool;
 
 fn main() {
