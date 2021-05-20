@@ -1,8 +1,8 @@
-use crate::threadpool::ThreadPool;
 use crate::protocol::request::Request;
-use std::net::TcpListener;
+use crate::threadpool::ThreadPool;
 use std::io::prelude::*;
 use std::io::BufReader;
+use std::net::TcpListener;
 use std::net::TcpStream;
 
 pub struct ListenerThread {

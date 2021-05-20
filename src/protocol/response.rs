@@ -1,13 +1,13 @@
 use crate::protocol::types::ProtocolType;
 
 struct Response {
-    results: Vec<ProtocolType>
+    results: Vec<ProtocolType>,
 }
 
 impl Response {
     pub fn new() -> Self {
         Response {
-            results: Vec::new()
+            results: Vec::new(),
         }
     }
 

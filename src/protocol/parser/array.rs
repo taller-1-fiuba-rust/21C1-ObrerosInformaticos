@@ -1,6 +1,6 @@
+use crate::protocol::parser::ParserFactory;
 use crate::protocol::parser::ProtocolParser;
 use crate::protocol::types::ProtocolType;
-use crate::protocol::parser::ParserFactory;
 
 pub struct ArrayParser {
     count: u32,
@@ -15,7 +15,7 @@ impl ArrayParser {
             count: 0,
             parsed_header: false,
             last_parser_completed: true,
-            parsers: Vec::new()
+            parsers: Vec::new(),
         }
     }
 }
@@ -113,8 +113,8 @@ mod tests {
         let len = chars.len();
         while i < len {
             if chars[i] == '\n' {
-                vector.push(&string[offset..i+1]);
-                offset = i+1;
+                vector.push(&string[offset..i + 1]);
+                offset = i + 1;
             }
             i += 1;
         }

@@ -2,17 +2,16 @@ pub mod array;
 pub mod integer;
 pub mod string;
 
-use crate::protocol::types::ProtocolType;
 use crate::protocol::parser::array::*;
-use crate::protocol::parser::string::*;
 use crate::protocol::parser::integer::*;
+use crate::protocol::parser::string::*;
+use crate::protocol::types::ProtocolType;
 
 pub trait ProtocolParser {
     fn get_prefix(&self) -> char;
     fn feed(&mut self, line: &String) -> bool;
     fn build(&self) -> ProtocolType;
 }
-
 
 struct ParserFactory;
 

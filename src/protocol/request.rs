@@ -1,15 +1,15 @@
+use crate::protocol::command::Command;
 use crate::protocol::parser::array::ArrayParser;
 use crate::protocol::parser::ProtocolParser;
-use crate::protocol::command::Command;
 
 pub struct Request {
-    parser: ArrayParser
+    parser: ArrayParser,
 }
 
 impl Request {
     pub fn new() -> Self {
         Request {
-            parser: ArrayParser::new()
+            parser: ArrayParser::new(),
         }
     }
 
@@ -24,7 +24,6 @@ impl Request {
         Command::new(symbol, types)
     }
 }
-
 
 #[cfg(test)]
 mod tests {

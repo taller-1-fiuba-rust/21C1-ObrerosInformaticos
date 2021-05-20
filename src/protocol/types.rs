@@ -2,7 +2,7 @@
 pub enum ProtocolType {
     String(String),
     Integer(i32),
-    Array(Vec<ProtocolType>)
+    Array(Vec<ProtocolType>),
 }
 
 impl ProtocolType {
@@ -14,7 +14,7 @@ impl ProtocolType {
         }
     }
 
-    pub fn integer(&self) -> i32{
+    pub fn integer(&self) -> i32 {
         if let ProtocolType::Integer(int) = *self {
             int
         } else {
@@ -32,12 +32,16 @@ impl ProtocolType {
 
     pub fn serialize(&self) -> String {
         match self {
-            ProtocolType::Array(vec) =>
-                format!("*{}\r\n{}", vec.len(), vec.iter().map(|x| x.serialize()).collect::<Vec<_>>().join("")),
-            ProtocolType::String(str) =>
-                format!("${}\r\n{}\r\n", str.len(), str),
-            ProtocolType::Integer(int) =>
-                format!(":{}\r\n", int.to_string()),
+            ProtocolType::Array(vec) => format!(
+                "*{}\r\n{}",
+                vec.len(),
+                vec.iter()
+                    .map(|x| x.serialize())
+                    .collect::<Vec<_>>()
+                    .join("")
+            ),
+            ProtocolType::String(str) => format!("${}\r\n{}\r\n", str.len(), str),
+            ProtocolType::Integer(int) => format!(":{}\r\n", int.to_string()),
         }
     }
 }
@@ -66,7 +70,10 @@ mod tests {
 
     #[test]
     fn test_get_array() {
-        let val = ProtocolType::Array(vec![ProtocolType::Integer(10), ProtocolType::String("Hi!".to_string())]);
+        let val = ProtocolType::Array(vec![
+            ProtocolType::Integer(10),
+            ProtocolType::String("Hi!".to_string()),
+        ]);
         let arr = val.array();
         assert_eq!(arr.len(), 2);
         assert_eq!(arr[0].integer(), 10);
@@ -93,13 +100,20 @@ mod tests {
 
     #[test]
     fn test_serialize_array() {
-        let val = ProtocolType::Array(vec![ProtocolType::Integer(10), ProtocolType::String("Hi!".to_string())]);
+        let val = ProtocolType::Array(vec![
+            ProtocolType::Integer(10),
+            ProtocolType::String("Hi!".to_string()),
+        ]);
         assert_eq!(val.serialize(), "*2\r\n:10\r\n$3\r\nHi!\r\n");
     }
 
     #[test]
     fn test_serialize_nested_array() {
-        let val = ProtocolType::Array(vec![ProtocolType::Integer(10), ProtocolType::Array(vec![ProtocolType::Integer(4), ProtocolType::Integer(3)]), ProtocolType::Integer(1)]);
+        let val = ProtocolType::Array(vec![
+            ProtocolType::Integer(10),
+            ProtocolType::Array(vec![ProtocolType::Integer(4), ProtocolType::Integer(3)]),
+            ProtocolType::Integer(1),
+        ]);
         assert_eq!(val.serialize(), "*3\r\n:10\r\n*2\r\n:4\r\n:3\r\n:1\r\n");
     }
 }

@@ -2,12 +2,14 @@ use crate::protocol::parser::ProtocolParser;
 use crate::protocol::types::ProtocolType;
 
 pub struct SimpleStringParser {
-    data: String
+    data: String,
 }
 
 impl SimpleStringParser {
     pub fn new() -> Self {
-        SimpleStringParser { data: String::new() }
+        SimpleStringParser {
+            data: String::new(),
+        }
     }
 }
 
@@ -18,7 +20,7 @@ impl ProtocolParser for SimpleStringParser {
 
     fn feed(&mut self, line: &String) -> bool {
         let l = line.len();
-        self.data = line[1..l-2].to_string();
+        self.data = line[1..l - 2].to_string();
         return true;
     }
 
@@ -29,14 +31,14 @@ impl ProtocolParser for SimpleStringParser {
 
 pub struct BulkStringParser {
     data: String,
-    length: usize
+    length: usize,
 }
 
 impl BulkStringParser {
     pub fn new() -> Self {
         BulkStringParser {
             data: String::new(),
-            length: 0
+            length: 0,
         }
     }
 }
@@ -51,12 +53,12 @@ impl ProtocolParser for BulkStringParser {
         assert!(len > 0);
         let symbol = line.chars().nth(0).unwrap();
         return if symbol == self.get_prefix() {
-            self.length = line[1..len-2].parse().unwrap();
+            self.length = line[1..len - 2].parse().unwrap();
             false
         } else {
             self.data = line[0..self.length].to_string();
             true
-        }
+        };
     }
 
     fn build(&self) -> ProtocolType {
@@ -64,7 +66,6 @@ impl ProtocolParser for BulkStringParser {
         return ProtocolType::String(self.data.clone());
     }
 }
-
 
 #[cfg(test)]
 mod tests {

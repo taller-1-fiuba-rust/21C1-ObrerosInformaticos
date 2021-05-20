@@ -2,15 +2,12 @@ use crate::protocol::types::ProtocolType;
 
 pub struct Command {
     symbol: String,
-    arguments: Vec<ProtocolType>
+    arguments: Vec<ProtocolType>,
 }
 
 impl Command {
     pub fn new(symbol: String, arguments: Vec<ProtocolType>) -> Self {
-        Command {
-            symbol,
-            arguments
-        }
+        Command { symbol, arguments }
     }
 
     pub fn name(&self) -> String {
@@ -22,6 +19,4 @@ impl Command {
     }
 }
 
-pub struct CommandResult {
-
-}
+pub struct CommandResult {}
