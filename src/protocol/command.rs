@@ -21,3 +21,7 @@ impl Command {
         self.arguments.clone()
     }
 }
+
+pub struct CommandResult {
+
+}
