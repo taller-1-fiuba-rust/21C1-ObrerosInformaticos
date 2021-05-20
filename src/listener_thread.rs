@@ -28,7 +28,8 @@ impl ListenerThread {
         }
     }
 
-    fn handle_connection(mut stream: TcpStream) {
+
+    fn handle_connection(_stream: TcpStream) {
         println!("Client received");
     }
 }
