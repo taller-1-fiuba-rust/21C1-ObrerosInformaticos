@@ -1,4 +1,5 @@
 use crate::protocol::request::Request;
+use crate::protocol::response::ResponseBuilder;
 use crate::threadpool::ThreadPool;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -28,7 +29,7 @@ impl ListenerThread {
         }
     }
 
-    fn handle_connection(stream: TcpStream) {
+    fn handle_connection(mut stream: TcpStream) {
         let mut request = Request::new();
         let mut line = String::new();
         let mut reader = BufReader::new(stream.try_clone().unwrap());
@@ -38,10 +39,9 @@ impl ListenerThread {
         }
 
         let _command = request.build();
-        // esto desp
-        // let result = execute(request.command);
-        // let response = Response::new(result);
-        // let response_str = response.serialize();
-        // stream.write...
+        let mut response = ResponseBuilder::new();
+        // execute(request.command, &mut response);
+        let response_str = response.serialize();
+        stream.write_all(response_str.as_bytes()).unwrap();
     }
 }
