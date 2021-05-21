@@ -1,0 +1,30 @@
+use crate::protocol::parser::ProtocolParser;
+use crate::protocol::types::ProtocolType;
+use crate::protocol::parser::SimpleStringParser;
+
+pub struct ErrorParser {
+    parser: SimpleStringParser,
+}
+
+#[allow(dead_code)]
+impl ErrorParser {
+    pub fn new() -> Self {
+        ErrorParser {
+            parser: SimpleStringParser::new(),
+        }
+    }
+}
+
+impl ProtocolParser for ErrorParser {
+    fn get_prefix(&self) -> char {
+        '-'
+    }
+
+    fn feed(&mut self, line: &str) -> Result<bool, String> {
+        self.parser.feed(line)
+    }
+
+    fn build(&self) -> ProtocolType {
+        ProtocolType::Error(self.parser.build().string())
+    }
+}
