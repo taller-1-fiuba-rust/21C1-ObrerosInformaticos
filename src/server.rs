@@ -1,7 +1,7 @@
 use crate::listener_thread::ListenerThread;
+use crate::storage::data_storage::DataStorage;
 use std::thread;
 use std::thread::JoinHandle;
-use crate::storage::data_storage::DataStorage;
 
 #[allow(dead_code)]
 pub struct Server {
@@ -13,7 +13,11 @@ pub struct Server {
 impl Server {
     pub fn new(addr: String) -> Self {
         let d = DataStorage::new();
-        Server { addr, handle: None, data: d}
+        Server {
+            addr,
+            handle: None,
+            data: d,
+        }
     }
 
     pub fn run(&mut self) {
