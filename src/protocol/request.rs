@@ -13,11 +13,8 @@ impl Request {
         }
     }
 
-    pub fn feed(&mut self, line: &str) -> Result<(), String> {
-        match self.parser.feed(line) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(e)
-        }
+    pub fn feed(&mut self, line: &str) -> Result<bool, String> {
+        self.parser.feed(line)
     }
 
     pub fn build(&self) -> Command {
