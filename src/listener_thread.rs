@@ -37,7 +37,6 @@ impl ListenerThread {
 
         for line in reader.lines() {
             let l = line.unwrap();
-            //println!("Message '{}'", &l);
             let formatted = format!("{}\r\n", &l);
             result = request.feed(&formatted);
             if let Ok(val) = result {
