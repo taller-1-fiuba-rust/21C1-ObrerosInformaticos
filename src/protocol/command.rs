@@ -6,7 +6,7 @@ pub struct Command {
     arguments: Vec<ProtocolType>,
 }
 
-#[allow(dead_code)]
+
 impl Command {
     pub fn new(symbol: String, arguments: Vec<ProtocolType>) -> Self {
         Command { symbol, arguments }
