@@ -22,18 +22,6 @@ impl DataStorage {
         DataStorage { data }
     }
 
-    /*pub fn print_hash(&mut self){
-        self.data.retain(|key, value| {
-            println!("key: {}", key);
-            match value {
-            Value::String(s) => println!("value: {}", s),
-            Value::Vec(i)    => println!("value:"),
-            Value::HashSet(j) => println!("value:"),
-            };
-            !key.starts_with("a")
-        });
-    }*/
-
     pub fn load_data(&mut self, file: &str){
         parser::parse_data(file, &mut self.data);
     }
@@ -53,8 +41,10 @@ impl DataStorage {
 		};
     }
 
-    //TODO: Cuando se implementen los comandos hay que hacer funciones que eliminen o solo el primer valor
-    // del vector o el ultimo dada una clave. Ahora se borra la clave con todo lo que contiene.
+    //TODO: Cuando se implementen los comandos hay que hacer funciones 
+    //que eliminen o solo el primer valor
+    //del vector o el ultimo dada una clave. Ahora se borra 
+    //la clave con todo lo que contiene.
     pub fn delete_key(&mut self, key: &str){
     	self.data.remove(key);
     }
@@ -62,39 +52,40 @@ impl DataStorage {
     pub fn get_value(&self, key: &str) -> Option<&Value> {
     	self.data.get(key)
     }
-
 }
 
 #[cfg(test)]
 
 mod tests {
 	use super::*;
+    use std::fs::File;
+    use std::io::Write;
+    use std::env;
 
     #[test]
     fn test_load_data(){
+
+        let dir = env::temp_dir();
+        let path_str = dir.to_str().unwrap().to_string() + &"/data.txt".to_string();
+        let path = dir.to_str().unwrap().to_string() + &"/data.txt".to_string();
+        
+        let mut file = File::create(path).expect("Not file created");
+        writeln!(file, "Daniela;hola").expect("Not file write");
+
         let mut data_storage = DataStorage::new();
-        data_storage.load_data("/home/dani/Documents/Taller de programación - Deymonnaz/Trabajo Practico Grupal/ObrerosInformaticos/src/storage/data.txt");
+        data_storage.load_data(&path_str);
 
         let key = String::from("Daniela");
         let value = String::from("hola");
 
-        let b = if let Value::String(a) = data_storage.get_value(&key).unwrap() {
+        let b = if let Value::String(a) = data_storage
+                                        .get_value(&key).unwrap() {
             a
         } else {
             panic!("Not string value")
         };
 
-        let key_2 = String::from("Martin");
-        let value_2 = String::from("1");
-
-        let c = if let Value::String(d) = data_storage.get_value(&key_2).unwrap() {
-            d
-        } else {
-            panic!("Not string value")
-        };
-
-        assert_eq!("hola", *b);
-        assert_eq!("1", *c);
+        assert_eq!(value, *b);
     }
 
     #[test]
@@ -106,7 +97,8 @@ mod tests {
 
     	data_storage.add_key_value(&key, Value::String(value));
 
-    	let b = if let Value::String(a) = data_storage.get_value(&key).unwrap() {
+    	let b = if let Value::String(a) = data_storage
+                                        .get_value(&key).unwrap() {
     		a
     	} else {
     		panic!("Not string value")
@@ -124,7 +116,8 @@ mod tests {
 
     	data_storage.add_key_value(&key, Value::Vec(value));
 
-    	let b = if let Value::Vec(a) = data_storage.get_value(&key).unwrap() {
+    	let b = if let Value::Vec(a) = data_storage
+                                    .get_value(&key).unwrap() {
     		a
     	} else {
     		panic!("Not string value")
@@ -138,7 +131,8 @@ mod tests {
 
     	let mut data_storage = DataStorage::new();
     	let key = String::from("Daniela");
-    	let value: HashSet<String> = vec!["a".to_string(), "b".to_string()].into_iter().collect();
+    	let value: HashSet<String> = vec!["a".to_string(), "b".to_string()]
+                                    .into_iter().collect();
 
     	data_storage.add_key_value(&key, Value::HashSet(value));
 
@@ -148,7 +142,8 @@ mod tests {
     		panic!("Not string value")
     	};
 
-    	let a: HashSet<String> = vec!["a".to_string(), "b".to_string()].into_iter().collect();
+    	let a: HashSet<String> = vec!["a".to_string(), "b".to_string()]
+                                .into_iter().collect();
 
     	assert_eq!(a, *b);
     }
@@ -165,7 +160,8 @@ mod tests {
 
     	data_storage.delete_key(&key);
 
-    	if let Value::String(a) = data_storage.get_value(&key).unwrap() {
+    	if let Value::String(a) = data_storage
+                                .get_value(&key).unwrap() {
     		a
     	} else {
     		panic!("Value not found in storage")
