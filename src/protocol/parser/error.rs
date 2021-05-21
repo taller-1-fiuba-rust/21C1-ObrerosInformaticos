@@ -1,6 +1,6 @@
 use crate::protocol::parser::ProtocolParser;
-use crate::protocol::types::ProtocolType;
 use crate::protocol::parser::SimpleStringParser;
+use crate::protocol::types::ProtocolType;
 
 pub struct ErrorParser {
     parser: SimpleStringParser,

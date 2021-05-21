@@ -3,7 +3,7 @@ pub enum ProtocolType {
     String(String),
     Integer(i32),
     Array(Vec<ProtocolType>),
-    Error(String)
+    Error(String),
 }
 
 #[allow(dead_code)]

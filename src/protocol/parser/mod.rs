@@ -1,7 +1,7 @@
 pub mod array;
+pub mod error;
 pub mod integer;
 pub mod string;
-pub mod error;
 
 use crate::protocol::parser::array::*;
 use crate::protocol::parser::integer::*;
