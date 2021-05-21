@@ -28,3 +28,19 @@ impl ProtocolParser for ErrorParser {
         ProtocolType::Error(self.parser.build().string())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_error() {
+        let sample = "-ERR Exploto todo!\r\n".to_string();
+        let mut parser = ErrorParser::new();
+
+        assert!(parser.feed(&sample).unwrap());
+
+        let result = parser.build().clone().error();
+        assert_eq!(result, "ERR Exploto todo!");
+    }
+}
