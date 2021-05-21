@@ -3,6 +3,7 @@ pub enum ProtocolType {
     String(String),
     Integer(i32),
     Array(Vec<ProtocolType>),
+    Error(String)
 }
 
 #[allow(dead_code)]
@@ -31,6 +32,14 @@ impl ProtocolType {
         }
     }
 
+    pub fn error(self) -> String {
+        if let ProtocolType::Error(err) = self {
+            err
+        } else {
+            panic!("Type is not error")
+        }
+    }
+
     pub fn serialize(&self) -> String {
         match self {
             ProtocolType::Array(vec) => format!(
@@ -43,6 +52,7 @@ impl ProtocolType {
             ),
             ProtocolType::String(str) => format!("${}\r\n{}\r\n", str.len(), str),
             ProtocolType::Integer(int) => format!(":{}\r\n", int.to_string()),
+            ProtocolType::Error(err) => format!("-{}\r\n", err),
         }
     }
 }
@@ -59,6 +69,7 @@ impl ToString for ProtocolType {
             ),
             ProtocolType::String(str) => str.clone(),
             ProtocolType::Integer(int) => int.to_string(),
+            ProtocolType::Error(err) => err.clone(),
         }
     }
 }
