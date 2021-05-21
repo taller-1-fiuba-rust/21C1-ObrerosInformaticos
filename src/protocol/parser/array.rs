@@ -37,8 +37,8 @@ impl ProtocolParser for ArrayParser {
                         self.count = val;
                         self.parsed_header = true;
                         Ok(false)
-                    },
-                    Err(_) => Err(format!("Invalid array length '{}' received.", slice))
+                    }
+                    Err(_) => Err(format!("Invalid array length '{}' received.", slice)),
                 };
             } else if self.last_parser_completed {
                 let parser = ParserFactory::create(symbol);
@@ -50,8 +50,8 @@ impl ProtocolParser for ArrayParser {
             Ok(val) => {
                 self.last_parser_completed = val;
                 Ok(self.last_parser_completed && len == self.count as usize)
-            },
-            Err(e) => Err(e)
+            }
+            Err(e) => Err(e),
         }
     }
 

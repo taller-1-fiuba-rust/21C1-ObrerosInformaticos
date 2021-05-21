@@ -1,3 +1,4 @@
+use crate::execution::Execution;
 use crate::protocol::request::Request;
 use crate::protocol::response::ResponseBuilder;
 use crate::threadpool::ThreadPool;
@@ -5,7 +6,6 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::TcpListener;
 use std::net::TcpStream;
-use crate::protocol::types::ProtocolType;
 
 pub struct ListenerThread {
     pool: ThreadPool,
@@ -43,7 +43,8 @@ impl ListenerThread {
             if let Ok(val) = result {
                 if val {
                     break;
-                } else {}
+                } else {
+                }
             } else {
                 break;
             }
@@ -55,14 +56,22 @@ impl ListenerThread {
 
         let command = request.build();
 
-        println!("Recieved command '{} {}'", command.name(), command.arguments().iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" "));
+        println!(
+            "Received command '{} {}'",
+            command.name(),
+            command
+                .arguments()
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<_>>()
+                .join(" ")
+        );
 
         let mut response = ResponseBuilder::new();
-        response.add(ProtocolType::String("Bonjour!".to_string()));
-        response.add(ProtocolType::Integer(5));
-        // execute_command(request.command, &mut response);
+        if let Err(e) = Execution::run(&command, &mut response) {
+            println!("{}", e);
+        }
         let response_str = response.serialize();
-
         stream.write_all(response_str.as_bytes()).unwrap();
     }
 }

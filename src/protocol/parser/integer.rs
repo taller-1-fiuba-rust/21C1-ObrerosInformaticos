@@ -23,8 +23,8 @@ impl ProtocolParser for IntegerParser {
             Ok(val) => {
                 self.data = val;
                 Ok(true)
-            },
-            Err(_) => Err(format!("Invalid '{}' integer received.", slice_result))
+            }
+            Err(_) => Err(format!("Invalid '{}' integer received.", slice_result)),
         }
     }
 

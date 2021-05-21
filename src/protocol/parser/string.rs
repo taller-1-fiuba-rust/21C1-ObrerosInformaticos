@@ -58,8 +58,8 @@ impl ProtocolParser for BulkStringParser {
                 Ok(val) => {
                     self.length = val;
                     Ok(false)
-                },
-                Err(_) => Err(format!("Invalid '{}' length received.", slice_result))
+                }
+                Err(_) => Err(format!("Invalid '{}' length received.", slice_result)),
             }
         } else {
             self.data = line[0..self.length].to_string();
@@ -93,7 +93,9 @@ mod tests {
         let mut parser = BulkStringParser::new();
 
         assert!(!parser.feed(&"$22\r\n".to_string()).unwrap());
-        assert!(parser.feed(&"Hi! I am a Bulk String\r\n".to_string()).unwrap());
+        assert!(parser
+            .feed(&"Hi! I am a Bulk String\r\n".to_string())
+            .unwrap());
 
         let result = parser.build().clone().string();
         assert_eq!(result, "Hi! I am a Bulk String");
