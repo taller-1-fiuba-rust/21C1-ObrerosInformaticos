@@ -44,7 +44,7 @@ impl ListenerThread {
                     break;
                 } else {
                 }
-            } else if let Err(_) = &result {
+            } else if result.is_err() {
                 break;
             }
         }
