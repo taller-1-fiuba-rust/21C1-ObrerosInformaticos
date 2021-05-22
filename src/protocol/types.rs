@@ -11,28 +11,28 @@ impl ProtocolType {
     pub fn array(self) -> Result<Vec<ProtocolType>, &'static str> {
         match self {
             ProtocolType::Array(vec) => Ok(vec),
-            _ => Err("Type is not array")
+            _ => Err("Type is not array"),
         }
     }
 
     pub fn integer(&self) -> Result<i32, &'static str> {
         match self {
             ProtocolType::Integer(int) => Ok(*int),
-            _ => Err("Type is not integer")
+            _ => Err("Type is not integer"),
         }
     }
 
     pub fn string(self) -> Result<String, &'static str> {
         match self {
             ProtocolType::String(str) => Ok(str),
-            _ => Err("Type is not string")
+            _ => Err("Type is not string"),
         }
     }
 
     pub fn error(self) -> Result<String, &'static str> {
         match self {
             ProtocolType::Error(str) => Ok(str),
-            _ => Err("Type is not error")
+            _ => Err("Type is not error"),
         }
     }
 
