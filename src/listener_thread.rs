@@ -40,11 +40,8 @@ impl ListenerThread {
             let formatted = format!("{}\r\n", &l);
             result = request.feed(&formatted);
             if let Ok(val) = result {
-                if val {
-                    break;
-                } else {
-                }
-            } else {
+                if val { break; } else { }
+            } else if let Err(_) = &result {
                 break;
             }
         }

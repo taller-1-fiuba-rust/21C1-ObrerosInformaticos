@@ -18,8 +18,8 @@ impl Request {
     }
 
     pub fn build(&self) -> Command {
-        let mut types = self.parser.build().array();
-        let symbol = types[0].clone().string();
+        let mut types = self.parser.build().array().unwrap();
+        let symbol = types[0].clone().string().unwrap();
         types.remove(0);
         Command::new(symbol, types)
     }
@@ -42,6 +42,6 @@ mod tests {
         assert_eq!(command.name(), "LLEN".to_string());
         let args = command.arguments();
         assert_eq!(args.len(), 1);
-        assert_eq!(args[0].clone().string(), "mylist");
+        assert_eq!(args[0].clone().string().unwrap(), "mylist");
     }
 }

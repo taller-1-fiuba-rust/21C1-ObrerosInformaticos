@@ -30,7 +30,6 @@ impl ProtocolParser for ArrayParser {
         if ParserFactory::has_symbol(symbol) {
             if symbol == self.get_prefix() && !self.parsed_header {
                 let len = line.len();
-                //println!("Line: {}, {}", line[1..len - 2].to_string(), line[1..len - 2].to_string().chars().count());
                 let slice = line[1..len - 2].to_string();
                 return match slice.parse() {
                     Ok(val) => {
@@ -75,7 +74,7 @@ mod tests {
         for line in lines {
             parser.feed(&line.to_string()).unwrap();
         }
-        parser.build().array()
+        parser.build().array().unwrap()
     }
 
     #[test]
@@ -83,8 +82,8 @@ mod tests {
         let lines = vec!["*2\r\n", ":3\r\n", ":42\r\n"];
         let result = parse_array(lines);
         assert_eq!(result.len(), 2);
-        assert_eq!(result[0].integer(), 3);
-        assert_eq!(result[1].integer(), 42);
+        assert_eq!(result[0].integer().unwrap(), 3);
+        assert_eq!(result[1].integer().unwrap(), 42);
     }
 
     #[test]
@@ -92,8 +91,8 @@ mod tests {
         let lines = vec!["*2\r\n", ":3\r\n", "+OK\r\n"];
         let result = parse_array(lines);
         assert_eq!(result.len(), 2);
-        assert_eq!(result[0].integer(), 3);
-        assert_eq!(result[1].clone().string(), "OK");
+        assert_eq!(result[0].integer().unwrap(), 3);
+        assert_eq!(result[1].clone().string().unwrap(), "OK");
     }
 
     #[test]
@@ -102,9 +101,9 @@ mod tests {
         let result = parse_array(lines);
 
         assert_eq!(result.len(), 2);
-        assert_eq!(result[0].integer(), 2);
-        let nested_arr = result[1].clone().array();
-        assert_eq!(nested_arr[0].integer(), 4);
+        assert_eq!(result[0].integer().unwrap(), 2);
+        let nested_arr = result[1].clone().array().unwrap();
+        assert_eq!(nested_arr[0].integer().unwrap(), 4);
     }
 
     #[test]
@@ -137,7 +136,7 @@ mod tests {
         let result = parse_array(lines);
 
         assert_eq!(result.len(), 2);
-        assert_eq!(result[0].clone().string(), "foo");
-        assert_eq!(result[1].clone().string(), "bar");
+        assert_eq!(result[0].clone().string().unwrap(), "foo");
+        assert_eq!(result[1].clone().string().unwrap(), "bar");
     }
 }

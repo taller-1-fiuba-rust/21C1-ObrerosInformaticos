@@ -25,7 +25,7 @@ impl ProtocolParser for ErrorParser {
     }
 
     fn build(&self) -> ProtocolType {
-        ProtocolType::Error(self.parser.build().string())
+        ProtocolType::Error(self.parser.build().string().unwrap())
     }
 }
 
@@ -40,7 +40,7 @@ mod tests {
 
         assert!(parser.feed(&sample).unwrap());
 
-        let result = parser.build().clone().error();
+        let result = parser.build().clone().error().unwrap();
         assert_eq!(result, "ERR Exploto todo!");
     }
 }

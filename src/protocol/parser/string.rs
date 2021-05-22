@@ -84,7 +84,7 @@ mod tests {
 
         assert!(parser.feed(&sample).unwrap());
 
-        let result = parser.build().clone().string();
+        let result = parser.build().clone().string().unwrap();
         assert_eq!(result, "OK");
     }
 
@@ -97,7 +97,7 @@ mod tests {
             .feed(&"Hi! I am a Bulk String\r\n".to_string())
             .unwrap());
 
-        let result = parser.build().clone().string();
+        let result = parser.build().clone().string().unwrap();
         assert_eq!(result, "Hi! I am a Bulk String");
     }
 }

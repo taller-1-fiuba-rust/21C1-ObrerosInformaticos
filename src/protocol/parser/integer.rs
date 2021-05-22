@@ -45,7 +45,18 @@ mod tests {
 
         assert!(parser.feed(&sample).unwrap());
 
-        let result = parser.build().integer();
+        let result = parser.build().integer().unwrap();
         assert_eq!(result, 54);
+    }
+
+    #[test]
+    fn test_parse_negative_integer() {
+        let sample = ":-32\r\n".to_string();
+        let mut parser = IntegerParser::new();
+
+        assert!(parser.feed(&sample).unwrap());
+
+        let result = parser.build().integer().unwrap();
+        assert_eq!(result, -32);
     }
 }

@@ -8,35 +8,31 @@ pub enum ProtocolType {
 
 #[allow(dead_code)]
 impl ProtocolType {
-    pub fn array(self) -> Vec<ProtocolType> {
-        if let ProtocolType::Array(vec) = self {
-            vec
-        } else {
-            panic!("Type is not array")
+    pub fn array(self) -> Result<Vec<ProtocolType>, &'static str> {
+        match self {
+            ProtocolType::Array(vec) => Ok(vec),
+            _ => Err("Type is not array")
         }
     }
 
-    pub fn integer(&self) -> i32 {
-        if let ProtocolType::Integer(int) = *self {
-            int
-        } else {
-            panic!("Type is not integer")
+    pub fn integer(&self) -> Result<i32, &'static str> {
+        match self {
+            ProtocolType::Integer(int) => Ok(*int),
+            _ => Err("Type is not integer")
         }
     }
 
-    pub fn string(self) -> String {
-        if let ProtocolType::String(str) = self {
-            str
-        } else {
-            panic!("Type is not string")
+    pub fn string(self) -> Result<String, &'static str> {
+        match self {
+            ProtocolType::String(str) => Ok(str),
+            _ => Err("Type is not string")
         }
     }
 
-    pub fn error(self) -> String {
-        if let ProtocolType::Error(err) = self {
-            err
-        } else {
-            panic!("Type is not error")
+    pub fn error(self) -> Result<String, &'static str> {
+        match self {
+            ProtocolType::Error(str) => Ok(str),
+            _ => Err("Type is not error")
         }
     }
 
@@ -81,19 +77,19 @@ mod tests {
     #[test]
     fn test_get_integer() {
         let val = ProtocolType::Integer(10);
-        assert_eq!(val.integer(), 10);
+        assert_eq!(val.integer().unwrap(), 10);
     }
 
     #[test]
     fn test_get_negative_integer() {
         let val = ProtocolType::Integer(-10);
-        assert_eq!(val.integer(), -10);
+        assert_eq!(val.integer().unwrap(), -10);
     }
 
     #[test]
     fn test_get_string() {
         let val = ProtocolType::String("Hi!".to_string());
-        assert_eq!(val.string(), "Hi!");
+        assert_eq!(val.string().unwrap(), "Hi!");
     }
 
     #[test]
@@ -102,10 +98,10 @@ mod tests {
             ProtocolType::Integer(10),
             ProtocolType::String("Hi!".to_string()),
         ]);
-        let arr = val.array();
+        let arr = val.array().unwrap();
         assert_eq!(arr.len(), 2);
-        assert_eq!(arr[0].integer(), 10);
-        assert_eq!(arr[1].clone().string(), "Hi!");
+        assert_eq!(arr[0].integer().unwrap(), 10);
+        assert_eq!(arr[1].clone().string().unwrap(), "Hi!");
     }
 
     #[test]
