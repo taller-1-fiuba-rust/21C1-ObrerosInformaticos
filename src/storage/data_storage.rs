@@ -1,41 +1,46 @@
 use crate::storage::parser;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::RwLock;
 
 #[allow(dead_code)]
 pub enum Value {
     String(String),
     Vec(Vec<String>),
     HashSet(HashSet<String>),
+
 }
 
 #[allow(dead_code)]
 pub struct DataStorage {
-    data: HashMap<String, Value>,
+    data: RwLock<HashMap<String, Value>>,
 }
 
 #[allow(dead_code)]
 impl DataStorage {
     pub fn new() -> Self {
-        let data: HashMap<String, Value> = HashMap::new();
+        let data: RwLock<HashMap<String, Value>> = RwLock::new(HashMap::new());
         DataStorage { data }
     }
 
     pub fn load_data(&mut self, file: &str) {
-        parser::parse_data(file, &mut self.data);
+        let mut lock = self.data.write().unwrap();
+        parser::parse_data(file, &mut lock);
     }
 
     pub fn save_data(&mut self, file: &str) {
-        parser::store_data(file, &self.data);
+        let lock = self.data.read().unwrap();
+        parser::store_data(file, &lock);
     }
 
     pub fn add_key_value(&mut self, key: &str, value: Value) {
+        let mut lock = self.data.write().unwrap();
         let copy_key = key.to_string();
 
         match value {
-            Value::String(s) => self.data.insert(copy_key, Value::String(s)),
-            Value::Vec(i) => self.data.insert(copy_key, Value::Vec(i)),
-            Value::HashSet(j) => self.data.insert(copy_key, Value::HashSet(j)),
+            Value::String(s) => lock.insert(copy_key, Value::String(s)),
+            Value::Vec(i) => lock.insert(copy_key, Value::Vec(i)),
+            Value::HashSet(j) => lock.insert(copy_key, Value::HashSet(j)),
         };
     }
 
@@ -44,11 +49,13 @@ impl DataStorage {
     //del vector o el ultimo dada una clave. Ahora se borra
     //la clave con todo lo que contiene.
     pub fn delete_key(&mut self, key: &str) {
-        self.data.remove(key);
+        let mut lock = self.data.write().unwrap();
+        lock.remove(key);
     }
 
     pub fn get_value(&self, key: &str) -> Option<&Value> {
-        self.data.get(key)
+        let lock = self.data.read().unwrap();
+        lock.get(key)
     }
 }
 
