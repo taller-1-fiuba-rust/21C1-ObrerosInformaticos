@@ -4,7 +4,6 @@ mod protocol;
 mod server;
 mod storage;
 mod threadpool;
-mod server_command;
 
 fn main() {
     let addr = "127.0.0.1:6379".to_string();

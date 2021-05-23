@@ -1,16 +1,15 @@
 use crate::storage::parser;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 use std::sync::RwLock;
 use std::sync::RwLockReadGuard;
-use std::sync::Arc;
 
 #[allow(dead_code)]
 pub enum Value {
     String(String),
     Vec(Vec<String>),
     HashSet(HashSet<String>),
-
 }
 
 #[allow(dead_code)]
@@ -21,7 +20,9 @@ pub struct DataStorage {
 #[allow(dead_code)]
 impl DataStorage {
     pub fn new() -> Self {
-        DataStorage { data: Arc::new(RwLock::new(HashMap::new())) }
+        DataStorage {
+            data: Arc::new(RwLock::new(HashMap::new())),
+        }
     }
 
     pub fn load_data(&mut self, file: &str) {
