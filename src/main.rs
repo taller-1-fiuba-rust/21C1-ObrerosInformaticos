@@ -9,13 +9,11 @@ fn main() {
         println!("Faltan parametros de inicio");
         return;
     }
-    
+
     let mut configuration = Configuration::new();
-    match configuration.set_config(&args[1]) {
-        Err(msj) => {
-            println!("{}",msj);
-            return;
-        }
-        Ok(_) => (),
+
+    if let Err(msj) = configuration.set_config(&args[1]) {
+        println!("{}", msj);
+        return;
     }
 }

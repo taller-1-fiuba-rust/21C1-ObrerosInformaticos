@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 use std::fs;
 
-const DEFAULT_VERBOSE : i8 = 0;
-const DEFAULT_PORT : i16 = 8080;
-const DEFAULT_TIMEOUT : i64 = 0;
-const DEFAULT_DBFILENAME : &str = "dump.rdb";
-const DEFAULT_LOGFILE : &str = "logfile";
+const DEFAULT_VERBOSE: i8 = 0;
+const DEFAULT_PORT: i16 = 8080;
+const DEFAULT_TIMEOUT: i64 = 0;
+const DEFAULT_DBFILENAME: &str = "dump.rdb";
+const DEFAULT_LOGFILE: &str = "logfile";
 
+#[allow(dead_code)]
 pub struct Configuration {
     verbose: i8,
     port: i16,
@@ -15,6 +16,7 @@ pub struct Configuration {
     logfile: String,
 }
 
+#[allow(dead_code)]
 impl Configuration {
     pub fn new() -> Self {
         //Devuelvo configuración por defecto
@@ -48,11 +50,7 @@ impl Configuration {
         Ok(true)
     }
 
-    fn parse(
-        &mut self,
-        file_path: &str,
-    ) -> Result<(i8, i16, i64, String, String), String> {
-    
+    fn parse(&mut self, file_path: &str) -> Result<(i8, i16, i64, String, String), String> {
         let file: String = match fs::read_to_string(file_path) {
             Ok(file) => file,
             Err(_) => return Err("Error al intentar abrir el archivo".to_string()),
@@ -76,48 +74,35 @@ impl Configuration {
         let mut verbose: i8 = DEFAULT_VERBOSE;
         let mut timeout: i64 = DEFAULT_TIMEOUT;
         let mut dbfilename: String = DEFAULT_DBFILENAME.to_string();
-        let mut logfile: String =  DEFAULT_LOGFILE.to_string();
+        let mut logfile: String = DEFAULT_LOGFILE.to_string();
 
-        match map.get("verbose") {
-            Some(verbose_) => {
-                if !self.check_number_between(verbose_, 0, 1) {
-                    return Err("Verbosidad mal configurada.".to_string());
-                }
-                verbose = verbose_.parse().unwrap();
+        if let Some(verbose_) = map.get("verbose") {
+            if !self.check_number_between(verbose_, 0, 1) {
+                return Err("Verbosidad mal configurada.".to_string());
             }
-            None => (),
+            verbose = verbose_.parse().unwrap();
         }
 
-        match map.get("port") {
-            Some(port_) => {
-                if !self.check_number_between(port_, 0, 65536) {
-                    return Err("Puerto mal configurado.".to_string());
-                }
-                port = port_.parse().unwrap();
+        if let Some(port_) = map.get("port") {
+            if !self.check_number_between(port_, 0, 65536) {
+                return Err("Puerto mal configurado.".to_string());
             }
-            None => (),
+            port = port_.parse().unwrap();
         }
 
-        match map.get("timeout") {
-            Some(timeout_) => match timeout_.parse::<i64>() {
+        if let Some(timeout_) = map.get("timeout") {
+            match timeout_.parse::<i64>() {
                 Ok(number) => timeout = number,
                 Err(_) => return Err("Timeout mal configurado.".to_string()),
-            },
-            None => (),
+            }
         }
 
-        match map.get("dbfilename") {
-            Some(dbfilename_) => {
-                dbfilename = dbfilename_.to_string();
-            }
-            None => (),
+        if let Some(dbfilename_) = map.get("dbfilename") {
+            dbfilename = dbfilename_.to_string();
         }
 
-        match map.get("logfile") {
-            Some(logfile_) => {
-                logfile = logfile_.to_string();
-            }
-            None => (),
+        if let Some(logfile_) = map.get("logfile") {
+            logfile = logfile_.to_string();
         }
 
         Ok((verbose, port, timeout, dbfilename, logfile))
