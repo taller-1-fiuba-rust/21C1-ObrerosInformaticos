@@ -108,7 +108,7 @@ impl Configuration {
         Ok((verbose, port, timeout, dbfilename, logfile))
     }
 
-    fn check_number_between(&mut self, number: &String, bottom: i64, top: i64) -> bool {
+    fn check_number_between(&mut self, number: &str, bottom: i64, top: i64) -> bool {
         let int_number: i64;
         match number.parse::<i64>() {
             Ok(x) => int_number = x,
