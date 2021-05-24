@@ -30,8 +30,8 @@ server_time_usec:{}
 uptime_in_seconds:{}
 hz:10
 configured_hz:10
-executable:../src/main
-config_file:../config/configuration.rs
+executable:/usr/local/bin/redis-server
+config_file:/etc/redis/redis.conf
 # Clients
 cluster_connections:0
 maxclients:32
