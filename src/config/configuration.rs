@@ -121,23 +121,23 @@ impl Configuration {
         false
     }
 
-    pub fn get_verbose(&mut self) -> i8 {
+    pub fn get_verbose(&self) -> i8 {
         self.verbose
     }
 
-    pub fn get_port(&mut self) -> i16 {
+    pub fn get_port(&self) -> i16 {
         self.port
     }
 
-    pub fn get_timeout(&mut self) -> i64 {
+    pub fn get_timeout(&self) -> i64 {
         self.timeout
     }
 
-    pub fn get_dbfilename(&mut self) -> &String {
+    pub fn get_dbfilename(&self) -> &String {
         &self.dbfilename
     }
 
-    pub fn get_logfile(&mut self) -> &String {
+    pub fn get_logfile(&self) -> &String {
         &self.logfile
     }
 }

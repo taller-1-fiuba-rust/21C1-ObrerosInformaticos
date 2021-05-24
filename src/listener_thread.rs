@@ -17,7 +17,11 @@ pub struct ListenerThread {
 impl ListenerThread {
     pub fn new(addr: String, execution: Arc<Execution>) -> Self {
         let pool = ThreadPool::new(32);
-        ListenerThread { pool, addr, execution }
+        ListenerThread {
+            pool,
+            addr,
+            execution,
+        }
     }
 
     pub fn run(&self) {
@@ -69,6 +73,7 @@ impl ListenerThread {
         );
 
         let mut response = ResponseBuilder::new();
+
         if let Err(e) = execution.run(&command, &mut response) {
             println!("{}", e);
         }
