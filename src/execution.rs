@@ -2,17 +2,18 @@ use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
+use std::sync::Arc;
 
-pub struct Execution<'a> {
-    data: &'a DataStorage,
+pub struct Execution {
+    data: Arc<DataStorage>,
 }
 
 /*
     Execution should map each command name to a function which can execute it. They don't have to necessarily be located here
 */
-impl<'a> Execution<'a> {
+impl Execution {
 
-    pub fn new(data: &'a DataStorage) -> Self {
+    pub fn new(data: Arc<DataStorage>) -> Self {
         Execution { data }
     }
 

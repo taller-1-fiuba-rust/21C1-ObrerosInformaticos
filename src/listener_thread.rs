@@ -8,18 +8,16 @@ use std::net::TcpListener;
 use std::net::TcpStream;
 use std::sync::Arc;
 
-pub struct ListenerThread<'a> {
+pub struct ListenerThread {
     pool: ThreadPool,
     addr: String,
-    execution: Arc<&'a Execution<'a>>,
+    execution: Arc<Execution>,
 }
 
-impl<'a> ListenerThread<'a> {
-    pub fn new(addr: String, execution: &'a Execution) -> Self {
+impl ListenerThread {
+    pub fn new(addr: String, execution: Arc<Execution>) -> Self {
         let pool = ThreadPool::new(32);
-        let exec = Arc::new(execution);
-
-        ListenerThread { pool, addr, execution: exec }
+        ListenerThread { pool, addr, execution }
     }
 
     pub fn run(&self) {
@@ -34,7 +32,7 @@ impl<'a> ListenerThread<'a> {
         }
     }
 
-    fn handle_connection(mut stream: TcpStream, execution: Arc<&'a Execution>) {
+    fn handle_connection(mut stream: TcpStream, execution: Arc<Execution>) {
         let mut request = Request::new();
         let reader = BufReader::new(stream.try_clone().unwrap());
         let mut result: Result<bool, String> = Err("Empty message".to_string());

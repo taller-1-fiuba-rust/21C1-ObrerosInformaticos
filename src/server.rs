@@ -3,31 +3,29 @@ use crate::storage::data_storage::DataStorage;
 use crate::execution::Execution;
 use std::thread;
 use std::thread::JoinHandle;
+use std::sync::Arc;
 
 #[allow(dead_code)]
-pub struct Server<'a> {
+pub struct Server {
     addr: String,
     handle: Option<JoinHandle<()>>,
-    data: DataStorage,
-    execution: Execution<'a>,
+    data: Arc<DataStorage>,
 }
 
-impl<'a> Server<'a> {
+impl Server {
     pub fn new(addr: String) -> Self {
-        let d = DataStorage::new();
-        let e = Execution::new(&d);
         Server {
             addr,
             handle: None,
-            data: d,
-            execution: e,
+            data: Arc::new(DataStorage::new()),
         }
     }
 
     pub fn run(&mut self) {
         let new_addr = self.addr.clone();
+        let execution = Arc::new(Execution::new(self.data.clone()));
         let handle = thread::spawn(move || {
-            let listener = ListenerThread::new(new_addr, &self.execution);
+            let listener = ListenerThread::new(new_addr, execution);
             listener.run();
         });
         self.handle = Some(handle);
