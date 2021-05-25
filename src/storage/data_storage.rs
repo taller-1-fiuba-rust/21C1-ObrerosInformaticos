@@ -14,7 +14,7 @@ pub enum Value {
 
 #[allow(dead_code)]
 pub struct DataStorage {
-    data: Arc<RwLock<HashMap<String, Value>>>,
+    data: Arc<RwLock<HashMap<String, (u64, Value)>>>,
 }
 
 #[allow(dead_code)]
@@ -35,14 +35,16 @@ impl DataStorage {
         parser::store_data(file, &lock);
     }
 
+    //El tiempo de expiracion inicial de todas las claves es 0. Esto indica
+    //que la clave nunca expira.
     pub fn add_key_value(&mut self, key: &str, value: Value) {
         let mut lock = self.data.write().unwrap();
         let copy_key = key.to_string();
 
         match value {
-            Value::String(s) => lock.insert(copy_key, Value::String(s)),
-            Value::Vec(i) => lock.insert(copy_key, Value::Vec(i)),
-            Value::HashSet(j) => lock.insert(copy_key, Value::HashSet(j)),
+            Value::String(s) => lock.insert(copy_key, (0, Value::String(s))),
+            Value::Vec(i) => lock.insert(copy_key, (0, Value::Vec(i))),
+            Value::HashSet(j) => lock.insert(copy_key, (0, Value::HashSet(j))),
         };
     }
 
@@ -55,7 +57,7 @@ impl DataStorage {
         lock.remove(key);
     }
 
-    pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, Value>> {
+    pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, (u64, Value)>> {
         self.data.read().unwrap()
     }
 }
@@ -69,14 +71,14 @@ mod tests {
     use std::io::Write;
 
     #[test]
-    fn test_load_data() {
+    fn test_load_string_data() {
         let dir = env::temp_dir();
-        let path_str = dir.to_str().unwrap().to_string() + &"/data.txt".to_string();
-        let path = dir.to_str().unwrap().to_string() + &"/data.txt".to_string();
+        let path_str = dir.to_str().unwrap().to_string() + &"/string_data.txt".to_string();
+        let path = dir.to_str().unwrap().to_string() + &"/string_data.txt".to_string();
 
         let mut file = File::create(path).expect("Not file created");
-        writeln!(file, "Daniela;hola").expect("Not file write");
 
+        writeln!(file, "Daniela;0;hola").expect("Not file write");
         let mut data_storage = DataStorage::new();
         data_storage.load_data(&path_str);
 
@@ -85,13 +87,65 @@ mod tests {
 
         let read = data_storage.read();
 
-        let b = if let Value::String(a) = read.get(&key).unwrap() {
+        let b = if let Value::String(a) = &(*read.get(&key).unwrap()).1 {
             a
         } else {
             panic!("Not string value")
         };
 
         assert_eq!(value, *b);
+    }
+
+    #[test]
+    fn test_load_vector_data() {
+        let dir = env::temp_dir();
+        let path_str = dir.to_str().unwrap().to_string() + &"/vector_data.txt".to_string();
+        let path = dir.to_str().unwrap().to_string() + &"/vector_data.txt".to_string();
+
+        let mut file = File::create(path).expect("Not file created");
+
+        writeln!(file, "Daniela;|LISTA|;0;buen,dia").expect("Not file write");
+        let mut data_storage = DataStorage::new();
+        data_storage.load_data(&path_str);
+
+        let key = String::from("Daniela");
+        let first_value = String::from("buen");
+
+        let read = data_storage.read();
+
+        let b = if let Value::Vec(a) = &(*read.get(&key).unwrap()).1 {
+            a
+        } else {
+            panic!("Not vector value")
+        };
+
+        assert_eq!(first_value, b[0]);
+    }
+
+    #[test]
+    fn test_load_set_data() {
+        let dir = env::temp_dir();
+        let path_str = dir.to_str().unwrap().to_string() + &"/set_data.txt".to_string();
+        let path = dir.to_str().unwrap().to_string() + &"/set_data.txt".to_string();
+
+        let mut file = File::create(path).expect("Not file created");
+
+        writeln!(file, "Daniela;|SET|;0;buen,dia").expect("Not file write");
+        let mut data_storage = DataStorage::new();
+        data_storage.load_data(&path_str);
+
+        let key = String::from("Daniela");
+        let first_value = String::from("buen");
+
+        let read = data_storage.read();
+
+        let b = if let Value::HashSet(a) = &(*read.get(&key).unwrap()).1 {
+            a
+        } else {
+            panic!("Not set value")
+        };
+
+        assert!(b.contains(&first_value));
     }
 
     #[test]
@@ -103,7 +157,7 @@ mod tests {
         data_storage.add_key_value(&key, Value::String(value));
         let read = data_storage.read();
 
-        let b = if let Value::String(a) = read.get(&key).unwrap() {
+        let b = if let Value::String(a) = &(*read.get(&key).unwrap()).1 {
             a
         } else {
             panic!("Not string value")
@@ -121,7 +175,7 @@ mod tests {
         data_storage.add_key_value(&key, Value::Vec(value));
         let read = data_storage.read();
 
-        let b = if let Value::Vec(a) = read.get(&key).unwrap() {
+        let b = if let Value::Vec(a) = &(*read.get(&key).unwrap()).1 {
             a
         } else {
             panic!("Not string value")
@@ -139,7 +193,7 @@ mod tests {
         data_storage.add_key_value(&key, Value::HashSet(value));
         let read = data_storage.read();
 
-        let b = if let Value::HashSet(a) = read.get(&key).unwrap() {
+        let b = if let Value::HashSet(a) = &(*read.get(&key).unwrap()).1 {
             a
         } else {
             panic!("Not string value")
@@ -162,7 +216,7 @@ mod tests {
         data_storage.delete_key(&key);
         let read = data_storage.read();
 
-        if let Value::String(a) = read.get(&key).unwrap() {
+        if let Value::String(a) = &(*read.get(&key).unwrap()).1 {
             a
         } else {
             panic!("Value not found in storage")
