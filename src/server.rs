@@ -28,14 +28,16 @@ impl Server {
     }
 
     pub fn run(&mut self) {
-        let new_addr = self.addr.clone();
+        let mut new_addr = self.addr.clone();
+        new_addr.push(':');
+        let addr_and_port = new_addr + &self.config.get_port().to_string();
         let execution = Arc::new(Execution::new(
             self.data.clone(),
             self.config.clone(),
             self.sys_time.clone(),
         ));
         let handle = thread::spawn(move || {
-            let listener = ListenerThread::new(new_addr, execution);
+            let listener = ListenerThread::new(addr_and_port, execution);
             listener.run();
         });
         self.handle = Some(handle);
