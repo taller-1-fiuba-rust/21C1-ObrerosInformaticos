@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 use std::fs;
+use crate::logging::logger::Logger;
 
 const DEFAULT_VERBOSE: u8 = 0;
 const DEFAULT_PORT: u16 = 6379;
 const DEFAULT_TIMEOUT: u32 = 0;
 const DEFAULT_DBFILENAME: &str = "dump.rdb";
-const DEFAULT_LOGFILE: &str = "logfile";
+const DEFAULT_LOGFILE: &str = "logfile.txt";
 const DEFAULT_IP: &str = "127.0.0.1";
 
 //To add a new configuration attribute:
@@ -17,6 +18,7 @@ const DEFAULT_IP: &str = "127.0.0.1";
 
 #[allow(dead_code)]
 pub struct Configuration {
+    logger: Logger,
     verbose: u8,
     port: u16,
     timeout: u32,
@@ -27,9 +29,12 @@ pub struct Configuration {
 
 #[allow(dead_code)]
 impl Configuration {
-    pub fn new() -> Self {
-        //Returns the default configuration
+    pub fn new(mut logger: Logger) -> Self {
+        //Returns the default configuration and sets the default logfile for the logger.
+        logger.set_logfile(DEFAULT_LOGFILE);
+        logger.log(&format!("Configuración del archivo de logs cargada por default: {}", DEFAULT_LOGFILE));
         Configuration {
+            logger,
             verbose: DEFAULT_VERBOSE,
             port: DEFAULT_PORT,
             timeout: DEFAULT_TIMEOUT,
@@ -85,11 +90,21 @@ impl Configuration {
         // Sets all the params and checks the validity of some of them.
         // If everything is OK, it returns none.
         // If any problem happens, it returns a string describing the problem.
+
+        if let Some(logfile_) = map.get("logfile") {
+            self.logfile = logfile_.to_string();
+            if let Some(msg) = self.logger.set_logfile(&self.logfile){
+                panic!("{}", msg)
+            }
+            self.logger.log(&format!("Configuración del archivo de logs cargada : {}", self.logfile));
+        } 
+
         if let Some(verbose_) = map.get("verbose") {
             if !self.check_number_between(verbose_, 0, 1) {
                 return Some("Verbosidad mal configurada.".to_string());
             }
             self.verbose = verbose_.parse().unwrap();
+            self.logger.log(&format!("Configuración de la verbosidad cargada : {}", self.verbose));
         }
 
         if let Some(port_) = map.get("port") {
@@ -97,6 +112,7 @@ impl Configuration {
                 return Some("Puerto mal configurado.".to_string());
             }
             self.port = port_.parse().unwrap();
+            self.logger.log(&format!("Configuración del puerto cargada : {}", self.port));
         }
 
         if let Some(timeout_) = map.get("timeout") {
@@ -104,18 +120,17 @@ impl Configuration {
                 Ok(number) => self.timeout = number,
                 Err(_) => return Some("Timeout mal configurado.".to_string()),
             }
+            self.logger.log(&format!("Configuración del timeout cargada : {}", self.timeout));
         }
 
         if let Some(dbfilename_) = map.get("dbfilename") {
             self.dbfilename = dbfilename_.to_string();
-        }
-
-        if let Some(logfile_) = map.get("logfile") {
-            self.logfile = logfile_.to_string();
+            self.logger.log(&format!("Configuración del archivo de almacenamiento cargada : {}", self.dbfilename));
         }
 
         if let Some(ip_) = map.get("ip") {
             self.ip = ip_.to_string();
+            self.logger.log(&format!("Configuración de la ip cargada : {}", self.ip));
         }
 
         None

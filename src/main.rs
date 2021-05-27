@@ -1,4 +1,6 @@
 use crate::config::configuration::Configuration;
+use crate::logging::logger::Logger;
+mod logging;
 use std::env;
 mod config;
 mod execution;
@@ -11,7 +13,8 @@ mod threadpool;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let mut configuration = Configuration::new();
+    let logger = Logger::new();
+    let mut configuration = Configuration::new(logger);
 
     if args.len() > 1 {
         if let Err(msj) = configuration.set_config(&args[1]) {
