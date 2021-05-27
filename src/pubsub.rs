@@ -1,43 +1,44 @@
 use std::collections::{HashMap, HashSet};
-use std::net::TcpStream;
-use std::sync::{Mutex, Arc};
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
-use std::sync::atomic::AtomicU32;
+use std::net::TcpStream;
+use std::sync::{Mutex, Arc};
 use std::io::Write;
+use std::sync::atomic::{AtomicU32, Ordering};
 
 struct Subscriber {
     socket: Arc<Mutex<TcpStream>>,
-    channel_count: u32
+    channels: Vec<String>
 }
 
 impl Subscriber {
     fn new(socket: Arc<Mutex<TcpStream>>) -> Self {
         Subscriber {
             socket,
-            channel_count: 0
+            channels: Vec::new()
         }
     }
 
-    fn send(&mut self, msg: &String) -> Result<(), &'static str> {
+    fn send(&mut self, msg: &String) -> Result<(), String> {
         let mut locked_socket = match self.socket.lock() {
             Ok(t) => t,
-            Err(e) => return Err("Failed to lock socket")
+            Err(_) => return Err("Failed to lock socket".to_string())
         };
         match locked_socket.write_all(msg.as_bytes()) {
             Ok(t) => Ok(t),
-            Err(e) => Err(&format!("Error '{}' while writing to socket", e.to_string())[..])
+            Err(e) => Err(format!("Error '{}' while writing to socket", e.to_string()))
         }
     }
 }
 
 pub struct PublisherSubscriber {
-    subscriber_ids: HashMap<i32, Subscriber>,
-    subscriptions: HashMap<String, HashSet<i32>>,
+    subscriber_ids: HashMap<u32, Subscriber>,
+    subscriptions: HashMap<String, HashSet<u32>>,
     last_id: AtomicU32,
 }
 
 impl PublisherSubscriber {
+
     pub fn new() -> Self {
         PublisherSubscriber {
             subscriber_ids: HashMap::new(),
@@ -46,35 +47,55 @@ impl PublisherSubscriber {
         }
     }
 
-    pub fn subscribe(&mut self, socket: Arc<Mutex<TcpStream>>, channel: &String) {
-        let key = last_id;
-        match self.subscriber_ids.get(&key) {
-            Some(_) => {}
-            None => {
-                self.subscriber_ids.insert(key, Subscriber::new(socket));
-            }
-        }
-        self.subscriptions.entry(channel.clone()).or_insert(HashSet::new()).insert(key);
+    /// Subscribes a socket to a specific channel, returns the number of channels the socket is subscribed to.
+    pub fn subscribe(&mut self, client: Arc<Mutex<TcpStream>>, channel: &String) -> u32 {
+        let client_id = self.last_id.fetch_add(1, Ordering::SeqCst);
+        self.subscriber_ids.entry(client_id).or_insert(Subscriber::new(client));
+        self.subscriptions.entry(channel.clone()).or_insert(HashSet::new()).insert(client_id);
+
+        let sub = self.subscriber_ids.get_mut(&client_id).unwrap();
+        sub.channels.push(channel.clone());
+        sub.channels.len() as u32
     }
 
-    pub fn publish(&mut self, message: String, channel: String) -> i32 {
+    /// Publishes a message to a specific channel. Returns the number of subscribers which received the message.
+    pub fn publish(&mut self, message: String, channel: String) -> u32 {
         let mut response = ResponseBuilder::new();
         response.add(ProtocolType::String(message));
         let response_str = response.serialize();
         let mut count = 0;
 
-        if let Some(mut streams) = self.subscriptions.get(&channel) {
-            streams.retain(|subscriber_id| {
-                let mut subscriber = self.subscriber_ids.get(subscriber_id).unwrap();
-                match subscriber.send(&response_str) {
-                   Ok(_) => {
-                       count += 1;
-                       true
-                   },
-                   Err(_) => false,
+        if let Some(streams) = self.subscriptions.get_mut(&channel) {
+            let subs = &mut self.subscriber_ids;
+            let count_ref = &mut count;
+
+            let mut dead_users: Vec<u32> = Vec::new();
+            for subscriber_id in streams.iter() {
+                let subscriber = subs.get_mut(subscriber_id).unwrap();
+                let result = match subscriber.send(&response_str) {
+                    Ok(_) => {
+                        *count_ref += 1;
+                        true
+                    },
+                    Err(_) => false,
+                };
+                if result {
+                    dead_users.push(*subscriber_id);
                 }
-            });
+            }
+
+            for user in dead_users {
+                self.unsubscribe(user);
+            }
         }
         count
+    }
+
+    pub fn unsubscribe(&mut self, user: u32) {
+        let sub = self.subscriber_ids.get_mut(&user).unwrap();
+        for channel in &sub.channels {
+            self.subscriptions.get_mut(channel).unwrap().remove(&user);
+        }
+        self.subscriber_ids.remove(&user);
     }
 }
