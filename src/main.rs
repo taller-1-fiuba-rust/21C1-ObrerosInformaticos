@@ -7,6 +7,7 @@ mod protocol;
 mod server;
 mod server_command;
 mod storage;
+mod pubsub;
 mod threadpool;
 
 fn main() {
