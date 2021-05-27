@@ -22,7 +22,7 @@ pub struct Configuration {
     timeout: u32,
     dbfilename: String,
     logfile: String,
-    ip: String
+    ip: String,
 }
 
 #[allow(dead_code)]
@@ -35,18 +35,18 @@ impl Configuration {
             timeout: DEFAULT_TIMEOUT,
             dbfilename: DEFAULT_DBFILENAME.to_string(),
             logfile: DEFAULT_LOGFILE.to_string(),
-            ip: DEFAULT_IP.to_string()
+            ip: DEFAULT_IP.to_string(),
         }
     }
 
     pub fn set_config(&mut self, file_path: &str) -> Result<bool, String> {
-        // Re-sets the configuration based on a configuration file (.config). 
+        // Re-sets the configuration based on a configuration file (.config).
         // If any problem happens, it returns a string describing the problem.
 
         let map;
-        match self.parse(file_path){
+        match self.parse(file_path) {
             Ok(map_) => map = map_,
-            Err(err) => return Err(err)
+            Err(err) => return Err(err),
         }
 
         if let Some(err) = self.set_all_params(map) {
@@ -57,8 +57,8 @@ impl Configuration {
     }
 
     fn parse(&mut self, file_path: &str) -> Result<HashMap<String, String>, String> {
-        // Returns a map <Attribute_name, Attribute_value> containing all the attributes 
-        // that the file contained. 
+        // Returns a map <Attribute_name, Attribute_value> containing all the attributes
+        // that the file contained.
         // If any problem happens, it returns a String describing the problem.
         let file: String = match fs::read_to_string(file_path) {
             Ok(file) => file,
@@ -81,9 +81,9 @@ impl Configuration {
         Ok(map)
     }
 
-    fn set_all_params(&mut self, map: HashMap<String, String>) -> Option<String>{
-        // Sets all the params and checks the validity of some of them. 
-        // If everything is OK, it returns none. 
+    fn set_all_params(&mut self, map: HashMap<String, String>) -> Option<String> {
+        // Sets all the params and checks the validity of some of them.
+        // If everything is OK, it returns none.
         // If any problem happens, it returns a string describing the problem.
         if let Some(verbose_) = map.get("verbose") {
             if !self.check_number_between(verbose_, 0, 1) {
@@ -114,7 +114,7 @@ impl Configuration {
             self.logfile = logfile_.to_string();
         }
 
-        if let Some(ip_) = map.get("ip"){
+        if let Some(ip_) = map.get("ip") {
             self.ip = ip_.to_string();
         }
 

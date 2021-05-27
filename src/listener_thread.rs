@@ -30,7 +30,7 @@ impl ListenerThread {
         if ttl > 0 {
             listener.set_ttl(ttl).unwrap();
         }
-        
+
         for stream in listener.incoming() {
             let stream = stream.unwrap();
             let exec = self.execution.clone();

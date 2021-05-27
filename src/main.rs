@@ -20,7 +20,7 @@ fn main() {
         }
     }
 
-    let mut server = server::Server::new( configuration);
+    let mut server = server::Server::new(configuration);
     server.run();
     server.join();
 }
