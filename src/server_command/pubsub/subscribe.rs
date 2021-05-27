@@ -1,0 +1,51 @@
+use crate::pubsub::PublisherSubscriber;
+use crate::protocol::response::ResponseBuilder;
+use crate::protocol::types::ProtocolType;
+use std::sync::{Mutex, Arc};
+
+pub fn run(pubsub: Arc<Mutex<PublisherSubscriber>>, client_id: u32, builder: &mut ResponseBuilder, arguments: Vec<ProtocolType>) -> Result<(), String> {
+    assert!(arguments.len() >= 1);
+
+
+    let channels = match parse_channels(&arguments) {
+        Ok(c) => c,
+        Err(s) =>  {
+            return Err(s);
+        }
+    };
+
+
+    let mut locked_pubsub = match pubsub.lock() {
+        Err(e) => {
+            return Err("Failed to execute subscribe".to_string());
+        },
+        Ok(t) => t
+    };
+
+    for channel in channels {
+        let current_subs = locked_pubsub.subscribe(client_id, &channel);
+        builder.add(ProtocolType::Array(
+            vec![
+                ProtocolType::String("subscribe".to_string()),
+                ProtocolType::String(channel),
+                ProtocolType::Integer(current_subs as i32)
+            ])
+        );
+    }
+
+    Ok(())
+}
+
+fn parse_channels(arguments: &Vec<ProtocolType>) -> Result<Vec<String>, String> {
+    let mut channels = Vec::new();
+    for argument in arguments {
+        let channel = match (*argument).clone().string() {
+            Ok(s) => s,
+            Err(s) => {
+                return Err(format!("Error '{}' while parsing channel'{}'", s, arguments[1].to_string()));
+            }
+        };
+        channels.push(channel);
+    }
+    Ok(channels)
+}

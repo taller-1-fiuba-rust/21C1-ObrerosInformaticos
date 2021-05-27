@@ -9,6 +9,7 @@ use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use crate::pubsub::PublisherSubscriber;
 use crate::protocol::command::Command;
+use crate::protocol::types::ProtocolType;
 
 pub struct ListenerThread {
     pool: ThreadPool,
@@ -42,7 +43,7 @@ impl ListenerThread {
         }
     }
 
-    fn handle_connection(mut stream: TcpStream, execution: Arc<Execution>, pubsub: Arc<Mutex<PublisherSubscriber>>) {
+    fn handle_connection(stream: TcpStream, execution: Arc<Execution>, pubsub: Arc<Mutex<PublisherSubscriber>>) {
 
         let command_result = Self::parse_command(&stream);
         if let Err(e) = command_result {
@@ -94,31 +95,34 @@ impl ListenerThread {
         Ok(request.build())
     }
 
-    fn execute_command(command: &Command, mut stream: TcpStream, execution: Arc<Execution>, pubsub: Arc<Mutex<PublisherSubscriber>>) {
+    fn execute_command(command: &Command, stream: TcpStream, execution: Arc<Execution>, pubsub: Arc<Mutex<PublisherSubscriber>>) {
         let socket = Arc::new(Mutex::new(stream));
         let mut response = ResponseBuilder::new();
 
         if !execution.is_pubsub_command(&command) {
             match execution.run(&command, &mut response) {
                 Err(e) => {
-                    println!("{}", e)
+                    println!("Error '{}' while running command", e);
+                    response.add(ProtocolType::Error(e.to_string()));
                 },
-                Ok(_) => Self::write_response(socket.clone(), &response)
+                Ok(_) => {}
             }
         } else {
-            match execution.run_pubsub(&command, &mut response, socket, pubsub) {
+            match execution.run_pubsub(&command, &mut response, socket.clone(), pubsub) {
                 Err(e) => {
-                    println!("{}", e)
+                    println!("Error '{}' while running pubsub command", e);
+                    response.add(ProtocolType::Error(e));
                 },
-                Ok(_) => Self::write_response(socket.clone(), &response)
+                Ok(_) => {}
             }
         }
+        Self::write_response(socket.clone(), &response);
     }
 
     fn write_response(stream: Arc<Mutex<TcpStream>>, response: &ResponseBuilder) {
         let mut locked_stream = match stream.lock() {
             Ok(s) => s,
-            Err(e) => {
+            Err(_) => {
                 println!("Error while writing to socket");
                 return;
             }

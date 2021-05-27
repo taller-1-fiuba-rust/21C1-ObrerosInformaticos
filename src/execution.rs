@@ -36,30 +36,26 @@ impl Execution {
     }
 
     pub fn run(&self, cmd: &Command, builder: &mut ResponseBuilder) -> Result<(), &'static str> {
-        match Self::normalize_name(cmd) {
+        match &cmd.name().to_ascii_lowercase()[..] {
             "ping" => ping::run(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
             _ => Err("Unknown command."),
         }
     }
 
-    pub fn run_pubsub(&self, cmd: &Command, response: &mut ResponseBuilder, socket: Arc<Mutex<TcpStream>>, pubsub: Arc<Mutex<PublisherSubscriber>>) -> Result<(), &'static str> {
-        match Self::normalize_name(cmd) {
+    pub fn run_pubsub(&self, cmd: &Command, response: &mut ResponseBuilder, socket: Arc<Mutex<TcpStream>>, pubsub: Arc<Mutex<PublisherSubscriber>>) -> Result<(), String> {
+        match &cmd.name().to_ascii_lowercase()[..] {
             "subscribe" => pubsub::subscribe::run(pubsub, socket, response, cmd.arguments()),
             "publish" => pubsub::publish::run(pubsub, response, cmd.arguments()),
-            _ => Err("Unknown command."),
+            _ => Err("Unknown command.".to_string()),
         }
     }
 
     pub fn is_pubsub_command(&self, cmd: &Command) -> bool {
-        match Self::normalize_name(cmd) {
+        match &cmd.name().to_ascii_lowercase()[..] {
             "subscribe" => true,
             "publish" => true,
             _ => false,
         }
-    }
-
-    fn normalize_name(cmd: &Command) -> &str {
-        &cmd.name().to_ascii_lowercase()[..]
     }
 }
