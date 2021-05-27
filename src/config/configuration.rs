@@ -1,56 +1,65 @@
 use std::collections::HashMap;
 use std::fs;
 
-const DEFAULT_VERBOSE: i8 = 0;
-const DEFAULT_PORT: i16 = 8080;
-const DEFAULT_TIMEOUT: i64 = 0;
+const DEFAULT_VERBOSE: u8 = 0;
+const DEFAULT_PORT: u16 = 6379;
+const DEFAULT_TIMEOUT: u32 = 0;
 const DEFAULT_DBFILENAME: &str = "dump.rdb";
 const DEFAULT_LOGFILE: &str = "logfile";
+const DEFAULT_IP: &str = "127.0.0.1";
+
+//To add a new configuration attribute:
+//  1) Add de default value as a constant.
+//  2) Add the attribute to the structure definition.
+//  3) Add the attribute to the 'new' function.
+//  4) Add the check and set to the set_all_params function.
+//  5) Add the get_/attribute/ function to return the value.
 
 #[allow(dead_code)]
 pub struct Configuration {
-    verbose: i8,
-    port: i16,
-    timeout: i64,
+    verbose: u8,
+    port: u16,
+    timeout: u32,
     dbfilename: String,
     logfile: String,
+    ip: String,
 }
 
 #[allow(dead_code)]
 impl Configuration {
     pub fn new() -> Self {
-        //Devuelvo configuración por defecto
+        //Returns the default configuration
         Configuration {
             verbose: DEFAULT_VERBOSE,
             port: DEFAULT_PORT,
             timeout: DEFAULT_TIMEOUT,
             dbfilename: DEFAULT_DBFILENAME.to_string(),
             logfile: DEFAULT_LOGFILE.to_string(),
+            ip: DEFAULT_IP.to_string(),
         }
     }
 
     pub fn set_config(&mut self, file_path: &str) -> Result<bool, String> {
-        let (verbose, port, timeout, dbfilename, logfile);
+        // Re-sets the configuration based on a configuration file (.config).
+        // If any problem happens, it returns a string describing the problem.
+
+        let map;
         match self.parse(file_path) {
-            Ok((verbose_, port_, timeout_, dbfilename_, logfile_)) => {
-                verbose = verbose_;
-                port = port_;
-                timeout = timeout_;
-                dbfilename = dbfilename_;
-                logfile = logfile_;
-            }
+            Ok(map_) => map = map_,
             Err(err) => return Err(err),
         }
 
-        self.verbose = verbose;
-        self.port = port;
-        self.timeout = timeout;
-        self.dbfilename = dbfilename;
-        self.logfile = logfile;
+        if let Some(err) = self.set_all_params(map) {
+            return Err(err);
+        }
+
         Ok(true)
     }
 
-    fn parse(&mut self, file_path: &str) -> Result<(i8, i16, i64, String, String), String> {
+    fn parse(&mut self, file_path: &str) -> Result<HashMap<String, String>, String> {
+        // Returns a map <Attribute_name, Attribute_value> containing all the attributes
+        // that the file contained.
+        // If any problem happens, it returns a String describing the problem.
         let file: String = match fs::read_to_string(file_path) {
             Ok(file) => file,
             Err(_) => return Err("Error al intentar abrir el archivo".to_string()),
@@ -69,48 +78,53 @@ impl Configuration {
             let value: String = name_and_value[1].replace(' ', "").to_string();
             map.insert(config_name, value);
         }
+        Ok(map)
+    }
 
-        let mut port: i16 = DEFAULT_PORT;
-        let mut verbose: i8 = DEFAULT_VERBOSE;
-        let mut timeout: i64 = DEFAULT_TIMEOUT;
-        let mut dbfilename: String = DEFAULT_DBFILENAME.to_string();
-        let mut logfile: String = DEFAULT_LOGFILE.to_string();
-
+    fn set_all_params(&mut self, map: HashMap<String, String>) -> Option<String> {
+        // Sets all the params and checks the validity of some of them.
+        // If everything is OK, it returns none.
+        // If any problem happens, it returns a string describing the problem.
         if let Some(verbose_) = map.get("verbose") {
             if !self.check_number_between(verbose_, 0, 1) {
-                return Err("Verbosidad mal configurada.".to_string());
+                return Some("Verbosidad mal configurada.".to_string());
             }
-            verbose = verbose_.parse().unwrap();
+            self.verbose = verbose_.parse().unwrap();
         }
 
         if let Some(port_) = map.get("port") {
             if !self.check_number_between(port_, 0, 65536) {
-                return Err("Puerto mal configurado.".to_string());
+                return Some("Puerto mal configurado.".to_string());
             }
-            port = port_.parse().unwrap();
+            self.port = port_.parse().unwrap();
         }
 
         if let Some(timeout_) = map.get("timeout") {
-            match timeout_.parse::<i64>() {
-                Ok(number) => timeout = number,
-                Err(_) => return Err("Timeout mal configurado.".to_string()),
+            match timeout_.parse::<u32>() {
+                Ok(number) => self.timeout = number,
+                Err(_) => return Some("Timeout mal configurado.".to_string()),
             }
         }
 
         if let Some(dbfilename_) = map.get("dbfilename") {
-            dbfilename = dbfilename_.to_string();
+            self.dbfilename = dbfilename_.to_string();
         }
 
         if let Some(logfile_) = map.get("logfile") {
-            logfile = logfile_.to_string();
+            self.logfile = logfile_.to_string();
         }
 
-        Ok((verbose, port, timeout, dbfilename, logfile))
+        if let Some(ip_) = map.get("ip") {
+            self.ip = ip_.to_string();
+        }
+
+        None
     }
 
-    fn check_number_between(&mut self, number: &str, bottom: i64, top: i64) -> bool {
-        let int_number: i64;
-        match number.parse::<i64>() {
+    fn check_number_between(&mut self, number: &str, bottom: u32, top: u32) -> bool {
+        // It checks that a string number is between two other numbers.
+        let int_number: u32;
+        match number.parse::<u32>() {
             Ok(x) => int_number = x,
             Err(_) => return false,
         }
@@ -121,15 +135,15 @@ impl Configuration {
         false
     }
 
-    pub fn get_verbose(&self) -> i8 {
+    pub fn get_verbose(&self) -> u8 {
         self.verbose
     }
 
-    pub fn get_port(&self) -> i16 {
+    pub fn get_port(&self) -> u16 {
         self.port
     }
 
-    pub fn get_timeout(&self) -> i64 {
+    pub fn get_timeout(&self) -> u32 {
         self.timeout
     }
 
@@ -139,6 +153,10 @@ impl Configuration {
 
     pub fn get_logfile(&self) -> &String {
         &self.logfile
+    }
+
+    pub fn get_ip(&self) -> &String {
+        &self.ip
     }
 }
 
@@ -188,7 +206,7 @@ mod tests {
             }
             Ok(_) => {
                 assert_eq!(configuration.get_verbose(), 0);
-                assert_eq!(configuration.get_port(), 8080);
+                assert_eq!(configuration.get_port(), 6379);
                 assert_eq!(configuration.get_timeout(), 0);
                 assert_eq!(configuration.get_dbfilename(), "andres.config");
                 assert_eq!(configuration.get_logfile(), "asda");

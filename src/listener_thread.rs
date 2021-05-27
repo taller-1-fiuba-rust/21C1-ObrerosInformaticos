@@ -30,9 +30,13 @@ impl ListenerThread {
         }
     }
 
-    pub fn run(&self) {
+    pub fn run(&self, ttl: u32) {
         let listener = TcpListener::bind(&self.addr).unwrap();
         println!("REDIS server started on address '{}'...", self.addr);
+        if ttl > 0 {
+            listener.set_ttl(ttl).unwrap();
+        }
+
         for stream in listener.incoming() {
             let stream = stream.unwrap();
             let exec = self.execution.clone();

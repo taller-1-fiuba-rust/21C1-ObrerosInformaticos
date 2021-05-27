@@ -17,9 +17,9 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn new(addr: String, config: Configuration) -> Self {
+    pub fn new(config: Configuration) -> Self {
         Server {
-            addr,
+            addr: config.get_ip().to_string(),
             handle: None,
             data: Arc::new(DataStorage::new()),
             config: Arc::new(config),
@@ -28,15 +28,18 @@ impl Server {
     }
 
     pub fn run(&mut self) {
-        let new_addr = self.addr.clone();
+        let mut new_addr = self.addr.clone();
+        new_addr.push(':');
+        let addr_and_port = new_addr + &self.config.get_port().to_string();
         let execution = Arc::new(Execution::new(
             self.data.clone(),
             self.config.clone(),
             self.sys_time.clone(),
         ));
+        let ttl = self.config.get_timeout();
         let handle = thread::spawn(move || {
-            let listener = ListenerThread::new(new_addr, execution);
-            listener.run();
+            let listener = ListenerThread::new(addr_and_port, execution);
+            listener.run(ttl);
         });
         self.handle = Some(handle);
     }
