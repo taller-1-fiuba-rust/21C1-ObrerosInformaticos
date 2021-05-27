@@ -17,9 +17,9 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn new(addr: String, config: Configuration) -> Self {
+    pub fn new(config: Configuration) -> Self {
         Server {
-            addr,
+            addr: config.get_ip().to_string(),
             handle: None,
             data: Arc::new(DataStorage::new()),
             config: Arc::new(config),
@@ -36,9 +36,10 @@ impl Server {
             self.config.clone(),
             self.sys_time.clone(),
         ));
+        let ttl = self.config.get_timeout();
         let handle = thread::spawn(move || {
             let listener = ListenerThread::new(addr_and_port, execution);
-            listener.run();
+            listener.run(ttl);
         });
         self.handle = Some(handle);
     }

@@ -20,8 +20,7 @@ fn main() {
         }
     }
 
-    let addr = "127.0.0.1".to_string();
-    let mut server = server::Server::new(addr, configuration);
+    let mut server = server::Server::new( configuration);
     server.run();
     server.join();
 }
