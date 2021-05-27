@@ -6,9 +6,8 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::TcpListener;
 use std::net::TcpStream;
-use std::sync::{Arc, RwLock, Mutex};
+use std::sync::{Arc, Mutex};
 use crate::pubsub::PublisherSubscriber;
-use std::rc::Rc;
 use crate::protocol::command::Command;
 
 pub struct ListenerThread {
@@ -35,8 +34,10 @@ impl ListenerThread {
         println!("REDIS server started on address '{}'...", self.addr);
         for stream in listener.incoming() {
             let stream = stream.unwrap();
+            let exec = self.execution.clone();
+            let pubsub = self.pubsub.clone();
             self.pool.spawn(move || {
-                ListenerThread::handle_connection(stream, self.execution.clone(), self.pubsub.clone());
+                ListenerThread::handle_connection(stream, exec, pubsub);
             });
         }
     }
@@ -87,7 +88,7 @@ impl ListenerThread {
             }
         }
         if let Err(e) = result {
-            Err(e)
+            return Err(e);
         }
 
         Ok(request.build())
