@@ -55,9 +55,12 @@ impl DataStorage {
     //que eliminen o solo el primer valor
     //del vector o el ultimo dada una clave. Ahora se borra
     //la clave con todo lo que contiene.
-    pub fn delete_key(&mut self, key: &str) {
+    pub fn delete_key(&self, key: &str) -> Result<(), &'static str> {
         let mut lock = self.data.write().unwrap();
-        lock.remove(key);
+        match lock.remove(key){
+            Some(_a) => Ok(()),
+            None => Err("Not key in HashMap"),
+        }
     }
 
     pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, (Option<Duration>, Value)>> {
