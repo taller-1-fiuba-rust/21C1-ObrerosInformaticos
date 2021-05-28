@@ -59,7 +59,7 @@ impl PublisherSubscriber {
     }
 
     /// Publishes a message to a specific channel. Returns the number of subscribers which received the message.
-    pub fn publish(&mut self, message: String, channel: String) -> u32 {
+    pub fn publish(&mut self, channel: String, message: String) -> u32 {
         let mut response = ResponseBuilder::new();
         response.add(ProtocolType::String(message));
         let response_str = response.serialize();
@@ -79,7 +79,7 @@ impl PublisherSubscriber {
                     },
                     Err(_) => false,
                 };
-                if result {
+                if !result {
                     dead_users.push(*subscriber_id);
                 }
             }
