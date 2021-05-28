@@ -4,6 +4,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
 use crate::server_command::info;
 use crate::server_command::ping;
+use crate::server_command::pubsub;
 use crate::storage::data_storage::DataStorage;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
@@ -50,7 +51,10 @@ impl Execution {
         socket: Arc<Mutex<TcpStream>>,
         pubsub: Arc<Mutex<PublisherSubscriber>>,
     ) -> Result<(), String> {
-        Err("Unknown command.".to_string())
+        match &cmd.name().to_ascii_lowercase()[..] {
+            "publish" => pubsub::publish::run(pubsub, response, cmd.arguments()),
+            _ => Err("Unknown command.".to_string()),
+        }
     }
 
     pub fn is_pubsub_command(&self, cmd: &Command) -> bool {

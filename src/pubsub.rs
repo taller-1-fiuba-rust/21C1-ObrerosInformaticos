@@ -31,7 +31,6 @@ impl Subscriber {
     }
 }
 
-#[allow(dead_code)]
 pub struct PublisherSubscriber {
     subscriber_ids: HashMap<u32, Subscriber>,
     subscriptions: HashMap<String, HashSet<u32>>,
@@ -39,7 +38,6 @@ pub struct PublisherSubscriber {
 }
 
 impl PublisherSubscriber {
-    #[allow(dead_code)]
     pub fn new() -> Self {
         PublisherSubscriber {
             subscriber_ids: HashMap::new(),
@@ -67,7 +65,6 @@ impl PublisherSubscriber {
         sub.channels.len() as u32
     }
 
-    #[allow(dead_code)]
     ///
     /// Publishes a message to a specific channel. Returns the number of subscribers which received the message.
     ///
@@ -103,7 +100,6 @@ impl PublisherSubscriber {
         count
     }
 
-    #[allow(dead_code)]
     ///
     /// Unsubscribes a user from all the channels it's subscribed.
     ///
