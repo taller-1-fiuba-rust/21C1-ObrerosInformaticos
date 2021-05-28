@@ -33,10 +33,10 @@ impl Configuration {
     pub fn new(logger: Arc<Mutex<Logger>>) -> Self {
         //Returns the default configuration and sets the default logfile for the logger.
         logger.lock().unwrap().set_logfile(DEFAULT_LOGFILE);
-        logger.lock().unwrap().log(&format!(
-            "Configuración del archivo de logs cargada por default: {}",
-            DEFAULT_LOGFILE
-        ));
+        // logger.lock().unwrap().log(&format!(
+        //     "Configuración del archivo de logs cargada por default: {}",
+        //     DEFAULT_LOGFILE
+        // ));
         Configuration {
             logger,
             verbose: DEFAULT_VERBOSE,
@@ -95,26 +95,27 @@ impl Configuration {
         // If everything is OK, it returns none.
         // If any problem happens, it returns a string describing the problem.
 
-        if let Some(logfile_) = map.get("logfile") {
-            self.logfile = logfile_.to_string();
-            if let Some(msg) = self.logger.lock().unwrap().set_logfile(&self.logfile) {
-                panic!("{}", msg)
-            }
-            self.logger.lock().unwrap().log(&format!(
-                "Configuración del archivo de logs cargada : {}",
-                self.logfile
-            ));
-        }
-
         if let Some(verbose_) = map.get("verbose") {
             if !self.check_number_between(verbose_, 0, 1) {
                 return Some("Verbosidad mal configurada.".to_string());
             }
             self.verbose = verbose_.parse().unwrap();
-            self.logger.lock().unwrap().log(&format!(
-                "Configuración de la verbosidad cargada : {}",
-                self.verbose
-            ));
+            if self.verbose == 1 {
+                println!("Configuración de la verbosidad cargada : 1");
+            }
+        }
+
+        if let Some(logfile_) = map.get("logfile") {
+            self.logfile = logfile_.to_string();
+            if let Some(msg) = self.logger.lock().unwrap().set_logfile(&self.logfile) {
+                panic!("{}", msg)
+            }
+            if self.verbose == 1 {
+                println!(
+                    "Configuración del archivo de logs cargada : {}",
+                    self.logfile
+                );
+            }
         }
 
         if let Some(port_) = map.get("port") {
@@ -122,10 +123,9 @@ impl Configuration {
                 return Some("Puerto mal configurado.".to_string());
             }
             self.port = port_.parse().unwrap();
-            self.logger
-                .lock()
-                .unwrap()
-                .log(&format!("Configuración del puerto cargada : {}", self.port));
+            if self.verbose == 1 {
+                println!("Configuración del puerto cargada : {}", self.port);
+            }
         }
 
         if let Some(timeout_) = map.get("timeout") {
@@ -133,28 +133,27 @@ impl Configuration {
                 Ok(number) => self.timeout = number,
                 Err(_) => return Some("Timeout mal configurado.".to_string()),
             }
-            self.logger.lock().unwrap().log(&format!(
-                "Configuración del timeout cargada : {}",
-                self.timeout
-            ));
+            if self.verbose == 1 {
+                println!("Configuración del timeout cargada : {}", self.timeout);
+            }
         }
 
         if let Some(dbfilename_) = map.get("dbfilename") {
             self.dbfilename = dbfilename_.to_string();
-            self.logger.lock().unwrap().log(&format!(
-                "Configuración del archivo de almacenamiento cargada : {}",
-                self.dbfilename
-            ));
+            if self.verbose == 1 {
+                println!(
+                    "Configuración del archivo de almacenamiento cargada : {}",
+                    self.dbfilename
+                );
+            }
         }
 
         if let Some(ip_) = map.get("ip") {
             self.ip = ip_.to_string();
-            self.logger
-                .lock()
-                .unwrap()
-                .log(&format!("Configuración de la ip cargada : {}", self.ip));
+            if self.verbose == 1 {
+                println!("Configuración de la ip cargada : {}", self.ip);
+            }
         }
-
         None
     }
 
