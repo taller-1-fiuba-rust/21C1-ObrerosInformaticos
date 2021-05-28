@@ -52,6 +52,7 @@ impl Execution {
         pubsub: Arc<Mutex<PublisherSubscriber>>,
     ) -> Result<(), String> {
         match &cmd.name().to_ascii_lowercase()[..] {
+            "subscribe" => pubsub::subscribe::run(pubsub, socket, response, cmd.arguments()),
             "publish" => pubsub::publish::run(pubsub, response, cmd.arguments()),
             _ => Err("Unknown command.".to_string()),
         }
