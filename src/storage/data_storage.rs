@@ -1,9 +1,11 @@
 use crate::storage::parser;
+use std::time::{SystemTime, UNIX_EPOCH};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::RwLock;
 use std::sync::RwLockReadGuard;
+use std::time::Duration;
 
 #[allow(dead_code)]
 pub enum Value {
@@ -14,7 +16,7 @@ pub enum Value {
 
 #[allow(dead_code)]
 pub struct DataStorage {
-    data: Arc<RwLock<HashMap<String, (u64, Value)>>>,
+    data: Arc<RwLock<HashMap<String, (Option<Duration>, Value)>>>,
 }
 
 #[allow(dead_code)]
@@ -35,16 +37,16 @@ impl DataStorage {
         parser::store_data(file, &lock);
     }
 
-    //El tiempo de expiracion inicial de todas las claves es 0. Esto indica
+    //El tiempo de expiracion inicial de todas las claves es None. Esto indica
     //que la clave nunca expira.
     pub fn add_key_value(&mut self, key: &str, value: Value) {
         let mut lock = self.data.write().unwrap();
         let copy_key = key.to_string();
 
         match value {
-            Value::String(s) => lock.insert(copy_key, (0, Value::String(s))),
-            Value::Vec(i) => lock.insert(copy_key, (0, Value::Vec(i))),
-            Value::HashSet(j) => lock.insert(copy_key, (0, Value::HashSet(j))),
+            Value::String(s) => lock.insert(copy_key, (None, Value::String(s))),
+            Value::Vec(i) => lock.insert(copy_key, (None, Value::Vec(i))),
+            Value::HashSet(j) => lock.insert(copy_key, (None, Value::HashSet(j))),
         };
     }
 
@@ -57,8 +59,22 @@ impl DataStorage {
         lock.remove(key);
     }
 
-    pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, (u64, Value)>> {
+    pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, (Option<Duration>, Value)>> {
         self.data.read().unwrap()
+    }
+
+    pub fn set_expiration_to_key(&self, actual_time: SystemTime, duration: Duration, key: &str) {
+        let mut lock = self.data.write().unwrap();
+        let copy_key = key.to_string();
+
+        let expiration_time = actual_time.checked_add(duration);
+
+        if expiration_time == None {
+            panic!("Expiration time can't be set");
+        }
+
+        let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
+        lock.get_mut(&copy_key).unwrap().0 = Some(key_duration.unwrap());
     }
 }
 
@@ -69,6 +85,44 @@ mod tests {
     use std::env;
     use std::fs::File;
     use std::io::Write;
+
+    #[test]
+    #[should_panic]
+    fn test_delete_data() {
+        let mut data_storage = DataStorage::new();
+        let key = String::from("Daniela");
+        let value = String::from("hola");
+
+        data_storage.add_key_value(&key, Value::String(value));
+
+        data_storage.delete_key(&key);
+        let read = data_storage.read();
+
+        if let Value::String(a) = &(*read.get(&key).unwrap()).1 {
+            a
+        } else {
+            panic!("Value not found in storage")
+        };
+    }
+
+    #[test]
+    fn test_set_exiration_to_key() {
+        let mut data_storage = DataStorage::new();
+        let key = String::from("Daniela");
+        let value = String::from("hola");
+        let actual_time = SystemTime::now();
+        let duration = Duration::from_secs(5);
+        let expiration_time = actual_time.checked_add(duration);
+        let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
+
+        data_storage.add_key_value(&key, Value::String(value));
+        data_storage.set_expiration_to_key(actual_time, duration, &key);
+
+        let read = data_storage.read();
+        let key_expiration: &Option<Duration> = &(*read.get(&key).unwrap()).0;
+
+        assert_eq!(key_duration.unwrap(), key_expiration.unwrap());
+    }
 
     #[test]
     fn test_load_string_data() {
@@ -202,24 +256,5 @@ mod tests {
         let a: HashSet<String> = vec!["a".to_string(), "b".to_string()].into_iter().collect();
 
         assert_eq!(a, *b);
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_delete_data() {
-        let mut data_storage = DataStorage::new();
-        let key = String::from("Daniela");
-        let value = String::from("hola");
-
-        data_storage.add_key_value(&key, Value::String(value));
-
-        data_storage.delete_key(&key);
-        let read = data_storage.read();
-
-        if let Value::String(a) = &(*read.get(&key).unwrap()).1 {
-            a
-        } else {
-            panic!("Value not found in storage")
-        };
     }
 }
