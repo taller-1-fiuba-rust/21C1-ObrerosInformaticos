@@ -4,6 +4,7 @@ mod config;
 mod execution;
 mod listener_thread;
 mod protocol;
+mod pubsub;
 mod server;
 mod server_command;
 mod key_command;
@@ -21,8 +22,7 @@ fn main() {
         }
     }
 
-    let addr = "127.0.0.1:6379".to_string();
-    let mut server = server::Server::new(addr, configuration);
+    let mut server = server::Server::new(configuration);
     server.run();
     server.join();
 }
