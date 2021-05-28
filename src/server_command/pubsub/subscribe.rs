@@ -2,8 +2,9 @@ use crate::pubsub::PublisherSubscriber;
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use std::sync::{Mutex, Arc};
+use std::net::TcpStream;
 
-pub fn run(pubsub: Arc<Mutex<PublisherSubscriber>>, client_id: u32, builder: &mut ResponseBuilder, arguments: Vec<ProtocolType>) -> Result<(), String> {
+pub fn run(pubsub: Arc<Mutex<PublisherSubscriber>>, client: Arc<Mutex<TcpStream>>, builder: &mut ResponseBuilder, arguments: Vec<ProtocolType>) -> Result<(), String> {
     assert!(arguments.len() >= 1);
 
 
@@ -16,14 +17,14 @@ pub fn run(pubsub: Arc<Mutex<PublisherSubscriber>>, client_id: u32, builder: &mu
 
 
     let mut locked_pubsub = match pubsub.lock() {
-        Err(e) => {
+        Err(_) => {
             return Err("Failed to execute subscribe".to_string());
         },
         Ok(t) => t
     };
 
     for channel in channels {
-        let current_subs = locked_pubsub.subscribe(client_id, &channel);
+        let current_subs = locked_pubsub.subscribe(client.clone(), &channel);
         builder.add(ProtocolType::Array(
             vec![
                 ProtocolType::String("subscribe".to_string()),
