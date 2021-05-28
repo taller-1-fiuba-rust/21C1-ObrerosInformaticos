@@ -57,7 +57,7 @@ impl DataStorage {
     //la clave con todo lo que contiene.
     pub fn delete_key(&self, key: &str) -> Result<(), &'static str> {
         let mut lock = self.data.write().unwrap();
-        match lock.remove(key){
+        match lock.remove(key) {
             Some(_a) => Ok(()),
             None => Err("Not key in HashMap"),
         }

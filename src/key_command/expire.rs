@@ -30,18 +30,20 @@ pub fn set_expiration_to_key(
     };
 
     if seconds.is_negative() {
-    	match data.delete_key(&key){
-    		Ok(_s) => builder.add(ProtocolType::Integer(1)),
-    		Err(_s) => builder.add(ProtocolType::Integer(0)),
-    	}
-    	
-    }else{
-	    match data.set_expiration_to_key(SystemTime::now(), Duration::from_secs(seconds as u64), &key) {
-	        Ok(s) => builder.add(ProtocolType::Integer(s as i32)),
-	        Err(_s) => builder.add(ProtocolType::Integer(0)),
-	    };
+        match data.delete_key(&key) {
+            Ok(_s) => builder.add(ProtocolType::Integer(1)),
+            Err(_s) => builder.add(ProtocolType::Integer(0)),
+        }
+    } else {
+        match data.set_expiration_to_key(
+            SystemTime::now(),
+            Duration::from_secs(seconds as u64),
+            &key,
+        ) {
+            Ok(s) => builder.add(ProtocolType::Integer(s as i32)),
+            Err(_s) => builder.add(ProtocolType::Integer(0)),
+        };
     }
-
 
     Ok(())
 }
