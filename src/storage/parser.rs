@@ -38,12 +38,11 @@ pub fn store_data(file: &str, data: &HashMap<String, (Option<Duration>, Value)>)
 }
 
 fn save_string_data(file: &str, key: &str, value: (Option<Duration>, &str)) {
-
     let save_data: String;
 
     if value.0 != None {
         save_data = format!("{};{};{}", key, value.0.unwrap().as_secs(), value.1);
-    }else {
+    } else {
         save_data = format!("{};{};{}", key, 0, value.1);
     }
 
@@ -55,8 +54,14 @@ fn save_vector_data(file: &str, key: &str, value: (Option<Duration>, &[String]))
     let save_data: String;
 
     if value.0 != None {
-        save_data = format!("{};{};{};{}", key, LIST, value.0.unwrap().as_secs(), values_joined);
-    }else {
+        save_data = format!(
+            "{};{};{};{}",
+            key,
+            LIST,
+            value.0.unwrap().as_secs(),
+            values_joined
+        );
+    } else {
         save_data = format!("{};{};{};{}", key, LIST, 0, values_joined);
     }
 
@@ -69,8 +74,14 @@ fn save_set_data(file: &str, key: &str, value: (Option<Duration>, &HashSet<Strin
     let save_data: String;
 
     if value.0 != None {
-        save_data = format!("{};{};{};{}", key, SET, value.0.unwrap().as_secs(), values_joined);
-    }else {
+        save_data = format!(
+            "{};{};{};{}",
+            key,
+            SET,
+            value.0.unwrap().as_secs(),
+            values_joined
+        );
+    } else {
         save_data = format!("{};{};{};{}", key, SET, 0, values_joined);
     }
 
@@ -83,8 +94,8 @@ fn get_string_data(vec: Vec<&str>) -> (String, Option<Duration>, String) {
     let key_expiration_number = vec[1].parse::<u64>().unwrap();
     let key_expiration: Option<Duration>;
     if key_expiration_number != 0 {
-       key_expiration = Some(Duration::from_secs(key_expiration_number));
-    }else{
+        key_expiration = Some(Duration::from_secs(key_expiration_number));
+    } else {
         key_expiration = None;
     }
 
@@ -103,8 +114,8 @@ fn get_vector_data(mut vec: Vec<&str>) -> (String, Option<Duration>, Vec<String>
     let key_expiration: Option<Duration>;
 
     if key_expiration_number != 0 {
-       key_expiration = Some(Duration::from_secs(key_expiration_number));
-    }else{
+        key_expiration = Some(Duration::from_secs(key_expiration_number));
+    } else {
         key_expiration = None;
     }
     vec.remove(0);
@@ -128,8 +139,8 @@ fn get_set_data(mut vec: Vec<&str>) -> (String, Option<Duration>, HashSet<String
     let key_expiration: Option<Duration>;
 
     if key_expiration_number != 0 {
-       key_expiration = Some(Duration::from_secs(key_expiration_number));
-    }else{
+        key_expiration = Some(Duration::from_secs(key_expiration_number));
+    } else {
         key_expiration = None;
     }
     vec.remove(0);

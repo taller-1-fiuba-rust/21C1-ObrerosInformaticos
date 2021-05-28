@@ -1,11 +1,12 @@
 use crate::storage::parser;
-use std::time::{SystemTime, UNIX_EPOCH};
+use crate::storage::SafeDataStorage;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::RwLock;
 use std::sync::RwLockReadGuard;
 use std::time::Duration;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[allow(dead_code)]
 pub enum Value {
@@ -16,7 +17,7 @@ pub enum Value {
 
 #[allow(dead_code)]
 pub struct DataStorage {
-    data: Arc<RwLock<HashMap<String, (Option<Duration>, Value)>>>,
+    data: SafeDataStorage,
 }
 
 #[allow(dead_code)]
