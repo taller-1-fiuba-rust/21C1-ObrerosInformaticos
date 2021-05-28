@@ -4,6 +4,7 @@ mod config;
 mod execution;
 mod listener_thread;
 mod protocol;
+mod pubsub;
 mod server;
 mod server_command;
 mod storage;

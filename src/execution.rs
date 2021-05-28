@@ -1,10 +1,12 @@
 use crate::config::configuration::Configuration;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
-use crate::protocol::types::ProtocolType;
+use crate::pubsub::PublisherSubscriber;
 use crate::server_command::info;
+use crate::server_command::ping;
 use crate::storage::data_storage::DataStorage;
-use std::sync::Arc;
+use std::net::TcpStream;
+use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
 #[allow(dead_code)]
@@ -34,14 +36,27 @@ impl Execution {
 
     pub fn run(&self, cmd: &Command, builder: &mut ResponseBuilder) -> Result<(), &'static str> {
         match &cmd.name().to_ascii_lowercase()[..] {
-            "ping" => Self::pong(builder),
+            "ping" => ping::run(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
             _ => Err("Unknown command."),
         }
     }
 
-    pub fn pong(builder: &mut ResponseBuilder) -> Result<(), &'static str> {
-        builder.add(ProtocolType::String("PONG".to_string()));
-        Ok(())
+    #[allow(unused_variables)]
+    pub fn run_pubsub(
+        &self,
+        cmd: &Command,
+        response: &mut ResponseBuilder,
+        socket: Arc<Mutex<TcpStream>>,
+        pubsub: Arc<Mutex<PublisherSubscriber>>,
+    ) -> Result<(), String> {
+        Err("Unknown command.".to_string())
+    }
+
+    pub fn is_pubsub_command(&self, cmd: &Command) -> bool {
+        matches!(
+            &cmd.name().to_ascii_lowercase()[..],
+            "subscribe" | "publish"
+        )
     }
 }
