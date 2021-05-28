@@ -3,6 +3,7 @@ use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::server_command::info;
+use crate::key_command::expire;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 use std::time::SystemTime;
@@ -36,6 +37,7 @@ impl Execution {
         match &cmd.name().to_ascii_lowercase()[..] {
             "ping" => Self::pong(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
+            "expire" => expire::set_expiration_to_key(builder, cmd, &self.data),
             _ => Err("Unknown command."),
         }
     }

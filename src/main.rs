@@ -6,6 +6,7 @@ mod listener_thread;
 mod protocol;
 mod server;
 mod server_command;
+mod key_command;
 mod storage;
 mod threadpool;
 

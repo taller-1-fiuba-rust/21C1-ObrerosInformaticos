@@ -64,18 +64,20 @@ impl DataStorage {
         self.data.read().unwrap()
     }
 
-    pub fn set_expiration_to_key(&self, actual_time: SystemTime, duration: Duration, key: &str) {
+    pub fn set_expiration_to_key(&self, actual_time: SystemTime, duration: Duration, key: &str) -> Result<u64, u64> {
         let mut lock = self.data.write().unwrap();
         let copy_key = key.to_string();
 
         let expiration_time = actual_time.checked_add(duration);
 
         if expiration_time == None {
-            panic!("Expiration time can't be set");
+            return Err(0)
+        }else{
+            let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
+            lock.get_mut(&copy_key).unwrap().0 = Some(key_duration.unwrap());
+            return Ok(1)
         }
 
-        let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
-        lock.get_mut(&copy_key).unwrap().0 = Some(key_duration.unwrap());
     }
 }
 
