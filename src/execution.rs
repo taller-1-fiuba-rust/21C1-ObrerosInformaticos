@@ -53,7 +53,7 @@ impl Execution {
     ) -> Result<(), String> {
         match &cmd.name().to_ascii_lowercase()[..] {
             "publish" => pubsub::publish::run(pubsub, response, cmd.arguments()),
-            _ => Err("Unknown command.".to_string())
+            _ => Err("Unknown command.".to_string()),
         }
     }
 

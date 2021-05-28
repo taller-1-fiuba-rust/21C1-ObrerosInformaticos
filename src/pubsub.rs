@@ -31,7 +31,6 @@ impl Subscriber {
     }
 }
 
-
 pub struct PublisherSubscriber {
     subscriber_ids: HashMap<u32, Subscriber>,
     subscriptions: HashMap<String, HashSet<u32>>,
@@ -39,7 +38,6 @@ pub struct PublisherSubscriber {
 }
 
 impl PublisherSubscriber {
-
     pub fn new() -> Self {
         PublisherSubscriber {
             subscriber_ids: HashMap::new(),
