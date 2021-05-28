@@ -1,8 +1,9 @@
 use crate::config::configuration::Configuration;
 use crate::execution::Execution;
 use crate::listener_thread::ListenerThread;
+use crate::logging::logger::Logger;
 use crate::storage::data_storage::DataStorage;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::SystemTime;
@@ -14,16 +15,18 @@ pub struct Server {
     data: Arc<DataStorage>,
     config: Arc<Configuration>,
     sys_time: Arc<SystemTime>,
+    logger: Arc<Mutex<Logger>>,
 }
 
 impl Server {
-    pub fn new(config: Configuration) -> Self {
+    pub fn new(config: Configuration, logger: Arc<Mutex<Logger>>) -> Self {
         Server {
             addr: config.get_ip().to_string(),
             handle: None,
             data: Arc::new(DataStorage::new()),
             config: Arc::new(config),
             sys_time: Arc::new(SystemTime::now()),
+            logger: logger,
         }
     }
 
@@ -35,6 +38,7 @@ impl Server {
             self.data.clone(),
             self.config.clone(),
             self.sys_time.clone(),
+            self.logger.clone(),
         ));
         let ttl = self.config.get_timeout();
         let handle = thread::spawn(move || {

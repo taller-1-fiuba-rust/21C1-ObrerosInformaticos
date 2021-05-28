@@ -1,5 +1,6 @@
 use crate::config::configuration::Configuration;
 use crate::logging::logger::Logger;
+use std::sync::{Arc, Mutex};
 mod logging;
 use std::env;
 mod config;
@@ -14,7 +15,8 @@ mod threadpool;
 fn main() {
     let args: Vec<String> = env::args().collect();
     let logger = Logger::new();
-    let mut configuration = Configuration::new(logger);
+    let logger_ref = Arc::new(Mutex::new(logger));
+    let mut configuration = Configuration::new(logger_ref.clone());
 
     if args.len() > 1 {
         if let Err(msj) = configuration.set_config(&args[1]) {
@@ -23,7 +25,7 @@ fn main() {
         }
     }
 
-    let mut server = server::Server::new(configuration);
+    let mut server = server::Server::new(configuration, logger_ref.clone());
     server.run();
     server.join();
 }

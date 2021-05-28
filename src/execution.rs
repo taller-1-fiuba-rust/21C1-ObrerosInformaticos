@@ -1,10 +1,11 @@
 use crate::config::configuration::Configuration;
+use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::server_command::info;
 use crate::storage::data_storage::DataStorage;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
 #[allow(dead_code)]
@@ -13,6 +14,7 @@ pub struct Execution {
     config: Arc<Configuration>,
     sys_time: Arc<SystemTime>,
     client_connected: u64,
+    logger: Arc<Mutex<Logger>>,
 }
 
 /*
@@ -23,12 +25,14 @@ impl Execution {
         data: Arc<DataStorage>,
         config: Arc<Configuration>,
         sys_time: Arc<SystemTime>,
+        logger: Arc<Mutex<Logger>>,
     ) -> Self {
         Execution {
             data,
             config,
             sys_time,
             client_connected: 0,
+            logger,
         }
     }
 
