@@ -31,6 +31,7 @@ impl Subscriber {
     }
 }
 
+#[allow(dead_code)]
 pub struct PublisherSubscriber {
     subscriber_ids: HashMap<u32, Subscriber>,
     subscriptions: HashMap<String, HashSet<u32>>,
@@ -38,6 +39,7 @@ pub struct PublisherSubscriber {
 }
 
 impl PublisherSubscriber {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         PublisherSubscriber {
             subscriber_ids: HashMap::new(),
@@ -46,7 +48,10 @@ impl PublisherSubscriber {
         }
     }
 
+    #[allow(dead_code)]
+    ///
     /// Subscribes a socket to a specific channel, returns the number of channels the socket is subscribed to.
+    ///
     pub fn subscribe(&mut self, client: Arc<Mutex<TcpStream>>, channel: &String) -> u32 {
         let client_id = self.last_id.fetch_add(1, Ordering::SeqCst);
         self.subscriber_ids
@@ -62,7 +67,10 @@ impl PublisherSubscriber {
         sub.channels.len() as u32
     }
 
+    #[allow(dead_code)]
+    ///
     /// Publishes a message to a specific channel. Returns the number of subscribers which received the message.
+    ///
     pub fn publish(&mut self, channel: String, message: String) -> u32 {
         let mut response = ResponseBuilder::new();
         response.add(ProtocolType::String(message));
@@ -95,6 +103,10 @@ impl PublisherSubscriber {
         count
     }
 
+    #[allow(dead_code)]
+    ///
+    /// Unsubscribes a user from all the channels it's subscribed.
+    ///
     pub fn unsubscribe(&mut self, user: u32) {
         let sub = self.subscriber_ids.get_mut(&user).unwrap();
         for channel in &sub.channels {
