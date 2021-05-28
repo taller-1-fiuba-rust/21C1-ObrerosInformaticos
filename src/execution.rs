@@ -1,4 +1,5 @@
 use crate::config::configuration::Configuration;
+use crate::key_command::expire;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
@@ -39,6 +40,7 @@ impl Execution {
         match &cmd.name().to_ascii_lowercase()[..] {
             "ping" => ping::run(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
+            "expire" => expire::set_expiration_to_key(builder, cmd, &self.data),
             _ => Err("Unknown command."),
         }
     }

@@ -55,27 +55,38 @@ impl DataStorage {
     //que eliminen o solo el primer valor
     //del vector o el ultimo dada una clave. Ahora se borra
     //la clave con todo lo que contiene.
-    pub fn delete_key(&mut self, key: &str) {
+    pub fn delete_key(&self, key: &str) -> Result<(), &'static str> {
         let mut lock = self.data.write().unwrap();
-        lock.remove(key);
+        match lock.remove(key) {
+            Some(_a) => Ok(()),
+            None => Err("Not key in HashMap"),
+        }
     }
 
     pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, (Option<Duration>, Value)>> {
         self.data.read().unwrap()
     }
 
-    pub fn set_expiration_to_key(&self, actual_time: SystemTime, duration: Duration, key: &str) {
+    pub fn set_expiration_to_key(
+        &self,
+        actual_time: SystemTime,
+        duration: Duration,
+        key: &str,
+    ) -> Result<u64, &'static str> {
         let mut lock = self.data.write().unwrap();
         let copy_key = key.to_string();
 
         let expiration_time = actual_time.checked_add(duration);
 
         if expiration_time == None {
-            panic!("Expiration time can't be set");
+            Err("Expiration time cant be calculated")
+        } else if lock.contains_key(&copy_key) {
+            let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
+            lock.get_mut(&copy_key).unwrap().0 = Some(key_duration.unwrap());
+            Ok(1)
+        } else {
+            Err("Key not found in DataStorage")
         }
-
-        let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
-        lock.get_mut(&copy_key).unwrap().0 = Some(key_duration.unwrap());
     }
 }
 
@@ -117,7 +128,11 @@ mod tests {
         let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
 
         data_storage.add_key_value(&key, Value::String(value));
-        data_storage.set_expiration_to_key(actual_time, duration, &key);
+
+        let _result = match data_storage.set_expiration_to_key(actual_time, duration, &key) {
+            Ok(s) => s,
+            Err(_s) => panic!("Key expiration cant be set"),
+        };
 
         let read = data_storage.read();
         let key_expiration: &Option<Duration> = &(*read.get(&key).unwrap()).0;
