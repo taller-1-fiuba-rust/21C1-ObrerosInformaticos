@@ -1,22 +1,21 @@
 use crate::execution::Execution;
+use crate::protocol::command::Command;
 use crate::protocol::request::Request;
 use crate::protocol::response::ResponseBuilder;
+use crate::protocol::types::ProtocolType;
+use crate::pubsub::PublisherSubscriber;
 use crate::threadpool::ThreadPool;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::TcpListener;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
-use crate::pubsub::PublisherSubscriber;
-use crate::protocol::command::Command;
-use crate::protocol::types::ProtocolType;
 
 pub struct ListenerThread {
     pool: ThreadPool,
     addr: String,
     execution: Arc<Execution>,
-    pubsub: Arc<Mutex<PublisherSubscriber>>
-
+    pubsub: Arc<Mutex<PublisherSubscriber>>,
 }
 
 impl ListenerThread {
@@ -26,7 +25,7 @@ impl ListenerThread {
             pool,
             addr,
             execution,
-            pubsub: Arc::new(Mutex::new(PublisherSubscriber::new()))
+            pubsub: Arc::new(Mutex::new(PublisherSubscriber::new())),
         }
     }
 
@@ -47,8 +46,11 @@ impl ListenerThread {
         }
     }
 
-    fn handle_connection(stream: TcpStream, execution: Arc<Execution>, pubsub: Arc<Mutex<PublisherSubscriber>>) {
-
+    fn handle_connection(
+        stream: TcpStream,
+        execution: Arc<Execution>,
+        pubsub: Arc<Mutex<PublisherSubscriber>>,
+    ) {
         let command_result = Self::parse_command(&stream);
         if let Err(e) = command_result {
             println!("{}", e);
@@ -99,7 +101,12 @@ impl ListenerThread {
         Ok(request.build())
     }
 
-    fn execute_command(command: &Command, stream: TcpStream, execution: Arc<Execution>, pubsub: Arc<Mutex<PublisherSubscriber>>) {
+    fn execute_command(
+        command: &Command,
+        stream: TcpStream,
+        execution: Arc<Execution>,
+        pubsub: Arc<Mutex<PublisherSubscriber>>,
+    ) {
         let socket = Arc::new(Mutex::new(stream));
         let mut response = ResponseBuilder::new();
 
@@ -108,7 +115,7 @@ impl ListenerThread {
                 Err(e) => {
                     println!("Error '{}' while running command", e);
                     response.add(ProtocolType::Error(e.to_string()));
-                },
+                }
                 Ok(_) => {}
             }
         } else {
@@ -116,7 +123,7 @@ impl ListenerThread {
                 Err(e) => {
                     println!("Error '{}' while running pubsub command", e);
                     response.add(ProtocolType::Error(e));
-                },
+                }
                 Ok(_) => {}
             }
         }

@@ -1,14 +1,14 @@
 use crate::config::configuration::Configuration;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
+use crate::pubsub::PublisherSubscriber;
 use crate::server_command::info;
 use crate::server_command::ping;
 use crate::server_command::pubsub;
 use crate::storage::data_storage::DataStorage;
+use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
-use std::net::TcpStream;
-use crate::pubsub::PublisherSubscriber;
 
 #[allow(dead_code)]
 pub struct Execution {
@@ -31,7 +31,7 @@ impl Execution {
             data,
             config,
             sys_time,
-            client_connected: 0
+            client_connected: 0,
         }
     }
 
@@ -43,7 +43,13 @@ impl Execution {
         }
     }
 
-    pub fn run_pubsub(&self, cmd: &Command, response: &mut ResponseBuilder, socket: Arc<Mutex<TcpStream>>, pubsub: Arc<Mutex<PublisherSubscriber>>) -> Result<(), String> {
+    pub fn run_pubsub(
+        &self,
+        cmd: &Command,
+        response: &mut ResponseBuilder,
+        socket: Arc<Mutex<TcpStream>>,
+        pubsub: Arc<Mutex<PublisherSubscriber>>,
+    ) -> Result<(), String> {
         match &cmd.name().to_ascii_lowercase()[..] {
             "subscribe" => pubsub::subscribe::run(pubsub, socket, response, cmd.arguments()),
             "publish" => pubsub::publish::run(pubsub, response, cmd.arguments()),
