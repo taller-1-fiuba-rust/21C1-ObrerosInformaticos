@@ -18,6 +18,10 @@ impl ProtocolType {
     pub fn integer(&self) -> Result<i32, &'static str> {
         match self {
             ProtocolType::Integer(int) => Ok(*int),
+            ProtocolType::String(str_int) => match str_int.parse() {
+                Ok(i) => Ok(i),
+                Err(_) => Err("Failed to cast string"),
+            },
             _ => Err("Type is not integer"),
         }
     }
@@ -78,6 +82,18 @@ mod tests {
     fn test_get_integer() {
         let val = ProtocolType::Integer(10);
         assert_eq!(val.integer().unwrap(), 10);
+    }
+
+    #[test]
+    fn test_get_string_integer() {
+        let val = ProtocolType::String("10".to_string());
+        assert_eq!(val.integer().unwrap(), 10);
+    }
+
+    #[test]
+    fn test_get_string_negative_integer() {
+        let val = ProtocolType::String("-10".to_string());
+        assert_eq!(val.integer().unwrap(), -10);
     }
 
     #[test]
