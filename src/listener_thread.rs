@@ -111,23 +111,16 @@ impl ListenerThread {
         let mut response = ResponseBuilder::new();
 
         if !execution.is_pubsub_command(&command) {
-            match execution.run(&command, &mut response) {
-                Err(e) => {
-                    println!("Error '{}' while running command", e);
-                    response.add(ProtocolType::Error(e.to_string()));
-                }
-                Ok(_) => {}
+            if let Err(e) = execution.run(&command, &mut response) {
+                println!("Error '{}' while running command", e);
+                response.add(ProtocolType::Error(e.to_string()));
             }
-        } else {
-            match execution.run_pubsub(&command, &mut response, socket.clone(), pubsub) {
-                Err(e) => {
-                    println!("Error '{}' while running pubsub command", e);
-                    response.add(ProtocolType::Error(e));
-                }
-                Ok(_) => {}
-            }
+        } else if let Err(e) = execution.run_pubsub(&command, &mut response, socket.clone(), pubsub)
+        {
+            println!("Error '{}' while running pubsub command", e);
+            response.add(ProtocolType::Error(e));
         }
-        Self::write_response(socket.clone(), &response);
+        Self::write_response(socket, &response);
     }
 
     fn write_response(stream: Arc<Mutex<TcpStream>>, response: &ResponseBuilder) {

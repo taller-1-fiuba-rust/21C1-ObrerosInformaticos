@@ -19,13 +19,13 @@ impl Subscriber {
         }
     }
 
-    fn send(&mut self, msg: &String) -> Result<(), String> {
+    fn send(&mut self, msg: &str) -> Result<(), String> {
         let mut locked_socket = match self.socket.lock() {
             Ok(t) => t,
             Err(_) => return Err("Failed to lock socket".to_string()),
         };
         match locked_socket.write_all(msg.as_bytes()) {
-            Ok(t) => Ok(t),
+            Ok(_) => Ok(()),
             Err(e) => Err(format!("Error '{}' while writing to socket", e.to_string())),
         }
     }
@@ -52,18 +52,18 @@ impl PublisherSubscriber {
     ///
     /// Subscribes a socket to a specific channel, returns the number of channels the socket is subscribed to.
     ///
-    pub fn subscribe(&mut self, client: Arc<Mutex<TcpStream>>, channel: &String) -> u32 {
+    pub fn subscribe(&mut self, client: Arc<Mutex<TcpStream>>, channel: &str) -> u32 {
         let client_id = self.last_id.fetch_add(1, Ordering::SeqCst);
         self.subscriber_ids
             .entry(client_id)
-            .or_insert(Subscriber::new(client));
+            .or_insert_with(|| Subscriber::new(client));
         self.subscriptions
-            .entry(channel.clone())
-            .or_insert(HashSet::new())
+            .entry(channel.to_string())
+            .or_insert_with(HashSet::new)
             .insert(client_id);
 
         let sub = self.subscriber_ids.get_mut(&client_id).unwrap();
-        sub.channels.push(channel.clone());
+        sub.channels.push(channel.to_string());
         sub.channels.len() as u32
     }
 

@@ -50,16 +50,13 @@ impl Execution {
         socket: Arc<Mutex<TcpStream>>,
         pubsub: Arc<Mutex<PublisherSubscriber>>,
     ) -> Result<(), String> {
-        match &cmd.name().to_ascii_lowercase()[..] {
-            _ => Err("Unknown command.".to_string()),
-        }
+        Err("Unknown command.".to_string())
     }
 
     pub fn is_pubsub_command(&self, cmd: &Command) -> bool {
-        match &cmd.name().to_ascii_lowercase()[..] {
-            "subscribe" => true,
-            "publish" => true,
-            _ => false,
-        }
+        matches!(
+            &cmd.name().to_ascii_lowercase()[..],
+            "subscribe" | "publish"
+        )
     }
 }
