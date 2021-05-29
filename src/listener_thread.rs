@@ -12,15 +12,17 @@ pub struct ListenerThread {
     pool: ThreadPool,
     addr: String,
     execution: Arc<Execution>,
+    verbosity: u8,
 }
 
 impl ListenerThread {
-    pub fn new(addr: String, execution: Arc<Execution>) -> Self {
+    pub fn new(addr: String, execution: Arc<Execution>, verbosity: u8) -> Self {
         let pool = ThreadPool::new(32);
         ListenerThread {
             pool,
             addr,
             execution,
+            verbosity
         }
     }
 

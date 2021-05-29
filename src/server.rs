@@ -41,8 +41,9 @@ impl Server {
             self.logger.clone(),
         ));
         let ttl = self.config.get_timeout();
+        let verbosity = self.config.get_verbose();
         let handle = thread::spawn(move || {
-            let listener = ListenerThread::new(addr_and_port, execution);
+            let listener = ListenerThread::new(addr_and_port, execution, verbosity);
             listener.run(ttl);
         });
         self.handle = Some(handle);
