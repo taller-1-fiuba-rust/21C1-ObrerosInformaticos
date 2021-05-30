@@ -31,7 +31,7 @@ fn run_set(
         "verbose" => {
             let new_verb: String = arguments[2].to_string();
             let new_verb_u8 = new_verb.parse();
-            if let Err(_) = new_verb_u8 {
+            if new_verb_u8.is_err() {
                 return Err("Could not set verbosity (must be 1 or 0)");
             }
             let config_res = config.lock().unwrap().set_verbose(new_verb_u8.unwrap());
