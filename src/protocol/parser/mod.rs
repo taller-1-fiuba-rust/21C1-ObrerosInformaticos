@@ -7,6 +7,7 @@ use crate::protocol::parser::array::*;
 use crate::protocol::parser::integer::*;
 use crate::protocol::parser::string::*;
 use crate::protocol::types::ProtocolType;
+use crate::protocol::parser::error::*;
 
 ///
 /// Common functions between all RESP parsers
@@ -33,6 +34,7 @@ impl ParserFactory {
             Box::new(SimpleStringParser::new()),
             Box::new(ArrayParser::new()),
             Box::new(BulkStringParser::new()),
+            Box::new(ErrorParser::new())
         ];
         for option in options {
             if option.get_prefix() == symbol {
