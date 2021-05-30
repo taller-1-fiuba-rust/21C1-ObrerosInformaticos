@@ -1,3 +1,6 @@
+///
+/// Represents all the possible RESP types.
+///
 #[derive(Clone)]
 pub enum ProtocolType {
     String(String),
@@ -8,6 +11,9 @@ pub enum ProtocolType {
 
 #[allow(dead_code)]
 impl ProtocolType {
+    ///
+    /// Casts the ProtocolType into an Vec<ProtocolType> or returns an Err on failure.
+    ///
     pub fn array(self) -> Result<Vec<ProtocolType>, &'static str> {
         match self {
             ProtocolType::Array(vec) => Ok(vec),
@@ -15,6 +21,9 @@ impl ProtocolType {
         }
     }
 
+    ///
+    /// Casts the ProtocolType to integer or returns an Err on failure.
+    ///
     pub fn integer(&self) -> Result<i32, &'static str> {
         match self {
             ProtocolType::Integer(int) => Ok(*int),
@@ -26,6 +35,9 @@ impl ProtocolType {
         }
     }
 
+    ///
+    /// Casts the ProtocolType to string or returns an Err on failure.
+    ///
     pub fn string(self) -> Result<String, &'static str> {
         match self {
             ProtocolType::String(str) => Ok(str),
@@ -33,6 +45,9 @@ impl ProtocolType {
         }
     }
 
+    ///
+    /// Casts the ProtocolType to an error string or returns an Err on failure.
+    ///
     pub fn error(self) -> Result<String, &'static str> {
         match self {
             ProtocolType::Error(str) => Ok(str),
@@ -40,6 +55,9 @@ impl ProtocolType {
         }
     }
 
+    ///
+    /// Serializes the ProtocolType into RESP format.
+    ///
     pub fn serialize(&self) -> String {
         match self {
             ProtocolType::Array(vec) => format!(
@@ -58,6 +76,9 @@ impl ProtocolType {
 }
 
 impl ToString for ProtocolType {
+    ///
+    /// Returns a string with a displayable representation of the ProtocolType.
+    ///
     fn to_string(&self) -> String {
         match self {
             ProtocolType::Array(vec) => format!(
