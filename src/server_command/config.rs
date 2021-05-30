@@ -28,7 +28,7 @@ fn run_get(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,
     config: Arc<Configuration>,
-){
+) {
     let argument: &str = &arguments[1].to_string().to_ascii_lowercase()[..];
 
     match argument {
@@ -38,7 +38,7 @@ fn run_get(
         "dbfilename" => builder.add(ProtocolType::String(config.get_dbfilename().to_string())),
         "logfile" => builder.add(ProtocolType::String(config.get_logfile().to_string())),
         "timeout" => builder.add(ProtocolType::String(config.get_timeout().to_string())),
-        "*" => builder.add(ProtocolType::String(get_all_config_params(config))),
+        "*" => send_all_config_params(config, builder),
         _ => builder.add(ProtocolType::String(format!(
             "There's no configuration named: {}",
             arguments[1].to_string()
@@ -46,13 +46,23 @@ fn run_get(
     }
 }
 #[allow(unused_variables)]
-fn get_all_config_params(config: Arc<Configuration>) -> String {
-    // format!("Verbose set to: {} \nPort set to: {} \nIp set to: {} \nDbfilename set to: {} \nLogfile set to: {} \nTimeout set to: {}",
-    // config.get_verbose(), config.get_port(),
-    // config.get_ip(), config.get_dbfilename(),
-    // config.get_logfile(), config.get_timeout()))
-    "hola
-    "
-    .to_string()
-        + "hola"
+fn send_all_config_params(config: Arc<Configuration>, builder: &mut ResponseBuilder) {
+    builder.add(ProtocolType::String(format!(
+        "Verbose: {}",
+        config.get_verbose()
+    )));
+    builder.add(ProtocolType::String(format!("Port: {}", config.get_port())));
+    builder.add(ProtocolType::String(format!("Ip: {}", config.get_ip())));
+    builder.add(ProtocolType::String(format!(
+        "Dbfilename: {}",
+        config.get_dbfilename()
+    )));
+    builder.add(ProtocolType::String(format!(
+        "Logfile: {}",
+        config.get_logfile()
+    )));
+    builder.add(ProtocolType::String(format!(
+        "Timeout: {}",
+        config.get_timeout()
+    )));
 }
