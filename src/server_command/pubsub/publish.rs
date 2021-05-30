@@ -3,6 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 use std::sync::{Arc, Mutex};
 
+/// Execute the pub/sub publish command.
 pub fn run(
     pubsub: Arc<Mutex<PublisherSubscriber>>,
     builder: &mut ResponseBuilder,

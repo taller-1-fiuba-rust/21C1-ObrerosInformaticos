@@ -11,6 +11,7 @@ use std::net::TcpListener;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 
+/// Struct which listens for connections and executes the given commands.
 pub struct ListenerThread {
     pool: ThreadPool,
     addr: String,
@@ -19,6 +20,7 @@ pub struct ListenerThread {
 }
 
 impl ListenerThread {
+    /// Create a new ListenerThread
     pub fn new(addr: String, execution: Arc<Execution>) -> Self {
         let pool = ThreadPool::new(32);
         ListenerThread {
@@ -29,6 +31,7 @@ impl ListenerThread {
         }
     }
 
+    /// Listen for connections on the configured settings.
     pub fn run(&self, ttl: u32) {
         let listener = TcpListener::bind(&self.addr).unwrap();
         println!("REDIS server started on address '{}'...", self.addr);
@@ -46,6 +49,7 @@ impl ListenerThread {
         }
     }
 
+    /// Handles a socket connection and executes the command extracted from it.
     fn handle_connection(
         stream: TcpStream,
         execution: Arc<Execution>,
@@ -63,6 +67,7 @@ impl ListenerThread {
         Self::execute_command(&command, stream, execution, pubsub);
     }
 
+    /// Prints a given command
     fn print_command(command: &Command) {
         println!(
             "Received command '{} {}'",
@@ -76,6 +81,7 @@ impl ListenerThread {
         );
     }
 
+    /// Parses a command from a socket connection
     fn parse_command(stream: &TcpStream) -> Result<Command, String> {
         let mut request = Request::new();
         let reader = BufReader::new(stream.try_clone().unwrap());
@@ -101,6 +107,7 @@ impl ListenerThread {
         Ok(request.build())
     }
 
+    /// Executed a given command.
     fn execute_command(
         command: &Command,
         stream: TcpStream,
@@ -123,6 +130,7 @@ impl ListenerThread {
         Self::write_response(socket, &response);
     }
 
+    /// Write a response from a response builder to the desired socket.
     fn write_response(stream: Arc<Mutex<TcpStream>>, response: &ResponseBuilder) {
         let mut locked_stream = match stream.lock() {
             Ok(s) => s,

@@ -19,9 +19,7 @@ pub struct Execution {
     client_connected: u64,
 }
 
-/*
-    Execution should map each command name to a function which can execute it. They don't have to necessarily be located here
-*/
+
 impl Execution {
     pub fn new(
         data: Arc<DataStorage>,
@@ -36,6 +34,7 @@ impl Execution {
         }
     }
 
+    /// Matches a command with it's executing function and runs it.
     pub fn run(&self, cmd: &Command, builder: &mut ResponseBuilder) -> Result<(), &'static str> {
         match &cmd.name().to_ascii_lowercase()[..] {
             "ping" => ping::run(builder),
@@ -45,7 +44,7 @@ impl Execution {
         }
     }
 
-    #[allow(unused_variables)]
+    /// Executes pub/sub commands. This distinction is required because of mode changes related to pub/sub commands.
     pub fn run_pubsub(
         &self,
         cmd: &Command,
@@ -60,6 +59,7 @@ impl Execution {
         }
     }
 
+    /// Returns a bool representing if the command is a pub/sub topic command or not.
     pub fn is_pubsub_command(&self, cmd: &Command) -> bool {
         matches!(
             &cmd.name().to_ascii_lowercase()[..],
