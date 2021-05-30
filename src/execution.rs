@@ -19,7 +19,6 @@ pub struct Execution {
     client_connected: u64,
 }
 
-
 impl Execution {
     pub fn new(
         data: Arc<DataStorage>,
