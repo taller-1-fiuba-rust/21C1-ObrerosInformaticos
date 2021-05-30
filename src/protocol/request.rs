@@ -2,21 +2,25 @@ use crate::protocol::command::Command;
 use crate::protocol::parser::array::ArrayParser;
 use crate::protocol::parser::ProtocolParser;
 
+/// Parses a RESP command request line by line.
 pub struct Request {
     parser: ArrayParser,
 }
 
 impl Request {
+    /// Create a new request parser
     pub fn new() -> Self {
         Request {
             parser: ArrayParser::new(),
         }
     }
 
+    /// Feed a line to the internal parser
     pub fn feed(&mut self, line: &str) -> Result<bool, String> {
         self.parser.feed(line)
     }
 
+    /// Build a new command from the parsed request.
     pub fn build(&self) -> Command {
         let mut types = self.parser.build().array().unwrap();
         let symbol = types[0].clone().string().unwrap();
