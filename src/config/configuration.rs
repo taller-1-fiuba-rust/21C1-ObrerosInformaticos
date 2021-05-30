@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs;
 
 const DEFAULT_VERBOSE: u8 = 0;
-const DEFAULT_PORT: u16 = 6379;
+const DEFAULT_PORT: u16 = 6380;
 const DEFAULT_TIMEOUT: u32 = 0;
 const DEFAULT_DBFILENAME: &str = "dump.rdb";
 const DEFAULT_LOGFILE: &str = "logfile";
@@ -157,6 +157,14 @@ impl Configuration {
 
     pub fn get_ip(&self) -> &String {
         &self.ip
+    }
+
+    pub fn set_verbose(&mut self, new_verb: u8) -> Result<&'static str, &'static str> {
+        if new_verb != 0 && new_verb != 1 {
+            return Err("La verbosidad tiene que ser 0 o 1.");
+        }
+        self.verbose = new_verb;
+        Ok("Ok")
     }
 }
 
