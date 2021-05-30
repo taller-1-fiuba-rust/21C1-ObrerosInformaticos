@@ -15,7 +15,7 @@ use std::time::SystemTime;
 #[allow(dead_code)]
 pub struct Execution {
     data: Arc<DataStorage>,
-    config: Arc<Configuration>,
+    config: Arc<Mutex<Configuration>>,
     sys_time: Arc<SystemTime>,
     client_connected: u64,
 }
@@ -26,7 +26,7 @@ pub struct Execution {
 impl Execution {
     pub fn new(
         data: Arc<DataStorage>,
-        config: Arc<Configuration>,
+        config: Arc<Mutex<Configuration>>,
         sys_time: Arc<SystemTime>,
     ) -> Self {
         Execution {

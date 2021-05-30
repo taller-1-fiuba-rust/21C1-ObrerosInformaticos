@@ -158,6 +158,14 @@ impl Configuration {
     pub fn get_ip(&self) -> &String {
         &self.ip
     }
+
+    pub fn set_verbose(&mut self, new_verb: u8) -> Result<&'static str, &'static str> {
+        if new_verb != 0 && new_verb != 1 {
+            return Err("La verbosidad tiene que ser 0 o 1.");
+        }
+        self.verbose = new_verb;
+        Ok("Ok")
+    }
 }
 
 #[cfg(test)]
