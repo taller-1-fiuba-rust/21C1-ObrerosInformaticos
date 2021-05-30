@@ -15,8 +15,9 @@ pub fn run(
             return Err("La cantidad de parametros es insuficiente");
         }
         run_get(arguments, builder, config);
+        return Ok(())
     }
-    Err("El argumento '{}' no existe para config.")
+    Err("There's no configuration argument named like that")
 }
 
 // #[allow(unused_variables)]
