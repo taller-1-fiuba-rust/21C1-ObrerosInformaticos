@@ -25,7 +25,7 @@ impl ProtocolParser for SimpleStringParser {
     }
 
     fn build(&self) -> ProtocolType {
-        ProtocolType::String(self.data.clone())
+        ProtocolType::SimpleString(self.data.clone())
     }
 }
 
