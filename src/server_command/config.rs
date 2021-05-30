@@ -9,26 +9,26 @@ pub fn run(
     config: Arc<Configuration>,
 ) -> Result<(), &'static str> {
     if arguments[0].to_string() == *"set" {
-        return run_set(builder, config);
+        // return run_set(builder, config);
     } else if arguments[0].to_string() == *"get" {
         if arguments.len() < 2 {
             return Err("La cantidad de parametros es insuficiente");
         }
-        return run_get(arguments, builder, config);
+        run_get(arguments, builder, config);
     }
     Err("El argumento '{}' no existe para config.")
 }
 
-#[allow(unused_variables)]
-fn run_set(builder: &mut ResponseBuilder, config: Arc<Configuration>) -> Result<(), &'static str> {
-    Ok(())
-}
+// #[allow(unused_variables)]
+// fn run_set(builder: &mut ResponseBuilder, config: Arc<Configuration>) -> Result<(), &'static str> {
+//     Ok(())
+// }
 
 fn run_get(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,
     config: Arc<Configuration>,
-) -> Result<(), &'static str> {
+){
     let argument: &str = &arguments[1].to_string().to_ascii_lowercase()[..];
 
     match argument {
@@ -44,8 +44,6 @@ fn run_get(
             arguments[1].to_string()
         ))),
     }
-
-    Ok(())
 }
 #[allow(unused_variables)]
 fn get_all_config_params(config: Arc<Configuration>) -> String {
