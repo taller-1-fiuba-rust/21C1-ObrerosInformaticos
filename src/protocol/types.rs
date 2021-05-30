@@ -1,6 +1,7 @@
 #[derive(Clone)]
 pub enum ProtocolType {
     String(String),
+    SimpleString(String),
     Integer(i32),
     Array(Vec<ProtocolType>),
     Error(String),
@@ -18,17 +19,23 @@ impl ProtocolType {
     pub fn integer(&self) -> Result<i32, &'static str> {
         match self {
             ProtocolType::Integer(int) => Ok(*int),
-            ProtocolType::String(str_int) => match str_int.parse() {
-                Ok(i) => Ok(i),
-                Err(_) => Err("Failed to cast string"),
-            },
+            ProtocolType::String(str_int) => Self::try_parse(str_int),
+            ProtocolType::SimpleString(str_int) => Self::try_parse(str_int),
             _ => Err("Type is not integer"),
+        }
+    }
+
+    fn try_parse(str_int: &str) -> Result<i32, &'static str> {
+        match str_int.parse() {
+            Ok(i) => Ok(i),
+            Err(_) => Err("Failed to cast string"),
         }
     }
 
     pub fn string(self) -> Result<String, &'static str> {
         match self {
             ProtocolType::String(str) => Ok(str),
+            ProtocolType::SimpleString(str) => Ok(str),
             _ => Err("Type is not string"),
         }
     }
@@ -50,6 +57,7 @@ impl ProtocolType {
                     .collect::<Vec<_>>()
                     .join("")
             ),
+            ProtocolType::SimpleString(err) => format!("+{}\r\n", err),
             ProtocolType::String(str) => format!("${}\r\n{}\r\n", str.len(), str),
             ProtocolType::Integer(int) => format!(":{}\r\n", int.to_string()),
             ProtocolType::Error(err) => format!("-{}\r\n", err),
@@ -68,6 +76,7 @@ impl ToString for ProtocolType {
                     .join(", ")
             ),
             ProtocolType::String(str) => str.clone(),
+            ProtocolType::SimpleString(str) => str.clone(),
             ProtocolType::Integer(int) => int.to_string(),
             ProtocolType::Error(err) => err.clone(),
         }
@@ -87,6 +96,12 @@ mod tests {
     #[test]
     fn test_get_string_integer() {
         let val = ProtocolType::String("10".to_string());
+        assert_eq!(val.integer().unwrap(), 10);
+    }
+
+    #[test]
+    fn test_get_simple_string_integer() {
+        let val = ProtocolType::SimpleString("10".to_string());
         assert_eq!(val.integer().unwrap(), 10);
     }
 
@@ -136,6 +151,12 @@ mod tests {
     fn test_serialize_string() {
         let val = ProtocolType::String("Hi!".to_string());
         assert_eq!(val.serialize(), "$3\r\nHi!\r\n");
+    }
+
+    #[test]
+    fn test_serialize_simple_string() {
+        let val = ProtocolType::SimpleString("Hi!".to_string());
+        assert_eq!(val.serialize(), "+Hi!\r\n");
     }
 
     #[test]
