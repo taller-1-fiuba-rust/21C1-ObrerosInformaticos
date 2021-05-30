@@ -3,6 +3,7 @@ use crate::key_command::expire;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
+use crate::server_command::config;
 use crate::server_command::info;
 use crate::server_command::ping;
 use crate::server_command::pubsub;
@@ -41,6 +42,7 @@ impl Execution {
             "ping" => ping::run(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
             "expire" => expire::set_expiration_to_key(builder, cmd, &self.data),
+            "config" => config::run(cmd.arguments(), builder, self.config.clone()),
             _ => Err("Unknown command."),
         }
     }

@@ -107,7 +107,7 @@ mod tests {
 
         data_storage.add_key_value(&key, Value::String(value));
 
-        data_storage.delete_key(&key);
+        data_storage.delete_key(&key).unwrap();
         let read = data_storage.read();
 
         if let Value::String(a) = &(*read.get(&key).unwrap()).1 {
