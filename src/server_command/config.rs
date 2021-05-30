@@ -17,7 +17,7 @@ pub fn run(
         run_get(arguments, builder, config);
         return Ok(());
     }
-    Err("There's no configuration argument named like that.")
+    Err("There's no configuration argument named like that")
 }
 
 fn run_set(
