@@ -75,6 +75,9 @@ impl DataStorage {
     }
 
     ///Elimina la clave con su correspondiente valor de la estructura.
+    ///PRE: La estuctura DataStorage debe estar creada.
+    ///POST: La clave es eliminada y su correspondiente valor. En caso 
+    ///de no estar la clave en la estructura se lanza error.
     pub fn delete_key(&self, key: &str) -> Result<(), &'static str> {
         let mut lock = self.data.write().unwrap();
         match lock.remove(key) {
@@ -83,10 +86,15 @@ impl DataStorage {
         }
     }
 
+    ///Devuelve una referencia de lectura para la estructura DataStorage.
     pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, (Option<Duration>, Value)>> {
         self.data.read().unwrap()
     }
 
+    ///Setea una expiracion a una clave dada.
+    ///PRE: La estructura DataStorage debe estar creada.
+    ///POST: La clave queda con un tiempo de expiracion seteado. En caso 
+    ///de no existir la clave en la estructura se lanza un error.
     pub fn set_expiration_to_key(
         &self,
         actual_time: SystemTime,
