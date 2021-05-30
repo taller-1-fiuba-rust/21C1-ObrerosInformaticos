@@ -8,6 +8,8 @@ use std::sync::RwLockReadGuard;
 use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+///Enum Value. Contiene todos los tipos de datos soportados
+///para el DataStorage.
 #[allow(dead_code)]
 pub enum Value {
     String(String),
@@ -15,31 +17,52 @@ pub enum Value {
     HashSet(HashSet<String>),
 }
 
+///Struct DataStorage. Se encuentra compuesto por un 
+///HashMap el cual almacena la informacion del programa.
+///Estructura protegida por un RwLock.
 #[allow(dead_code)]
 pub struct DataStorage {
     data: SafeDataStorage,
 }
 
+///Implementacion de la estructura DataStorage.
 #[allow(dead_code)]
 impl DataStorage {
+
+    ///Crea la estructura DataStorage. 
     pub fn new() -> Self {
         DataStorage {
             data: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
+    ///Dado un nombre de archivo carga en la base de datos 
+    ///la informacion contenida en el mismo.
+    ///PRE: El archivo debe tener la estructura soportada 
+    ///para la carga de datos y la estructura debe encontrarse
+    ///previamente creada.
+    ///POST: DataStorage se encuentra cargado con los datos 
+    ///que contenia el archivo.
     pub fn load_data(&mut self, file: &str) {
         let mut lock = self.data.write().unwrap();
         parser::parse_data(file, &mut lock);
     }
 
+    ///Dado un nombre de archivo guarda los datos de la 
+    ///base de datos en el mismo.
+    ///PRE: La estructura DataStorage debe estar creada.
+    ///POST: El archivo contiene la informacion que habia 
+    ///en la estructura.
     pub fn save_data(&mut self, file: &str) {
         let lock = self.data.read().unwrap();
         parser::store_data(file, &lock);
     }
 
-    //El tiempo de expiracion inicial de todas las claves es None. Esto indica
-    //que la clave nunca expira.
+    ///Dada una clave y un valor los alamacena en la base de datos.
+    ///PRE: La estructura DataStorage debe estar creada.
+    ///POST: La clave es almacenada en la estructura con su valor
+    ///correspondiente y con tiempo de vencimiento 0 dado que las 
+    ///claves por default nunca expiran.
     pub fn add_key_value(&mut self, key: &str, value: Value) {
         let mut lock = self.data.write().unwrap();
         let copy_key = key.to_string();
@@ -51,10 +74,7 @@ impl DataStorage {
         };
     }
 
-    //TODO: Cuando se implementen los comandos hay que hacer funciones
-    //que eliminen o solo el primer valor
-    //del vector o el ultimo dada una clave. Ahora se borra
-    //la clave con todo lo que contiene.
+    ///Elimina la clave con su correspondiente valor de la estructura.
     pub fn delete_key(&mut self, key: &str) {
         let mut lock = self.data.write().unwrap();
         lock.remove(key);
