@@ -1,49 +1,60 @@
 use crate::config::configuration::Configuration;
-use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
-use std::sync::Arc;
 use crate::protocol::types::ProtocolType;
+use std::sync::Arc;
 
-pub fn run(arguments: Vec<ProtocolType>, builder: &mut ResponseBuilder, config: Arc<Configuration>) -> Result<(), &'static str>{
-
-    if arguments[0].to_string() == "set".to_string(){
-        return run_set(builder, config)
-    } else if arguments[0].to_string() == "get".to_string(){
-        if arguments.len() < 2{
-            return Err("La cantidad de parametros es insuficiente")
+pub fn run(
+    arguments: Vec<ProtocolType>,
+    builder: &mut ResponseBuilder,
+    config: Arc<Configuration>,
+) -> Result<(), &'static str> {
+    if arguments[0].to_string() == *"set" {
+        return run_set(builder, config);
+    } else if arguments[0].to_string() == *"get" {
+        if arguments.len() < 2 {
+            return Err("La cantidad de parametros es insuficiente");
         }
-        return run_get(arguments, builder, config)
+        return run_get(arguments, builder, config);
     }
-    return Err("El argumento '{}' no existe para config.")
+    Err("El argumento '{}' no existe para config.")
 }
 
-fn run_set(builder: &mut ResponseBuilder, config: Arc<Configuration>)-> Result<(), &'static str>{
+#[allow(unused_variables)]
+fn run_set(builder: &mut ResponseBuilder, config: Arc<Configuration>) -> Result<(), &'static str> {
     Ok(())
 }
 
-fn run_get( arguments: Vec<ProtocolType>, builder: &mut ResponseBuilder, config: Arc<Configuration>)-> Result<(), &'static str>{
-    
-    let verbose = "verbose".to_string();
-    let port = "port".to_string();
-    let id = "id".to_string();
-    let logfile = "logfile".to_string();
-    let dbfilename = "dbfilename".to_string();
-    let timeout = "timeout".to_string();
+fn run_get(
+    arguments: Vec<ProtocolType>,
+    builder: &mut ResponseBuilder,
+    config: Arc<Configuration>,
+) -> Result<(), &'static str> {
+    let argument: &str = &arguments[1].to_string().to_ascii_lowercase()[..];
 
-    println!("{}", arguments[1].to_string().len());
-    
-    
-
-    match arguments[1].to_string() {
-        verbose => builder.add(ProtocolType::String(format!("Verbose set to: {}", config.get_verbose()))),
-        port => builder.add(ProtocolType::String(format!("Port set to: {}", config.get_port()))),
-        ip=> builder.add(ProtocolType::String(format!("Ip set to: {}", config.get_ip()))),
-        dbfilename => builder.add(ProtocolType::String(format!("Dbfilename set to: {}", config.get_dbfilename()))),
-        logfile => builder.add(ProtocolType::String(format!("Logfile set to: {}", config.get_logfile()))),
-        timeout => builder.add(ProtocolType::String(format!("Timeout set to: {}", config.get_timeout()))),
-        _ => builder.add(ProtocolType::String(format!("There's no configuration named: {}", arguments[2].to_string())))
+    match argument {
+        "verbose" => builder.add(ProtocolType::String(config.get_verbose().to_string())),
+        "port" => builder.add(ProtocolType::String(config.get_port().to_string())),
+        "ip" => builder.add(ProtocolType::String(config.get_ip().to_string())),
+        "dbfilename" => builder.add(ProtocolType::String(config.get_dbfilename().to_string())),
+        "logfile" => builder.add(ProtocolType::String(config.get_logfile().to_string())),
+        "timeout" => builder.add(ProtocolType::String(config.get_timeout().to_string())),
+        "*" => builder.add(ProtocolType::String(get_all_config_params(config))),
+        _ => builder.add(ProtocolType::String(format!(
+            "There's no configuration named: {}",
+            arguments[1].to_string()
+        ))),
     }
-    
+
     Ok(())
 }
-
+#[allow(unused_variables)]
+fn get_all_config_params(config: Arc<Configuration>) -> String {
+    // format!("Verbose set to: {} \nPort set to: {} \nIp set to: {} \nDbfilename set to: {} \nLogfile set to: {} \nTimeout set to: {}",
+    // config.get_verbose(), config.get_port(),
+    // config.get_ip(), config.get_dbfilename(),
+    // config.get_logfile(), config.get_timeout()))
+    "hola
+    "
+    .to_string()
+        + "hola"
+}
