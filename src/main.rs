@@ -2,6 +2,7 @@ use crate::config::configuration::Configuration;
 use std::env;
 mod config;
 mod execution;
+mod key_command;
 mod listener_thread;
 mod protocol;
 mod pubsub;
