@@ -6,6 +6,7 @@ use crate::pubsub::PublisherSubscriber;
 use crate::server_command::info;
 use crate::server_command::ping;
 use crate::server_command::pubsub;
+use crate::server_command::config;
 use crate::storage::data_storage::DataStorage;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
@@ -41,6 +42,7 @@ impl Execution {
             "ping" => ping::run(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
             "expire" => expire::set_expiration_to_key(builder, cmd, &self.data),
+            "config" => config::run(cmd.arguments(), builder, self.config.clone()),
             _ => Err("Unknown command."),
         }
     }
