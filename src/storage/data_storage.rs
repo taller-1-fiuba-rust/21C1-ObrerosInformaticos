@@ -8,7 +8,7 @@ use std::sync::RwLockReadGuard;
 use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-#[allow(dead_code)]
+#[derive(Clone)]
 pub enum Value {
     String(String),
     Vec(Vec<String>),
@@ -40,7 +40,7 @@ impl DataStorage {
 
     //El tiempo de expiracion inicial de todas las claves es None. Esto indica
     //que la clave nunca expira.
-    pub fn add_key_value(&mut self, key: &str, value: Value) {
+    pub fn add_key_value(&self, key: &str, value: Value) {
         let mut lock = self.data.write().unwrap();
         let copy_key = key.to_string();
 
@@ -101,7 +101,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_delete_data() {
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         let key = String::from("Daniela");
         let value = String::from("hola");
 
@@ -119,7 +119,7 @@ mod tests {
 
     #[test]
     fn test_set_exiration_to_key() {
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         let key = String::from("Daniela");
         let value = String::from("hola");
         let actual_time = SystemTime::now();
@@ -220,7 +220,7 @@ mod tests {
 
     #[test]
     fn test_add_string_data() {
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         let key = String::from("Daniela");
         let value = String::from("hola");
 
@@ -238,7 +238,7 @@ mod tests {
 
     #[test]
     fn test_add_vector_data() {
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         let key = String::from("Daniela");
         let value = vec!["a".to_string(), "b".to_string()];
 
@@ -256,7 +256,7 @@ mod tests {
 
     #[test]
     fn test_add_set_data() {
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         let key = String::from("Daniela");
         let value: HashSet<String> = vec!["a".to_string(), "b".to_string()].into_iter().collect();
 
