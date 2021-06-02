@@ -16,21 +16,21 @@ pub enum Value {
 }
 #[allow(dead_code)]
 impl Value {
-    fn string(&self) -> Result<String, &'static str> {
+    pub fn string(&self) -> Result<String, &'static str> {
         match self {
             Value::String(s) => Ok(s.clone()),
             _ => Err("Failed to cast Value to string")
         }
     }
 
-    fn array(&self) -> Result<Vec<String>, &'static str> {
+    pub fn array(&self) -> Result<Vec<String>, &'static str> {
         match self {
             Value::Vec(v) => Ok(v.clone()),
             _ => Err("Failed to cast Value to string")
         }
     }
 
-    fn set(&self) -> Result<HashSet<String>, &'static str> {
+    pub fn set(&self) -> Result<HashSet<String>, &'static str> {
         match self {
             Value::HashSet(s) => Ok(s.clone()),
             _ => Err("Failed to cast Value to string")
