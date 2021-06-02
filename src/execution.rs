@@ -1,6 +1,6 @@
 use crate::config::configuration::Configuration;
-use crate::key_command::expire;
 use crate::key_command::copy;
+use crate::key_command::expire;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
