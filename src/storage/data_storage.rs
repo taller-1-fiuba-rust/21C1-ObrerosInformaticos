@@ -19,21 +19,21 @@ impl Value {
     pub fn string(&self) -> Result<String, &'static str> {
         match self {
             Value::String(s) => Ok(s.clone()),
-            _ => Err("Failed to cast Value to string")
+            _ => Err("Failed to cast Value to string"),
         }
     }
 
     pub fn array(&self) -> Result<Vec<String>, &'static str> {
         match self {
             Value::Vec(v) => Ok(v.clone()),
-            _ => Err("Failed to cast Value to string")
+            _ => Err("Failed to cast Value to string"),
         }
     }
 
     pub fn set(&self) -> Result<HashSet<String>, &'static str> {
         match self {
             Value::HashSet(s) => Ok(s.clone()),
-            _ => Err("Failed to cast Value to string")
+            _ => Err("Failed to cast Value to string"),
         }
     }
 }
@@ -86,8 +86,27 @@ impl DataStorage {
         }
     }
 
-    pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, (Option<Duration>, Value)>> {
+    fn read(&self) -> RwLockReadGuard<'_, HashMap<String, (Option<Duration>, Value)>> {
         self.data.read().unwrap()
+    }
+
+    pub fn get(&self, key: &str) -> Option<Value> {
+        let lock = self.data.read().ok()?;
+        let result = lock.get(key);
+        if let Some((duration, val)) = result {
+            if let Some(seconds) = duration {
+                let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+                if seconds > &now {
+                    return Some(val.clone());
+                }
+                // Key has expired, we should delete it
+                drop(lock);
+                self.delete_key(key).unwrap();
+                return None;
+            }
+            return Some(val.clone());
+        }
+        None
     }
 
     pub fn set_expiration_to_key(
