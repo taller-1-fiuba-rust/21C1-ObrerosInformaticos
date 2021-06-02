@@ -16,7 +16,7 @@ pub fn run(
     let option = db.get(&src);
     let mut result = 0;
     if let Some(value) = option {
-        db.add_key_value(&dst, value.clone());
+        db.add_key_value(&dst, value);
         result = 1;
     }
 
