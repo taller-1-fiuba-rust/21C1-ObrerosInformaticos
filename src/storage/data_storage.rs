@@ -14,6 +14,29 @@ pub enum Value {
     Vec(Vec<String>),
     HashSet(HashSet<String>),
 }
+#[allow(dead_code)]
+impl Value {
+    fn string(&self) -> Result<String, &'static str> {
+        match self {
+            Value::String(s) => Ok(s.clone()),
+            _ => Err("Failed to cast Value to string")
+        }
+    }
+
+    fn array(&self) -> Result<Vec<String>, &'static str> {
+        match self {
+            Value::Vec(v) => Ok(v.clone()),
+            _ => Err("Failed to cast Value to string")
+        }
+    }
+
+    fn set(&self) -> Result<HashSet<String>, &'static str> {
+        match self {
+            Value::HashSet(s) => Ok(s.clone()),
+            _ => Err("Failed to cast Value to string")
+        }
+    }
+}
 
 #[allow(dead_code)]
 pub struct DataStorage {
