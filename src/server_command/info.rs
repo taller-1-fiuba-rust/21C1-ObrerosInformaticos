@@ -5,7 +5,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use std::time::SystemTime;
 
-///Funcion para la ejecucion del comando INFO. 
+///Funcion para la ejecucion del comando INFO.
 ///Imprime informacion del servidor y los clientes conectados.
 pub fn run(
     builder: &mut ResponseBuilder,
