@@ -3,7 +3,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 pub fn run(
     builder: &mut ResponseBuilder,
@@ -34,7 +34,11 @@ pub fn run(
             Err(_s) => builder.add(ProtocolType::Integer(0)),
         }
     } else {
-        match data.set_expiration_to_key(Duration::from_secs(seconds as u64), &key) {
+        let actual_time = SystemTime::now();
+        let expiration_time = actual_time
+            .checked_add(Duration::from_secs(seconds as u64)).ok_or("Failed to calculate expiration time")?
+            .duration_since(UNIX_EPOCH).ok().ok_or("Failed to calculate expiration time")?;
+        match data.set_expiration_to_key(Some(expiration_time), &key) {
             Ok(s) => builder.add(ProtocolType::Integer(s as i32)),
             Err(_s) => builder.add(ProtocolType::Integer(0)),
         };

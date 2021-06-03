@@ -90,21 +90,31 @@ impl DataStorage {
         self.data.read().unwrap()
     }
 
+    /// Returns a copy of the value at key or none if it doesnt exist.
     pub fn get(&self, key: &str) -> Option<Value> {
+        let result = self.get_with_expiration(key);
+        if let Some((_, value)) = result {
+            Some(value)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_with_expiration(&self, key: &str) -> Option<(Option<Duration>, Value)> {
         let lock = self.data.read().ok()?;
         let result = lock.get(key);
         if let Some((duration, val)) = result {
             if let Some(seconds) = duration {
                 let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
                 if seconds > &now {
-                    return Some(val.clone());
+                    return Some((Some(*seconds), val.clone()));
                 }
                 // Key has expired, we should delete it
                 drop(lock);
                 self.delete_key(key).unwrap();
                 return None;
             }
-            return Some(val.clone());
+            return Some((None, val.clone()));
         }
         None
     }
@@ -112,47 +122,40 @@ impl DataStorage {
     pub fn rename(&self, src: &str, dst: &str) -> Result<(), &'static str> {
         let lock = self.data.read().ok().ok_or("Failed to lock database")?;
         let result = lock.get(src);
-        return if let Some((duration, val)) = result {
+        if let Some((duration, val)) = result {
             let moved_duration = *duration;
             let moved_val = val.clone();
             drop(lock);
-            self.add_with_expiration(dst, moved_val, moved_duration)?;
+            self.add_key_value(dst, moved_val);
+            self.set_expiration_to_key(moved_duration, dst)?;
             self.delete_key(src)?;
             Ok(())
         } else {
             Err("No such key")
-        };
+        }
     }
 
     pub fn add_with_expiration(
         &self,
         key: &str,
         value: Value,
-        duration: Option<Duration>,
+        expiration_time_since_unix_epoch: Duration,
     ) -> Result<(), &'static str> {
         self.add_key_value(key, value);
-        if let Some(t) = duration {
-            self.set_expiration_to_key(t, key)?;
-        }
+        self.set_expiration_to_key(Some(expiration_time_since_unix_epoch), key)?;
         Ok(())
     }
 
     pub fn set_expiration_to_key(
         &self,
-        duration: Duration,
+        expiration_time_since_unix_epoch: Option<Duration>,
         key: &str,
     ) -> Result<u64, &'static str> {
         let mut lock = self.data.write().unwrap();
         let copy_key = key.to_string();
 
-        let actual_time = SystemTime::now();
-        let expiration_time = actual_time.checked_add(duration);
-
-        if expiration_time == None {
-            Err("Expiration time cant be calculated")
-        } else if lock.contains_key(&copy_key) {
-            let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
-            lock.get_mut(&copy_key).unwrap().0 = Some(key_duration.unwrap());
+        if lock.contains_key(&copy_key) {
+            lock.get_mut(&copy_key).unwrap().0 = expiration_time_since_unix_epoch;
             Ok(1)
         } else {
             Err("Key not found in DataStorage")
@@ -176,8 +179,8 @@ mod tests {
         let value = String::from("hola");
 
         data_storage.add_key_value(&key, Value::String(value));
-
         data_storage.delete_key(&key).unwrap();
+
         let read = data_storage.read();
 
         if let Value::String(a) = &(*read.get(&key).unwrap()).1 {
@@ -188,7 +191,7 @@ mod tests {
     }
 
     #[test]
-    fn test_set_exiration_to_key() {
+    fn test_set_expiration_to_key() {
         let data_storage = DataStorage::new();
         let key = String::from("Daniela");
         let value = String::from("hola");
@@ -196,8 +199,8 @@ mod tests {
 
         data_storage.add_key_value(&key, Value::String(value));
 
-        let expiration_time = SystemTime::now().checked_add(duration);
-        let _result = match data_storage.set_expiration_to_key(duration, &key) {
+        let expiration_time = SystemTime::now().checked_add(duration).unwrap().duration_since(UNIX_EPOCH).unwrap();
+        let _result = match data_storage.set_expiration_to_key(Some(expiration_time), &key) {
             Ok(s) => s,
             Err(_s) => panic!("Key expiration cant be set"),
         };
@@ -205,9 +208,8 @@ mod tests {
         let read = data_storage.read();
         let key_expiration: &Option<Duration> = &(*read.get(&key).unwrap()).0;
 
-        let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
         assert_eq!(
-            key_duration.unwrap().as_secs(),
+            expiration_time.as_secs(),
             key_expiration.unwrap().as_secs()
         );
     }
