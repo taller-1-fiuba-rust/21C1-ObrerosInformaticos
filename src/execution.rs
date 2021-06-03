@@ -1,5 +1,6 @@
 use crate::config::configuration::Configuration;
 use crate::key_command::expire;
+use crate::key_command::key_type;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
@@ -43,6 +44,7 @@ impl Execution {
             "info" => info::run(builder, &self.config, &self.sys_time),
             "expire" => expire::set_expiration_to_key(builder, cmd, &self.data),
             "config" => config::run(cmd.arguments(), builder, self.config.clone()),
+            "type" => key_type::run(cmd.arguments(), builder, &self.data),
             _ => Err("Unknown command."),
         }
     }
