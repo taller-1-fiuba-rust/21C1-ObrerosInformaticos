@@ -110,10 +110,11 @@ impl DataStorage {
 
     ///Devuelve OK si la clave existe en la base de datos y error en caso contrario.
     pub fn exists_key(&self, key: &str) -> Result<(), &'static str> {
-        let mut lock = self.data.read().unwrap();
-        match lock.contains_key(key) {
-            Some(_a) => Ok(()),
-            None => Err("Not key in HashMap"),
+        let lock = self.data.read().unwrap();
+        if lock.contains_key(key) {
+            Ok(())
+        } else {
+            Err("Not key in HashMap")
         }
     }
 
