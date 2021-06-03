@@ -1,4 +1,5 @@
 use crate::config::configuration::Configuration;
+use crate::key_command::copy;
 use crate::key_command::expire;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
@@ -42,6 +43,7 @@ impl Execution {
             "ping" => ping::run(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
             "expire" => expire::set_expiration_to_key(builder, cmd, &self.data),
+            "copy" => copy::run(self.data.clone(), cmd.arguments(), builder),
             "config" => config::run(cmd.arguments(), builder, self.config.clone()),
             _ => Err("Unknown command."),
         }
