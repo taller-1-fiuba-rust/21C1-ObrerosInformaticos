@@ -4,7 +4,6 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 use std::time::Duration;
-use std::time::SystemTime;
 
 pub fn set_expiration_to_key(
     builder: &mut ResponseBuilder,
@@ -35,11 +34,7 @@ pub fn set_expiration_to_key(
             Err(_s) => builder.add(ProtocolType::Integer(0)),
         }
     } else {
-        match data.set_expiration_to_key(
-            SystemTime::now(),
-            Duration::from_secs(seconds as u64),
-            &key,
-        ) {
+        match data.set_expiration_to_key(Duration::from_secs(seconds as u64), &key) {
             Ok(s) => builder.add(ProtocolType::Integer(s as i32)),
             Err(_s) => builder.add(ProtocolType::Integer(0)),
         };

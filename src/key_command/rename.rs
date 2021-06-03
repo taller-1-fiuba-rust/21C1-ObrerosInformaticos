@@ -13,14 +13,8 @@ pub fn run(
     let src = arguments[0].clone().string()?;
     let dst = arguments[1].clone().string()?;
 
-    let option = db.get(&src);
-    let mut result = 0;
-    if let Some(value) = option {
-        db.add_key_value(&dst, value);
-        result = 1;
-    }
-
-    builder.add(ProtocolType::Integer(result));
+    db.rename(&src, &dst)?;
+    builder.add(ProtocolType::SimpleString("OK".to_string()));
     Ok(())
 }
 
@@ -31,7 +25,7 @@ mod tests {
     use crate::storage::data_storage::Value;
 
     #[test]
-    fn test_copy() {
+    fn test_rename() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
         data.add_key_value("key", Value::String("value".to_string()));
@@ -47,12 +41,13 @@ mod tests {
         .unwrap();
 
         assert_eq!(data.get("new_key").unwrap().string().unwrap(), "value");
-        assert!(data.get("key").is_some());
-        assert_eq!(builder.serialize(), "*1\r\n:1\r\n");
+        assert!(data.get("key").is_none());
+        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
     }
 
     #[test]
-    fn test_copy_with_empty_element() {
+    #[should_panic]
+    fn test_rename_error() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
@@ -65,7 +60,5 @@ mod tests {
             &mut builder,
         )
         .unwrap();
-
-        assert_eq!(builder.serialize(), "*1\r\n:0\r\n");
     }
 }
