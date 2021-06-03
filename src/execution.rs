@@ -1,6 +1,6 @@
 use crate::config::configuration::Configuration;
-use crate::key_command::expire;
-use crate::key_command::key_type;
+use crate::key_command::{copy, rename};
+use crate::key_command::{expire, persist, key_type};
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
@@ -21,9 +21,6 @@ pub struct Execution {
     client_connected: u64,
 }
 
-/*
-    Execution should map each command name to a function which can execute it. They don't have to necessarily be located here
-*/
 impl Execution {
     pub fn new(
         data: Arc<DataStorage>,
@@ -38,18 +35,22 @@ impl Execution {
         }
     }
 
+    /// Matches a command with it's executing function and runs it.
     pub fn run(&self, cmd: &Command, builder: &mut ResponseBuilder) -> Result<(), &'static str> {
         match &cmd.name().to_ascii_lowercase()[..] {
             "ping" => ping::run(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
-            "expire" => expire::set_expiration_to_key(builder, cmd, &self.data),
+            "expire" => expire::run(builder, cmd, &self.data),
+            "copy" => copy::run(self.data.clone(), cmd.arguments(), builder),
+            "rename" => rename::run(self.data.clone(), cmd.arguments(), builder),
+            "persist" => persist::run(self.data.clone(), cmd.arguments(), builder),
             "config" => config::run(cmd.arguments(), builder, self.config.clone()),
             "type" => key_type::run(cmd.arguments(), builder, &self.data),
             _ => Err("Unknown command."),
         }
     }
 
-    #[allow(unused_variables)]
+    /// Executes pub/sub commands. This distinction is required because of mode changes related to pub/sub commands.
     pub fn run_pubsub(
         &self,
         cmd: &Command,
@@ -64,6 +65,7 @@ impl Execution {
         }
     }
 
+    /// Returns a bool representing if the command is a pub/sub topic command or not.
     pub fn is_pubsub_command(&self, cmd: &Command) -> bool {
         matches!(
             &cmd.name().to_ascii_lowercase()[..],
