@@ -10,11 +10,34 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 ///Enum Value. Contiene todos los tipos de datos soportados
 ///para el DataStorage.
-#[allow(dead_code)]
+#[derive(Clone)]
 pub enum Value {
     String(String),
     Vec(Vec<String>),
     HashSet(HashSet<String>),
+}
+#[allow(dead_code)]
+impl Value {
+    pub fn string(&self) -> Result<String, &'static str> {
+        match self {
+            Value::String(s) => Ok(s.clone()),
+            _ => Err("Failed to cast Value to string"),
+        }
+    }
+
+    pub fn array(&self) -> Result<Vec<String>, &'static str> {
+        match self {
+            Value::Vec(v) => Ok(v.clone()),
+            _ => Err("Failed to cast Value to string"),
+        }
+    }
+
+    pub fn set(&self) -> Result<HashSet<String>, &'static str> {
+        match self {
+            Value::HashSet(s) => Ok(s.clone()),
+            _ => Err("Failed to cast Value to string"),
+        }
+    }
 }
 
 ///Struct DataStorage. Se encuentra compuesto por un
@@ -62,7 +85,7 @@ impl DataStorage {
     ///POST: La clave es almacenada en la estructura con su valor
     ///correspondiente y con tiempo de vencimiento 0 dado que las
     ///claves por default nunca expiran.
-    pub fn add_key_value(&mut self, key: &str, value: Value) {
+    pub fn add_key_value(&self, key: &str, value: Value) {
         let mut lock = self.data.write().unwrap();
         let copy_key = key.to_string();
 
@@ -90,26 +113,76 @@ impl DataStorage {
         self.data.read().unwrap()
     }
 
+    /// Returns a copy of the value at key or none if it doesnt exist.
+    pub fn get(&self, key: &str) -> Option<Value> {
+        let result = self.get_with_expiration(key);
+        if let Some((_, value)) = result {
+            Some(value)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_with_expiration(&self, key: &str) -> Option<(Option<Duration>, Value)> {
+        let lock = self.data.read().ok()?;
+        let result = lock.get(key);
+        if let Some((duration, val)) = result {
+            if let Some(seconds) = duration {
+                let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+                if seconds > &now {
+                    return Some((Some(*seconds), val.clone()));
+                }
+                // Key has expired, we should delete it
+                drop(lock);
+                self.delete_key(key).unwrap();
+                return None;
+            }
+            return Some((None, val.clone()));
+        }
+        None
+    }
+
+    pub fn rename(&self, src: &str, dst: &str) -> Result<(), &'static str> {
+        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
+        let result = lock.get(src);
+        if let Some((duration, val)) = result {
+            let moved_duration = *duration;
+            let moved_val = val.clone();
+            drop(lock);
+            self.add_key_value(dst, moved_val);
+            self.set_expiration_to_key(moved_duration, dst)?;
+            self.delete_key(src)?;
+            Ok(())
+        } else {
+            Err("No such key")
+        }
+    }
+
+    pub fn add_with_expiration(
+        &self,
+        key: &str,
+        value: Value,
+        expiration_time_since_unix_epoch: Duration,
+    ) -> Result<(), &'static str> {
+        self.add_key_value(key, value);
+        self.set_expiration_to_key(Some(expiration_time_since_unix_epoch), key)?;
+        Ok(())
+    }
+
     ///Setea una expiracion a una clave dada.
     ///PRE: La estructura DataStorage debe estar creada.
     ///POST: La clave queda con un tiempo de expiracion seteado. En caso
     ///de no existir la clave en la estructura se lanza un error.
     pub fn set_expiration_to_key(
         &self,
-        actual_time: SystemTime,
-        duration: Duration,
+        expiration_time_since_unix_epoch: Option<Duration>,
         key: &str,
     ) -> Result<u64, &'static str> {
         let mut lock = self.data.write().unwrap();
         let copy_key = key.to_string();
 
-        let expiration_time = actual_time.checked_add(duration);
-
-        if expiration_time == None {
-            Err("Expiration time cant be calculated")
-        } else if lock.contains_key(&copy_key) {
-            let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
-            lock.get_mut(&copy_key).unwrap().0 = Some(key_duration.unwrap());
+        if lock.contains_key(&copy_key) {
+            lock.get_mut(&copy_key).unwrap().0 = expiration_time_since_unix_epoch;
             Ok(1)
         } else {
             Err("Key not found in DataStorage")
@@ -128,13 +201,13 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_delete_data() {
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         let key = String::from("Daniela");
         let value = String::from("hola");
 
         data_storage.add_key_value(&key, Value::String(value));
+        data_storage.delete_key(&key).unwrap();
 
-        data_storage.delete_key(&key);
         let read = data_storage.read();
 
         if let Value::String(a) = &(*read.get(&key).unwrap()).1 {
@@ -145,18 +218,20 @@ mod tests {
     }
 
     #[test]
-    fn test_set_exiration_to_key() {
-        let mut data_storage = DataStorage::new();
+    fn test_set_expiration_to_key() {
+        let data_storage = DataStorage::new();
         let key = String::from("Daniela");
         let value = String::from("hola");
-        let actual_time = SystemTime::now();
         let duration = Duration::from_secs(5);
-        let expiration_time = actual_time.checked_add(duration);
-        let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
 
         data_storage.add_key_value(&key, Value::String(value));
 
-        let _result = match data_storage.set_expiration_to_key(actual_time, duration, &key) {
+        let expiration_time = SystemTime::now()
+            .checked_add(duration)
+            .unwrap()
+            .duration_since(UNIX_EPOCH)
+            .unwrap();
+        let _result = match data_storage.set_expiration_to_key(Some(expiration_time), &key) {
             Ok(s) => s,
             Err(_s) => panic!("Key expiration cant be set"),
         };
@@ -164,7 +239,7 @@ mod tests {
         let read = data_storage.read();
         let key_expiration: &Option<Duration> = &(*read.get(&key).unwrap()).0;
 
-        assert_eq!(key_duration.unwrap(), key_expiration.unwrap());
+        assert_eq!(expiration_time.as_secs(), key_expiration.unwrap().as_secs());
     }
 
     #[test]
@@ -247,7 +322,7 @@ mod tests {
 
     #[test]
     fn test_add_string_data() {
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         let key = String::from("Daniela");
         let value = String::from("hola");
 
@@ -265,7 +340,7 @@ mod tests {
 
     #[test]
     fn test_add_vector_data() {
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         let key = String::from("Daniela");
         let value = vec!["a".to_string(), "b".to_string()];
 
@@ -283,7 +358,7 @@ mod tests {
 
     #[test]
     fn test_add_set_data() {
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         let key = String::from("Daniela");
         let value: HashSet<String> = vec!["a".to_string(), "b".to_string()].into_iter().collect();
 

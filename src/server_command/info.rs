@@ -1,7 +1,7 @@
 use crate::config::configuration::Configuration;
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::time::SystemTime;
 
@@ -9,7 +9,7 @@ use std::time::SystemTime;
 ///Imprime informacion del servidor y los clientes conectados.
 pub fn run(
     builder: &mut ResponseBuilder,
-    config: &Arc<Configuration>,
+    config: &Arc<Mutex<Configuration>>,
     sys_time: &Arc<SystemTime>,
 ) -> Result<(), &'static str> {
     let active_time: Duration = get_system_active_time(sys_time);
@@ -41,7 +41,7 @@ blocked_clients:0
 tracking_clients:0
 clients_in_timeout_table:0
 \n\r",
-        config.get_port(),
+        config.lock().unwrap().get_port(),
         active_time.as_micros(),
         active_time.as_secs()
     );
