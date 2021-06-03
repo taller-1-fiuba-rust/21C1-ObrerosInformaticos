@@ -22,3 +22,49 @@ pub fn run(
     Ok(())
 }
 
+#[cfg(test)]
+
+mod tests {
+    use super::*;
+    use crate::storage::data_storage::Value;
+    use std::time::{Duration, UNIX_EPOCH, SystemTime};
+
+    #[test]
+    fn test_persist() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+        let expiration_time = SystemTime::now()
+            .checked_add(Duration::from_secs(10)).unwrap()
+            .duration_since(UNIX_EPOCH).unwrap();
+        data.add_with_expiration("src", Value::String("value".to_string()), expiration_time).unwrap();
+
+        run(
+            data.clone(),
+            vec![
+                ProtocolType::String("src".to_string()),
+            ],
+            &mut builder,
+        ).unwrap();
+
+        assert!(data.get_with_expiration("src").unwrap().0.is_none());
+        assert_eq!(builder.serialize(), "*1\r\n:1\r\n");
+    }
+
+    #[test]
+    fn test_persist_fails() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+        data.add_key_value("src", Value::String("value".to_string()));
+
+        run(
+            data.clone(),
+            vec![
+                ProtocolType::String("src".to_string()),
+            ],
+            &mut builder,
+        ).unwrap();
+
+        assert!(data.get_with_expiration("src").unwrap().0.is_none());
+        assert_eq!(builder.serialize(), "*1\r\n:0\r\n");
+    }
+}
