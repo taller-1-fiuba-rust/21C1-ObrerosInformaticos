@@ -199,7 +199,11 @@ mod tests {
 
         data_storage.add_key_value(&key, Value::String(value));
 
-        let expiration_time = SystemTime::now().checked_add(duration).unwrap().duration_since(UNIX_EPOCH).unwrap();
+        let expiration_time = SystemTime::now()
+            .checked_add(duration)
+            .unwrap()
+            .duration_since(UNIX_EPOCH)
+            .unwrap();
         let _result = match data_storage.set_expiration_to_key(Some(expiration_time), &key) {
             Ok(s) => s,
             Err(_s) => panic!("Key expiration cant be set"),
@@ -208,10 +212,7 @@ mod tests {
         let read = data_storage.read();
         let key_expiration: &Option<Duration> = &(*read.get(&key).unwrap()).0;
 
-        assert_eq!(
-            expiration_time.as_secs(),
-            key_expiration.unwrap().as_secs()
-        );
+        assert_eq!(expiration_time.as_secs(), key_expiration.unwrap().as_secs());
     }
 
     #[test]

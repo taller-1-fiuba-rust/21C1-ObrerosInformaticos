@@ -36,8 +36,11 @@ pub fn run(
     } else {
         let actual_time = SystemTime::now();
         let expiration_time = actual_time
-            .checked_add(Duration::from_secs(seconds as u64)).ok_or("Failed to calculate expiration time")?
-            .duration_since(UNIX_EPOCH).ok().ok_or("Failed to calculate expiration time")?;
+            .checked_add(Duration::from_secs(seconds as u64))
+            .ok_or("Failed to calculate expiration time")?
+            .duration_since(UNIX_EPOCH)
+            .ok()
+            .ok_or("Failed to calculate expiration time")?;
         match data.set_expiration_to_key(Some(expiration_time), &key) {
             Ok(s) => builder.add(ProtocolType::Integer(s as i32)),
             Err(_s) => builder.add(ProtocolType::Integer(0)),
