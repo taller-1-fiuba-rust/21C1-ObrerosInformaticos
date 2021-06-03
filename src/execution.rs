@@ -45,6 +45,7 @@ impl Execution {
             "expire" => expire::run(builder, cmd, &self.data),
             "copy" => copy::run(self.data.clone(), cmd.arguments(), builder),
             "rename" => rename::run(self.data.clone(), cmd.arguments(), builder),
+            "persist" => persist::run(self.data.clone(), cmd.arguments(), builder),
             "config" => config::run(cmd.arguments(), builder, self.config.clone()),
             _ => Err("Unknown command."),
         }
