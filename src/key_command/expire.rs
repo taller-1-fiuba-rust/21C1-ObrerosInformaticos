@@ -5,7 +5,7 @@ use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 use std::time::Duration;
 
-pub fn set_expiration_to_key(
+pub fn run(
     builder: &mut ResponseBuilder,
     cmd: &Command,
     data: &Arc<DataStorage>,

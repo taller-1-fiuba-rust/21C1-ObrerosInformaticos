@@ -42,7 +42,7 @@ impl Execution {
         match &cmd.name().to_ascii_lowercase()[..] {
             "ping" => ping::run(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
-            "expire" => expire::set_expiration_to_key(builder, cmd, &self.data),
+            "expire" => expire::run(builder, cmd, &self.data),
             "copy" => copy::run(self.data.clone(), cmd.arguments(), builder),
             "rename" => rename::run(self.data.clone(), cmd.arguments(), builder),
             "config" => config::run(cmd.arguments(), builder, self.config.clone()),
