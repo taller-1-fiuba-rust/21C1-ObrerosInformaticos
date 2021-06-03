@@ -108,6 +108,15 @@ impl DataStorage {
         }
     }
 
+    ///Devuelve OK si la clave existe en la base de datos y error en caso contrario.
+    pub fn exists_key(&self, key: &str) -> Result<(), &'static str> {
+        let mut lock = self.data.read().unwrap();
+        match lock.contains_key(key) {
+            Some(_a) => Ok(()),
+            None => Err("Not key in HashMap"),
+        }
+    }
+
     ///Devuelve una referencia de lectura para la estructura DataStorage.
     pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, (Option<Duration>, Value)>> {
         self.data.read().unwrap()
