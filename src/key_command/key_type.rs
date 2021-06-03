@@ -9,7 +9,7 @@ pub fn run(
     builder: &mut ResponseBuilder,
     data: &Arc<DataStorage>,
 ) -> Result<(), &'static str> {
-    //This command 
+    //This command
     if arguments.len() != 1 {
         return Err("Wrong quantity of arguments. Command TYPE has only one.");
     }
@@ -61,7 +61,6 @@ mod tests {
         data.add_key_value("src", Value::String("value".to_string()));
 
         run(
-            
             vec![ProtocolType::String("src".to_string())],
             &mut builder,
             &data.clone(),
@@ -95,11 +94,15 @@ mod tests {
         let run_result = run(
             vec![ProtocolType::String("src".to_string())],
             &mut builder,
-            &data.clone()
+            &data.clone(),
         );
         match run_result {
-            Ok(_) => {assert_eq!(true, false)},
-            Err(msj) => {assert_eq!(msj, "none")},
-        }        
+            Ok(_) => {
+                assert_eq!(true, false)
+            }
+            Err(msj) => {
+                assert_eq!(msj, "none")
+            }
+        }
     }
 }
