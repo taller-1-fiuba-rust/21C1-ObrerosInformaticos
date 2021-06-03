@@ -11,12 +11,7 @@ pub fn run(
     let mut string_arguments = vec![];
 
     for argument in arguments {
-        match argument.clone().string() {
-            Ok(s) => string_arguments.push(s),
-            Err(_s) => {
-                return Err("While parsing argument in del command");
-            }
-        };
+        string_arguments.push(argument.clone().string()?);
     }
 
     let mut counter = 0;
