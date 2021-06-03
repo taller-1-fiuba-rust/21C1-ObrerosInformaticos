@@ -1,13 +1,9 @@
 use crate::config::configuration::Configuration;
-use crate::key_command::{copy, rename};
-use crate::key_command::{expire, persist};
+use crate::key_command::{expire, persist, del, copy, rename};
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
-use crate::server_command::config;
-use crate::server_command::info;
-use crate::server_command::ping;
-use crate::server_command::pubsub;
+use crate::server_command::{config, info, ping, pubsub};
 use crate::storage::data_storage::DataStorage;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
@@ -45,6 +41,7 @@ impl Execution {
             "rename" => rename::run(self.data.clone(), cmd.arguments(), builder),
             "persist" => persist::run(self.data.clone(), cmd.arguments(), builder),
             "config" => config::run(cmd.arguments(), builder, self.config.clone()),
+            "del" => del::run(builder, cmd, &self.data),
             _ => Err("Unknown command."),
         }
     }
