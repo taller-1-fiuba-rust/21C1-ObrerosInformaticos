@@ -1,6 +1,6 @@
 use crate::config::configuration::Configuration;
-use crate::key_command::expire;
 use crate::key_command::{copy, rename};
+use crate::key_command::{expire, persist};
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
@@ -42,9 +42,10 @@ impl Execution {
         match &cmd.name().to_ascii_lowercase()[..] {
             "ping" => ping::run(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
-            "expire" => expire::set_expiration_to_key(builder, cmd, &self.data),
+            "expire" => expire::run(builder, cmd, &self.data),
             "copy" => copy::run(self.data.clone(), cmd.arguments(), builder),
             "rename" => rename::run(self.data.clone(), cmd.arguments(), builder),
+            "persist" => persist::run(self.data.clone(), cmd.arguments(), builder),
             "config" => config::run(cmd.arguments(), builder, self.config.clone()),
             _ => Err("Unknown command."),
         }
