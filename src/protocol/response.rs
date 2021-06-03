@@ -1,21 +1,26 @@
 use crate::protocol::types::ProtocolType;
 
+///
+/// Struct for building responses in RESP format. Stores ProtocolTypes and serializes them.
+///
 pub struct ResponseBuilder {
     results: Vec<ProtocolType>,
 }
 
 impl ResponseBuilder {
+    /// Create a new ResponseBuilder
     pub fn new() -> Self {
         ResponseBuilder {
             results: Vec::new(),
         }
     }
 
-    #[allow(dead_code)]
+    /// Adds a new value into the RESP response
     pub fn add(&mut self, val: ProtocolType) {
         self.results.push(val);
     }
 
+    /// Serialiazes the objects into a RESP compatible format.
     pub fn serialize(&self) -> String {
         ProtocolType::Array(self.results.clone()).serialize()
     }

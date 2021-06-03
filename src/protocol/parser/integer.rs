@@ -1,6 +1,9 @@
 use crate::protocol::parser::ProtocolParser;
 use crate::protocol::types::ProtocolType;
 
+///
+/// Parses a serialized RESP signed integer into a ProtocolType::Integer
+///
 pub struct IntegerParser {
     data: i32,
 }

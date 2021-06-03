@@ -6,7 +6,9 @@ pub struct ErrorParser {
     parser: SimpleStringParser,
 }
 
-#[allow(dead_code)]
+///
+/// Parses a serialized RESP error into a ProtocolType::Error
+///
 impl ErrorParser {
     pub fn new() -> Self {
         ErrorParser {

@@ -6,6 +6,7 @@ use std::net::TcpStream;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 
+/// A pub/sub subscribers. Stores a list of channels and a socket to relay messages to.
 struct Subscriber {
     socket: Arc<Mutex<TcpStream>>,
     channels: Vec<String>,
@@ -31,6 +32,8 @@ impl Subscriber {
     }
 }
 
+/// Struct which holds all the Publisher/Subscriber information. This includes
+/// subscriptions, and clients.
 pub struct PublisherSubscriber {
     subscriber_ids: HashMap<u32, Subscriber>,
     subscriptions: HashMap<String, HashSet<u32>>,

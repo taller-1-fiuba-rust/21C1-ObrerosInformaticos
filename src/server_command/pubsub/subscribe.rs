@@ -4,6 +4,7 @@ use crate::pubsub::PublisherSubscriber;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 
+/// Execute the pub/sub subscribe command.
 pub fn run(
     pubsub: Arc<Mutex<PublisherSubscriber>>,
     client: Arc<Mutex<TcpStream>>,

@@ -7,6 +7,8 @@ use std::time::Duration;
 static LIST: &str = "|LISTA|";
 static SET: &str = "|SET|";
 
+///Dado un archivo y una estructura de datos obtiene la informacion del archivo
+///y la almacena en la estructura, respetando los tipos de datos contenidos.
 pub fn parse_data(file: &str, data: &mut HashMap<String, (Option<Duration>, Value)>) {
     let lines = file_reader::read_lines(file);
 
@@ -26,7 +28,8 @@ pub fn parse_data(file: &str, data: &mut HashMap<String, (Option<Duration>, Valu
     }
 }
 
-//Para almacenar una clave con expiracion "None" (sin expiracion) se almacena un 0.
+///Dado un archivo y una estructura de datos toma la informacion de la estructura
+///y la almacena en el archivo, respetando la estructura de almacenamiento predefinida.
 pub fn store_data(file: &str, data: &HashMap<String, (Option<Duration>, Value)>) {
     for (key, value) in &*data {
         match &value.1 {
@@ -37,6 +40,7 @@ pub fn store_data(file: &str, data: &HashMap<String, (Option<Duration>, Value)>)
     }
 }
 
+///Almacena informacion en forma de string en el archivo 'file'.
 fn save_string_data(file: &str, key: &str, value: (Option<Duration>, &str)) {
     let save_data: String;
 
@@ -49,6 +53,7 @@ fn save_string_data(file: &str, key: &str, value: (Option<Duration>, &str)) {
     file_reader::data_to_file(file, save_data);
 }
 
+///Almacena informacion en forma de vector en el archivo 'file'.
 fn save_vector_data(file: &str, key: &str, value: (Option<Duration>, &[String])) {
     let values_joined = (value.1).join(",");
     let save_data: String;
@@ -68,6 +73,7 @@ fn save_vector_data(file: &str, key: &str, value: (Option<Duration>, &[String]))
     file_reader::data_to_file(file, save_data);
 }
 
+///Almacena informacion en forma de set en el archivo 'file'.
 fn save_set_data(file: &str, key: &str, value: (Option<Duration>, &HashSet<String>)) {
     let set = value.1.clone();
     let values_joined = set.into_iter().collect::<Vec<String>>().join(",");
@@ -88,6 +94,7 @@ fn save_set_data(file: &str, key: &str, value: (Option<Duration>, &HashSet<Strin
     file_reader::data_to_file(file, save_data);
 }
 
+///Obtiene la informacion en forma de string del archivo 'file'.
 fn get_string_data(vec: Vec<&str>) -> (String, Option<Duration>, String) {
     let key = vec[0].to_string();
 
@@ -104,6 +111,7 @@ fn get_string_data(vec: Vec<&str>) -> (String, Option<Duration>, String) {
     (key, key_expiration, value)
 }
 
+///Obtiene la informacion en forma de vector del archivo 'file'.
 fn get_vector_data(mut vec: Vec<&str>) -> (String, Option<Duration>, Vec<String>) {
     let mut data: Vec<String> = vec![];
     let key = vec[0].to_string();
@@ -129,6 +137,7 @@ fn get_vector_data(mut vec: Vec<&str>) -> (String, Option<Duration>, Vec<String>
     (key, key_expiration, data)
 }
 
+///Obtiene la informacion en forma de set del archivo 'file'.
 fn get_set_data(mut vec: Vec<&str>) -> (String, Option<Duration>, HashSet<String>) {
     let mut data: HashSet<String> = HashSet::new();
     let key = vec[0].to_string();
