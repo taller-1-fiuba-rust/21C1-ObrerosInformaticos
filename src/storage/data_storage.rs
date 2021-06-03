@@ -109,6 +109,28 @@ impl DataStorage {
         None
     }
 
+    pub fn rename(&self, src: &str, dst: &str) -> Result<(), &'static str> {
+        let lock = self.data.read().ok().ok_or_else(|| "Failed to lock database")?;
+        let result = lock.get(src);
+        return if let Some((duration, val)) = result {
+            let moved_duration = *duration;
+            let moved_val = val.clone();
+            drop(lock);
+            self.add_with_expiration(dst, moved_val, moved_duration)?;
+            self.delete_key(src)?;
+            Ok(())
+        } else {
+            Err("No such key")
+        }
+    }
+
+    pub fn add_with_expiration(&self, key: &str, value: Value, duration: Option<Duration>) -> Result<(), &'static str> {
+        self.add_key_value(key, value);
+        if let Some(t) = duration {
+            self.set_expiration_to_key(t, key)?;
+        }
+        Ok(())
+    }
 
     pub fn set_expiration_to_key(
         &self,
