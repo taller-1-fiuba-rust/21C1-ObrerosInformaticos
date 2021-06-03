@@ -34,10 +34,7 @@ pub fn set_expiration_to_key(
             Err(_s) => builder.add(ProtocolType::Integer(0)),
         }
     } else {
-        match data.set_expiration_to_key(
-            Duration::from_secs(seconds as u64),
-            &key,
-        ) {
+        match data.set_expiration_to_key(Duration::from_secs(seconds as u64), &key) {
             Ok(s) => builder.add(ProtocolType::Integer(s as i32)),
             Err(_s) => builder.add(ProtocolType::Integer(0)),
         };

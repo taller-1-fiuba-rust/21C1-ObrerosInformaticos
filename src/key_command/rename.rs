@@ -38,7 +38,7 @@ mod tests {
             ],
             &mut builder,
         )
-            .unwrap();
+        .unwrap();
 
         assert_eq!(data.get("new_key").unwrap().string().unwrap(), "value");
         assert!(data.get("key").is_none());
@@ -58,6 +58,7 @@ mod tests {
                 ProtocolType::String("new_key".to_string()),
             ],
             &mut builder,
-        ).unwrap();
+        )
+        .unwrap();
     }
 }

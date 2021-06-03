@@ -110,7 +110,7 @@ impl DataStorage {
     }
 
     pub fn rename(&self, src: &str, dst: &str) -> Result<(), &'static str> {
-        let lock = self.data.read().ok().ok_or_else(|| "Failed to lock database")?;
+        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
         let result = lock.get(src);
         return if let Some((duration, val)) = result {
             let moved_duration = *duration;
@@ -121,10 +121,15 @@ impl DataStorage {
             Ok(())
         } else {
             Err("No such key")
-        }
+        };
     }
 
-    pub fn add_with_expiration(&self, key: &str, value: Value, duration: Option<Duration>) -> Result<(), &'static str> {
+    pub fn add_with_expiration(
+        &self,
+        key: &str,
+        value: Value,
+        duration: Option<Duration>,
+    ) -> Result<(), &'static str> {
         self.add_key_value(key, value);
         if let Some(t) = duration {
             self.set_expiration_to_key(t, key)?;
@@ -201,7 +206,10 @@ mod tests {
         let key_expiration: &Option<Duration> = &(*read.get(&key).unwrap()).0;
 
         let key_duration = expiration_time.unwrap().duration_since(UNIX_EPOCH);
-        assert_eq!(key_duration.unwrap().as_secs(), key_expiration.unwrap().as_secs());
+        assert_eq!(
+            key_duration.unwrap().as_secs(),
+            key_expiration.unwrap().as_secs()
+        );
     }
 
     #[test]
