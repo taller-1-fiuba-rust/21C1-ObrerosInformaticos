@@ -1,5 +1,5 @@
 use crate::config::configuration::Configuration;
-use crate::key_command::{copy, del, expire, persist, rename};
+use crate::key_command::{copy, del, expire, key_type, persist, rename};
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
@@ -41,6 +41,7 @@ impl Execution {
             "rename" => rename::run(self.data.clone(), cmd.arguments(), builder),
             "persist" => persist::run(self.data.clone(), cmd.arguments(), builder),
             "config" => config::run(cmd.arguments(), builder, self.config.clone()),
+            "type" => key_type::run(cmd.arguments(), builder, &self.data),
             "del" => del::run(builder, cmd.arguments(), &self.data),
             _ => Err("Unknown command."),
         }
