@@ -142,7 +142,7 @@ impl DataStorage {
         None
     }
 
-    pub fn update(&self, key: &str, new_value: Value) -> Result<(), &'static str>{
+    pub fn update(&self, key: &str, new_value: Value) -> Result<(), &'static str> {
         self.delete_key(key)?;
         self.add_key_value(key, new_value);
         Ok(())
@@ -389,7 +389,7 @@ mod tests {
 
         data_storage.add_key_value(&key, Value::String("value1".to_string()));
 
-        data_storage.update(&key, Value::String("value2".to_string()));
+        data_storage.update(&key, Value::String("value2".to_string())).unwrap();
         assert_eq!(data_storage.get(&key).unwrap().string().unwrap(), "value2");
     }
 }
