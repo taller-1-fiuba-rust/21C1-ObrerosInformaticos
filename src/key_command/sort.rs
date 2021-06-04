@@ -2,6 +2,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use crate::storage::data_storage::Value;
+use std::collections::HashSet;
 use std::sync::Arc;
 
 pub fn run(
@@ -9,34 +10,83 @@ pub fn run(
     arguments: Vec<ProtocolType>,
     data: &Arc<DataStorage>,
 ) -> Result<(), &'static str> {
+    let mut vc = HashSet::new();
+    vc.insert("asd".to_string());
+    vc.insert("1".to_string());
+    vc.insert("3".to_string());
+    vc.insert("bsd".to_string());
+    vc.insert("2".to_string());
+    data.add_key_value("asd", Value::HashSet(vc));
+
+    let mut sort_values: Option<Vec<String>> = None;
+    let key = arguments[0].clone().string()?;
 
     if arguments.len() == 1 {
-        return basic_sort(builder, arguments, data)
+        sort_values = Some(basic_sort(key, data)?);
+    } else {
+        for i in 1..arguments.len() {
+            let second_argument: &str = &arguments[i].to_string().to_ascii_lowercase()[..];
+
+            match second_argument {
+                "desc" => {
+                    sort_values = Some(inverse_sort(key.clone(), data)?);
+                }
+                "store" => {
+                    if i == arguments.len() - 1 {
+                        return Err("No new key specified.");
+                    }
+                    let values = basic_sort(key.clone(), data)?;
+                    let new_key = arguments[i + 1].clone().string()?;
+                    data.add_key_value(&new_key, Value::Vec(values.clone()));
+                    sort_values = Some(values);
+                }
+                _ => (),
+            }
+        }
     }
 
+    if let Some(vec) = sort_values {
+        send_result(builder, vec)
+    } else {
+        return Err("Wrong arguments");
+    }
     Ok(())
 }
 
-fn basic_sort(
-    builder: &mut ResponseBuilder,
-    arguments: Vec<ProtocolType>,
-    data: &Arc<DataStorage>,
-) -> Result<(), &'static str> {
+fn basic_sort(key: String, data: &Arc<DataStorage>) -> Result<Vec<String>, &'static str> {
+    let mut values = get_values(data, key)?;
+    values.sort();
+    return Ok(values);
+}
 
-    let key = arguments[0].clone().string()?;
+fn inverse_sort(key: String, data: &Arc<DataStorage>) -> Result<Vec<String>, &'static str> {
+    let mut values = get_values(data, key)?;
+    values.sort_by(|a, b| b.cmp(a));
+    return Ok(values);
+}
 
+fn get_values(data: &Arc<DataStorage>, key: String) -> Result<Vec<String>, &'static str> {
     let values = data.get(&key);
-
     match values {
         None => return Err("None"),
-        Some(Value::String(string)) => return Err("String value. No possible sort."),
-        Some(Value::Vec(vecs)) => {
-            // vec.sort();
-            builder.add(ProtocolType::Array(vecs));
-        },
+        Some(Value::String(_)) => return Err("String value. No possible sort."),
+        Some(Value::Vec(vec)) => {
+            return Ok(vec);
+        }
         Some(Value::HashSet(set)) => {
-            builder.add(ProtocolType::Array(set));
-        },
+            let mut sorted_vec = Vec::new();
+            for element in set.iter() {
+                sorted_vec.push(element.clone());
+            }
+            return Ok(sorted_vec);
+        }
     }
-    Ok(())
+}
+
+fn send_result(builder: &mut ResponseBuilder, values: Vec<String>) {
+    let mut protocol_vec = Vec::new();
+    for element in values.iter() {
+        protocol_vec.push(ProtocolType::String(element.to_string()));
+    }
+    builder.add(ProtocolType::Array(protocol_vec));
 }
