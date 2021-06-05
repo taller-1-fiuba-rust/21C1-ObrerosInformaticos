@@ -152,7 +152,7 @@ impl DataStorage {
         }
         None
     }
-    
+
     pub fn update(&self, key: &str, new_value: Value) -> Result<(), &'static str> {
         self.delete_key(key)?;
         self.add_key_value(key, new_value);
@@ -214,7 +214,7 @@ impl DataStorage {
         for key in lock.keys() {
             result.push(key.clone());
         }
-        return result;
+        result
     }
 }
 
