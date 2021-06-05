@@ -51,7 +51,8 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap();
 
-        data.add_with_expiration("src", Value::String("value".to_string()), expiration_time).unwrap();
+        data.add_with_expiration("src", Value::String("value".to_string()), expiration_time)
+            .unwrap();
 
         run(
             &mut builder,
