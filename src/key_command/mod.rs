@@ -6,3 +6,5 @@ pub mod key_type;
 pub mod persist;
 pub mod rename;
 pub mod keys;
+pub mod sort;
+pub mod ttl;

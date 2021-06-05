@@ -32,7 +32,7 @@ pub fn run(
         builder.add(ProtocolType::Array(vec![
             ProtocolType::String("subscribe".to_string()),
             ProtocolType::String(channel),
-            ProtocolType::Integer(current_subs as i32),
+            ProtocolType::Integer(current_subs as i64),
         ]));
     }
 
