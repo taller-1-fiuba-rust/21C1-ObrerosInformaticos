@@ -92,7 +92,8 @@ mod tests {
             vec![ProtocolType::String("src".to_string())],
             &mut builder,
             &data.clone(),
-        ).unwrap();
+        )
+        .unwrap();
         assert_eq!(builder.serialize(), "*1\r\n+none\r\n");
     }
 }

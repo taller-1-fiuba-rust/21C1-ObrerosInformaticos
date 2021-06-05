@@ -1,8 +1,8 @@
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
-use std::sync::Arc;
 use regex::Regex;
+use std::sync::Arc;
 
 pub fn run(
     db: Arc<DataStorage>,
@@ -31,13 +31,22 @@ pub fn run(
 
 mod tests {
     use super::*;
-    use crate::storage::data_storage::Value;
     use crate::protocol::parser::array::ArrayParser;
     use crate::protocol::parser::ProtocolParser;
+    use crate::storage::data_storage::Value;
 
     fn get_test_data() -> (Arc<DataStorage>, ResponseBuilder) {
         let data = Arc::new(DataStorage::new());
-        for x in vec!["firstname", "Jack", "lastname", "Stuntman", "age", "aim", "ate", "abe"] {
+        for x in vec![
+            "firstname",
+            "Jack",
+            "lastname",
+            "Stuntman",
+            "age",
+            "aim",
+            "ate",
+            "abe",
+        ] {
             data.add_key_value(x, Value::String("value".to_string()));
         }
         return (data, ResponseBuilder::new());
@@ -46,11 +55,10 @@ mod tests {
     fn run_command(data: Arc<DataStorage>, builder: &mut ResponseBuilder, pattern: &str) {
         run(
             data.clone(),
-            vec![
-                ProtocolType::String(pattern.to_string())
-            ],
+            vec![ProtocolType::String(pattern.to_string())],
             builder,
-        ).unwrap();
+        )
+        .unwrap();
     }
 
     fn assert_response(builder: &ResponseBuilder, mut expected: Vec<&str>) {
@@ -63,7 +71,8 @@ mod tests {
             }
         }
         if let ProtocolType::Array(results) = parser.build() {
-            let mut sorted_result: Vec<String> = results.into_iter().map(|x| x.string().unwrap()).collect();
+            let mut sorted_result: Vec<String> =
+                results.into_iter().map(|x| x.string().unwrap()).collect();
             sorted_result.sort();
             expected.sort();
             assert_eq!(sorted_result, expected);
