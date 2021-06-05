@@ -3,10 +3,12 @@ use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
-use std::time::Duration;
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-pub fn set_expiration_to_key(
+///Dada una clave y un valor setea el valor como expiracion
+///de la clave. Si el valor es negativo se elimina la clave de
+///la estructura de datos.
+pub fn run(
     builder: &mut ResponseBuilder,
     cmd: &Command,
     data: &Arc<DataStorage>,
@@ -35,12 +37,15 @@ pub fn set_expiration_to_key(
             Err(_s) => builder.add(ProtocolType::Integer(0)),
         }
     } else {
-        match data.set_expiration_to_key(
-            SystemTime::now(),
-            Duration::from_secs(seconds as u64),
-            &key,
-        ) {
-            Ok(s) => builder.add(ProtocolType::Integer(s as i32)),
+        let actual_time = SystemTime::now();
+        let expiration_time = actual_time
+            .checked_add(Duration::from_secs(seconds as u64))
+            .ok_or("Failed to calculate expiration time")?
+            .duration_since(UNIX_EPOCH)
+            .ok()
+            .ok_or("Failed to calculate expiration time")?;
+        match data.set_expiration_to_key(Some(expiration_time), &key) {
+            Ok(s) => builder.add(ProtocolType::Integer(s as i64)),
             Err(_s) => builder.add(ProtocolType::Integer(0)),
         };
     }

@@ -2,6 +2,9 @@ use crate::protocol::parser::ParserFactory;
 use crate::protocol::parser::ProtocolParser;
 use crate::protocol::types::ProtocolType;
 
+///
+/// Parses a serialized RESP array into a ProtocolType::Array
+///
 pub struct ArrayParser {
     count: u32,
     parsed_header: bool,

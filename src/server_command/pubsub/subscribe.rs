@@ -4,6 +4,7 @@ use crate::pubsub::PublisherSubscriber;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 
+/// Execute the pub/sub subscribe command.
 pub fn run(
     pubsub: Arc<Mutex<PublisherSubscriber>>,
     client: Arc<Mutex<TcpStream>>,
@@ -31,7 +32,7 @@ pub fn run(
         builder.add(ProtocolType::Array(vec![
             ProtocolType::String("subscribe".to_string()),
             ProtocolType::String(channel),
-            ProtocolType::Integer(current_subs as i32),
+            ProtocolType::Integer(current_subs as i64),
         ]));
     }
 

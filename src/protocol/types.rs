@@ -1,14 +1,20 @@
+///
+/// Represents all the possible RESP types.
+///
 #[derive(Clone)]
 pub enum ProtocolType {
     String(String),
     SimpleString(String),
-    Integer(i32),
+    Integer(i64),
     Array(Vec<ProtocolType>),
     Error(String),
 }
 
 #[allow(dead_code)]
 impl ProtocolType {
+    ///
+    /// Casts the ProtocolType into an Vec<ProtocolType> or returns an Err on failure.
+    ///
     pub fn array(self) -> Result<Vec<ProtocolType>, &'static str> {
         match self {
             ProtocolType::Array(vec) => Ok(vec),
@@ -16,7 +22,10 @@ impl ProtocolType {
         }
     }
 
-    pub fn integer(&self) -> Result<i32, &'static str> {
+    ///
+    /// Casts the ProtocolType to integer or returns an Err on failure.
+    ///
+    pub fn integer(&self) -> Result<i64, &'static str> {
         match self {
             ProtocolType::Integer(int) => Ok(*int),
             ProtocolType::String(str_int) => Self::try_parse(str_int),
@@ -25,13 +34,16 @@ impl ProtocolType {
         }
     }
 
-    fn try_parse(str_int: &str) -> Result<i32, &'static str> {
+    fn try_parse(str_int: &str) -> Result<i64, &'static str> {
         match str_int.parse() {
             Ok(i) => Ok(i),
             Err(_) => Err("Failed to cast string"),
         }
     }
 
+    ///
+    /// Casts the ProtocolType to string or returns an Err on failure.
+    ///
     pub fn string(self) -> Result<String, &'static str> {
         match self {
             ProtocolType::String(str) => Ok(str),
@@ -40,6 +52,9 @@ impl ProtocolType {
         }
     }
 
+    ///
+    /// Casts the ProtocolType to an error string or returns an Err on failure.
+    ///
     pub fn error(self) -> Result<String, &'static str> {
         match self {
             ProtocolType::Error(str) => Ok(str),
@@ -47,6 +62,9 @@ impl ProtocolType {
         }
     }
 
+    ///
+    /// Serializes the ProtocolType into RESP format.
+    ///
     pub fn serialize(&self) -> String {
         match self {
             ProtocolType::Array(vec) => format!(
@@ -66,6 +84,9 @@ impl ProtocolType {
 }
 
 impl ToString for ProtocolType {
+    ///
+    /// Returns a string with a displayable representation of the ProtocolType.
+    ///
     fn to_string(&self) -> String {
         match self {
             ProtocolType::Array(vec) => format!(

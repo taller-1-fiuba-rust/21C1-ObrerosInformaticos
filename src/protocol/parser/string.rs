@@ -1,6 +1,9 @@
 use crate::protocol::parser::ProtocolParser;
 use crate::protocol::types::ProtocolType;
 
+///
+/// Parses a serialized RESP simple string into a ProtocolType::SimpleString
+///
 pub struct SimpleStringParser {
     data: String,
 }
@@ -29,6 +32,9 @@ impl ProtocolParser for SimpleStringParser {
     }
 }
 
+///
+/// Parses a serialized RESP string into a ProtocolType::String
+///
 pub struct BulkStringParser {
     data: String,
     length: usize,

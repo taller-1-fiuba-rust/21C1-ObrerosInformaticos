@@ -11,6 +11,7 @@ use std::net::TcpListener;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 
+/// Struct which listens for connections and executes the given commands.
 pub struct ListenerThread {
     pool: ThreadPool,
     addr: String,
@@ -31,12 +32,13 @@ impl ListenerThread {
         }
     }
 
-    pub fn run(&self, ttl: u32) {
+    /// Listen for connections on the configured settings.
+    pub fn run(&self, _ttl: u32) {
         let listener = TcpListener::bind(&self.addr).unwrap();
         println!("REDIS server started on address '{}'...", self.addr);
-        if ttl > 0 {
-            listener.set_ttl(ttl).unwrap();
-        }
+        // if ttl > 0 {
+        //     listener.set_ttl(ttl).unwrap();
+        // }
 
         for stream in listener.incoming() {
             let stream = stream.unwrap();
@@ -48,6 +50,7 @@ impl ListenerThread {
         }
     }
 
+    /// Handles a socket connection and executes the command extracted from it.
     fn handle_connection(
         stream: TcpStream,
         execution: Arc<Execution>,
@@ -65,6 +68,7 @@ impl ListenerThread {
         Self::execute_command(&command, stream, execution, pubsub);
     }
 
+    /// Prints a given command
     fn print_command(command: &Command) {
         println!(
             "Received command '{} {}'",
@@ -78,6 +82,7 @@ impl ListenerThread {
         );
     }
 
+    /// Parses a command from a socket connection
     fn parse_command(stream: &TcpStream) -> Result<Command, String> {
         let mut request = Request::new();
         let reader = BufReader::new(stream.try_clone().unwrap());
@@ -103,6 +108,7 @@ impl ListenerThread {
         Ok(request.build())
     }
 
+    /// Executed a given command.
     fn execute_command(
         command: &Command,
         stream: TcpStream,
@@ -125,6 +131,7 @@ impl ListenerThread {
         Self::write_response(socket, &response);
     }
 
+    /// Write a response from a response builder to the desired socket.
     fn write_response(stream: Arc<Mutex<TcpStream>>, response: &ResponseBuilder) {
         let mut locked_stream = match stream.lock() {
             Ok(s) => s,

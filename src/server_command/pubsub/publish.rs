@@ -3,6 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 use std::sync::{Arc, Mutex};
 
+/// Execute the pub/sub publish command.
 pub fn run(
     pubsub: Arc<Mutex<PublisherSubscriber>>,
     builder: &mut ResponseBuilder,
@@ -40,7 +41,7 @@ pub fn run(
     };
 
     builder.add(ProtocolType::Integer(
-        locked_pubsub.publish(channel, msg) as i32
+        locked_pubsub.publish(channel, msg) as i64
     ));
     Ok(())
 }

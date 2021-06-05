@@ -5,6 +5,8 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::time::SystemTime;
 
+///Funcion para la ejecucion del comando INFO.
+///Imprime informacion del servidor y los clientes conectados.
 pub fn run(
     builder: &mut ResponseBuilder,
     config: &Arc<Mutex<Configuration>>,
@@ -48,6 +50,7 @@ clients_in_timeout_table:0
     Ok(())
 }
 
+///Obtiene tiempo total en el cual el servidor se encontro activo.
 pub fn get_system_active_time(sys_time: &Arc<SystemTime>) -> Duration {
     sys_time.elapsed().unwrap()
 }
