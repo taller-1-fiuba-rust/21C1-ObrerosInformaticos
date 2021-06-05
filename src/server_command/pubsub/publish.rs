@@ -41,7 +41,7 @@ pub fn run(
     };
 
     builder.add(ProtocolType::Integer(
-        locked_pubsub.publish(channel, msg) as i32
+        locked_pubsub.publish(channel, msg) as i64
     ));
     Ok(())
 }
