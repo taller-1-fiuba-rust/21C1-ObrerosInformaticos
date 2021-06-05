@@ -133,6 +133,7 @@ impl DataStorage {
         }
     }
 
+    /// Returns a tuple of expiration and value.
     pub fn get_with_expiration(&self, key: &str) -> Option<(Option<Duration>, Value)> {
         let lock = self.data.read().ok()?;
         let result = lock.get(key);
@@ -152,6 +153,7 @@ impl DataStorage {
         None
     }
 
+    /// Renames a key and fails if it does not exist
     pub fn rename(&self, src: &str, dst: &str) -> Result<(), &'static str> {
         let lock = self.data.read().ok().ok_or("Failed to lock database")?;
         let result = lock.get(src);
@@ -168,6 +170,7 @@ impl DataStorage {
         }
     }
 
+    /// Adds a key into the db with the specified expiration date
     pub fn add_with_expiration(
         &self,
         key: &str,
@@ -197,6 +200,15 @@ impl DataStorage {
         } else {
             Err("Key not found in DataStorage")
         }
+    }
+
+    pub fn get_keys(&self) -> Vec<String> {
+        let lock = self.read();
+        let mut result = Vec::new();
+        for key in lock.keys() {
+            result.push(key.clone());
+        }
+        return result;
     }
 }
 
