@@ -11,7 +11,7 @@ pub fn run(
 ) -> Result<(), &'static str> {
     //This command
     if arguments.len() != 1 {
-        return Err("Wrong quantity of arguments. Command TYPE has only one.");
+        return Err("Wrong quantity of arguments.");
     }
 
     let key = arguments[0].clone().string()?;
