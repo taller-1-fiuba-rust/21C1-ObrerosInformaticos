@@ -1,5 +1,9 @@
 use crate::config::configuration::Configuration;
+<<<<<<< HEAD
 use crate::key_command::{copy, del, expire, key_type, persist, rename, sort};
+=======
+use crate::key_command::{copy, del, exists, expire, key_type, persist, rename};
+>>>>>>> 397946a0b845612e73b52be3757d1fd26f7ebbd8
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
@@ -44,6 +48,7 @@ impl Execution {
             "type" => key_type::run(cmd.arguments(), builder, &self.data),
             "del" => del::run(builder, cmd.arguments(), &self.data),
             "sort" => sort::run(builder, cmd.arguments(), &self.data),
+            "exists" => exists::run(builder, cmd.arguments(), &self.data),
             _ => Err("Unknown command."),
         }
     }
