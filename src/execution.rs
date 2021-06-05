@@ -1,9 +1,5 @@
 use crate::config::configuration::Configuration;
-<<<<<<< HEAD
-use crate::key_command::{copy, del, expire, key_type, persist, rename, sort};
-=======
-use crate::key_command::{copy, del, exists, expire, key_type, persist, rename};
->>>>>>> 397946a0b845612e73b52be3757d1fd26f7ebbd8
+use crate::key_command::{copy, del, exists, expire, key_type, persist, rename, sort};
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;

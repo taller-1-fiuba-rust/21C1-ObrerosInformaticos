@@ -47,29 +47,27 @@ pub fn run(
 fn basic_sort(key: String, data: &Arc<DataStorage>) -> Result<Vec<String>, &'static str> {
     let mut values = get_values(data, key)?;
     values.sort();
-    return Ok(values);
+    Ok(values)
 }
 
 fn inverse_sort(key: String, data: &Arc<DataStorage>) -> Result<Vec<String>, &'static str> {
     let mut values = get_values(data, key)?;
     values.sort_by(|a, b| b.cmp(a));
-    return Ok(values);
+    Ok(values)
 }
 
 fn get_values(data: &Arc<DataStorage>, key: String) -> Result<Vec<String>, &'static str> {
     let values = data.get(&key);
     match values {
-        None => return Err("None"),
-        Some(Value::String(_)) => return Err("String value. No possible sort."),
-        Some(Value::Vec(vec)) => {
-            return Ok(vec);
-        }
+        None => Err("None"),
+        Some(Value::String(_)) => Err("String value. No possible sort."),
+        Some(Value::Vec(vec)) => Ok(vec),
         Some(Value::HashSet(set)) => {
             let mut sorted_vec = Vec::new();
             for element in set.iter() {
                 sorted_vec.push(element.clone());
             }
-            return Ok(sorted_vec);
+            Ok(sorted_vec)
         }
     }
 }
