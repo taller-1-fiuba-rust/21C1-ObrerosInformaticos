@@ -1,5 +1,5 @@
 use crate::config::configuration::Configuration;
-use crate::key_command::{copy, del, exists, expire, key_type, persist, rename, ttl};
+use crate::key_command::{copy, del, exists, expire, key_type, persist, rename, ttl, sort};
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
@@ -43,6 +43,7 @@ impl Execution {
             "config" => config::run(cmd.arguments(), builder, self.config.clone()),
             "type" => key_type::run(cmd.arguments(), builder, &self.data),
             "del" => del::run(builder, cmd.arguments(), &self.data),
+            "sort" => sort::run(builder, cmd.arguments(), &self.data),
             "exists" => exists::run(builder, cmd.arguments(), &self.data),
             "ttl" => ttl::run(builder, cmd.arguments(), &self.data),
             _ => Err("Unknown command."),
