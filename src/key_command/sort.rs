@@ -2,7 +2,6 @@ use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use crate::storage::data_storage::Value;
-use std::collections::HashSet;
 use std::sync::Arc;
 
 pub fn run(
@@ -10,14 +9,6 @@ pub fn run(
     arguments: Vec<ProtocolType>,
     data: &Arc<DataStorage>,
 ) -> Result<(), &'static str> {
-    let mut vc = HashSet::new();
-    vc.insert("asd".to_string());
-    vc.insert("1".to_string());
-    vc.insert("3".to_string());
-    vc.insert("bsd".to_string());
-    vc.insert("2".to_string());
-    data.add_key_value("asd", Value::HashSet(vc));
-
     let mut sort_values: Option<Vec<String>> = None;
     let key = arguments[0].clone().string()?;
 
@@ -89,4 +80,109 @@ fn send_result(builder: &mut ResponseBuilder, values: Vec<String>) {
         protocol_vec.push(ProtocolType::String(element.to_string()));
     }
     builder.add(ProtocolType::Array(protocol_vec));
+}
+
+#[cfg(test)]
+
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+
+    #[test]
+    fn test_unnable_to_sort_string() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+
+        data.add_key_value("key", Value::String("inexistent".to_string()));
+
+        let run_result = run(
+            &mut builder,
+            vec![ProtocolType::String("key".to_string())],
+            &data.clone(),
+        );
+
+        match run_result {
+            Ok(_) => {
+                assert_eq!(true, false)
+            }
+            Err(msj) => {
+                assert_eq!(msj, "String value. No possible sort.")
+            }
+        }
+    }
+
+    #[test]
+    fn test_sort_vec() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+        let mut vc = Vec::new();
+
+        vc.push("asd".to_string());
+        vc.push("1".to_string());
+        vc.push("3".to_string());
+        vc.push("bsd".to_string());
+        vc.push("2".to_string());
+
+        data.add_key_value("key", Value::Vec(vc));
+
+        run(
+            &mut builder,
+            vec![ProtocolType::String("key".to_string())],
+            &data.clone(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            builder.serialize(),
+            "*1\r\n*5\r\n$1\r\n1\r\n$1\r\n2\r\n$1\r\n3\r\n$3\r\nasd\r\n$3\r\nbsd\r\n"
+        );
+    }
+
+    #[test]
+    fn test_sort_hashset() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+        let mut vc = HashSet::new();
+
+        vc.insert("asd".to_string());
+        vc.insert("1".to_string());
+        vc.insert("3".to_string());
+        vc.insert("bsd".to_string());
+        vc.insert("2".to_string());
+
+        data.add_key_value("key", Value::HashSet(vc));
+
+        run(
+            &mut builder,
+            vec![ProtocolType::String("key".to_string())],
+            &data.clone(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            builder.serialize(),
+            "*1\r\n*5\r\n$1\r\n1\r\n$1\r\n2\r\n$1\r\n3\r\n$3\r\nasd\r\n$3\r\nbsd\r\n"
+        );
+    }
+
+    #[test]
+    fn test_unnable_to_sort_unexistent_key() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+
+        let run_result = run(
+            &mut builder,
+            vec![ProtocolType::String("key".to_string())],
+            &data.clone(),
+        );
+
+        match run_result {
+            Ok(_) => {
+                assert_eq!(true, false)
+            }
+            Err(msj) => {
+                assert_eq!(msj, "None")
+            }
+        }
+    }
 }

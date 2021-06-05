@@ -389,7 +389,9 @@ mod tests {
 
         data_storage.add_key_value(&key, Value::String("value1".to_string()));
 
-        data_storage.update(&key, Value::String("value2".to_string())).unwrap();
+        data_storage
+            .update(&key, Value::String("value2".to_string()))
+            .unwrap();
         assert_eq!(data_storage.get(&key).unwrap().string().unwrap(), "value2");
     }
 }
