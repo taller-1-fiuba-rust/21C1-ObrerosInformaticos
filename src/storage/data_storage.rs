@@ -91,15 +91,10 @@ impl DataStorage {
     pub fn add_key_value(&self, key: &str, value: Value) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let copy_key = key.to_string();
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .ok()
-            .ok_or("Failed to get duration since UNIX EPOCH")?;
-
         match value {
-            Value::String(s) => lock.insert(copy_key, Entry::new(now, None, Value::String(s))),
-            Value::Vec(i) => lock.insert(copy_key, Entry::new(now, None, Value::Vec(i))),
-            Value::HashSet(j) => lock.insert(copy_key, Entry::new(now, None, Value::HashSet(j))),
+            Value::String(s) => lock.insert(copy_key, Entry::new(now()?, None, Value::String(s))),
+            Value::Vec(i) => lock.insert(copy_key, Entry::new(now()?, None, Value::Vec(i))),
+            Value::HashSet(j) => lock.insert(copy_key, Entry::new(now()?, None, Value::HashSet(j))),
         };
 
         Ok(())
@@ -142,6 +137,35 @@ impl DataStorage {
         }
     }
 
+    /// Returns Ok(Some(entryF)) for a specified key
+    /// Returns Ok(None) if the key has expired
+    /// Returns Err() if theres no value for that key
+    pub fn get_entry(&self, key: &str) -> Result<Option<Entry>, &'static str> {
+        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
+
+        if lock.contains_key(key) {
+            let entry: &Entry = lock.get(key).unwrap();
+            let key_exp = entry.key_expiration();
+            let entry_cpy = entry.clone();
+
+            if key_exp != None {
+                let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+                if key_exp.unwrap() > now {
+                    drop(lock);
+                    self.modify_last_key_access(&key, now).unwrap();
+                    return Ok(Some(entry_cpy));
+                }
+                // Key has expired, we should delete it
+                drop(lock);
+                self.delete_key(key).unwrap();
+                return Ok(None);
+            }
+            return Ok(Some(entry_cpy));
+        } else {
+            return Err("No value for that key");
+        }
+    }
+
     /// Returns a tuple of expiration and value.
     pub fn get_with_expiration(&self, key: &str) -> Option<(Option<Duration>, Value)> {
         let lock = self.data.read().ok()?;
@@ -152,7 +176,10 @@ impl DataStorage {
             if key_exp != None {
                 let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
                 if key_exp.unwrap() > now {
-                    return Some((key_exp, result.value()));
+                    let value = result.value();
+                    drop(lock);
+                    self.modify_last_key_access(&key, now).unwrap();
+                    return Some((key_exp, value));
                 }
                 // Key has expired, we should delete it
                 drop(lock);
@@ -246,6 +273,15 @@ impl DataStorage {
         }
 
         Err("last access not modify")
+    }
+}
+
+fn now() -> Result<Duration, &'static str> {
+    let _now = SystemTime::now().duration_since(UNIX_EPOCH);
+
+    match _now {
+        Ok(now) => return Ok(now),
+        Err(_) => return Err("Cannot get actual timestamp"),
     }
 }
 

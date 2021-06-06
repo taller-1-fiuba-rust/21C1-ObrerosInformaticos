@@ -2,6 +2,7 @@ use crate::storage::data_storage::Value;
 use std::time::Duration;
 
 ///Structure that contains all the information to store as a value in the database
+#[derive(Clone)]
 pub struct Entry {
     last_access: Duration,
     key_expiration: Option<Duration>,
