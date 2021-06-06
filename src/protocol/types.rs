@@ -5,7 +5,7 @@
 pub enum ProtocolType {
     String(String),
     SimpleString(String),
-    Integer(i32),
+    Integer(i64),
     Array(Vec<ProtocolType>),
     Error(String),
 }
@@ -25,7 +25,7 @@ impl ProtocolType {
     ///
     /// Casts the ProtocolType to integer or returns an Err on failure.
     ///
-    pub fn integer(&self) -> Result<i32, &'static str> {
+    pub fn integer(&self) -> Result<i64, &'static str> {
         match self {
             ProtocolType::Integer(int) => Ok(*int),
             ProtocolType::String(str_int) => Self::try_parse(str_int),
@@ -34,7 +34,7 @@ impl ProtocolType {
         }
     }
 
-    fn try_parse(str_int: &str) -> Result<i32, &'static str> {
+    fn try_parse(str_int: &str) -> Result<i64, &'static str> {
         match str_int.parse() {
             Ok(i) => Ok(i),
             Err(_) => Err("Failed to cast string"),

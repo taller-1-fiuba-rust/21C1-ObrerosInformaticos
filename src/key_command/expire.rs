@@ -45,7 +45,7 @@ pub fn run(
             .ok()
             .ok_or("Failed to calculate expiration time")?;
         match data.set_expiration_to_key(Some(expiration_time), &key) {
-            Ok(s) => builder.add(ProtocolType::Integer(s as i32)),
+            Ok(s) => builder.add(ProtocolType::Integer(s as i64)),
             Err(_s) => builder.add(ProtocolType::Integer(0)),
         };
     }
