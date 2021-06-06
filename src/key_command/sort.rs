@@ -28,7 +28,8 @@ pub fn run(
                     }
                     let values = basic_sort(key.clone(), data)?;
                     let new_key = arguments[i + 1].clone().string()?;
-                    data.add_key_value(&new_key, Value::Vec(values.clone()));
+                    data.add_key_value(&new_key, Value::Vec(values.clone()))
+                        .unwrap();
                     sort_values = Some(values);
                 }
                 _ => (),
@@ -91,7 +92,8 @@ mod tests {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
-        data.add_key_value("key", Value::String("inexistent".to_string()));
+        data.add_key_value("key", Value::String("inexistent".to_string()))
+            .unwrap();
 
         let run_result = run(
             &mut builder,
@@ -121,7 +123,7 @@ mod tests {
         vc.push("bsd".to_string());
         vc.push("2".to_string());
 
-        data.add_key_value("key", Value::Vec(vc));
+        data.add_key_value("key", Value::Vec(vc)).unwrap();
 
         run(
             &mut builder,
@@ -148,7 +150,7 @@ mod tests {
         vc.insert("bsd".to_string());
         vc.insert("2".to_string());
 
-        data.add_key_value("key", Value::HashSet(vc));
+        data.add_key_value("key", Value::HashSet(vc)).unwrap();
 
         run(
             &mut builder,
