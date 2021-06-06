@@ -1,3 +1,4 @@
+use crate::storage::entry::Entry;
 use crate::storage::parser;
 use crate::storage::SafeDataStorage;
 use std::collections::HashMap;
@@ -8,14 +9,15 @@ use std::sync::RwLockReadGuard;
 use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-///Enum Value. Contiene todos los tipos de datos soportados
-///para el DataStorage.
+/// Enumeration value. Contains all supported data types
+/// for the DataStorage.
 #[derive(Clone)]
 pub enum Value {
     String(String),
     Vec(Vec<String>),
     HashSet(HashSet<String>),
 }
+
 #[allow(dead_code)]
 impl Value {
     pub fn string(&self) -> Result<String, &'static str> {
@@ -40,77 +42,84 @@ impl Value {
     }
 }
 
-///Struct DataStorage. Se encuentra compuesto por un
-///HashMap el cual almacena la informacion del programa.
-///Estructura protegida por un RwLock.
-#[allow(dead_code)]
+/// Struct DataStorage. It is composed of a
+/// HashMap which stores the information of the program.
+/// Structure protected by a RwLock.
 pub struct DataStorage {
     data: SafeDataStorage,
 }
 
-///Implementacion de la estructura DataStorage.
+/// Implementation of the DataStorage structure.
 #[allow(dead_code)]
 impl DataStorage {
-    ///Crea la estructura DataStorage.
+    /// Create the DataStorage structure.
     pub fn new() -> Self {
         DataStorage {
             data: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
-    ///Dado un nombre de archivo carga en la base de datos
-    ///la informacion contenida en el mismo.
-    ///PRE: El archivo debe tener la estructura soportada
-    ///para la carga de datos y la estructura debe encontrarse
-    ///previamente creada.
-    ///POST: DataStorage se encuentra cargado con los datos
-    ///que contenia el archivo.
-    pub fn load_data(&mut self, file: &str) {
-        let mut lock = self.data.write().unwrap();
+    /// Given a filename load into the database
+    /// the information contained.
+    /// PRE: The file must have the supported structure
+    /// for data loading and structure must be found
+    /// previously created.
+    /// POST: DataStorage is loaded with the data
+    /// that contained the file.
+    pub fn load_data(&mut self, file: &str) -> Result<(), &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         parser::parse_data(file, &mut lock);
+        Ok(())
     }
 
-    ///Dado un nombre de archivo guarda los datos de la
-    ///base de datos en el mismo.
-    ///PRE: La estructura DataStorage debe estar creada.
-    ///POST: El archivo contiene la informacion que habia
-    ///en la estructura.
-    pub fn save_data(&mut self, file: &str) {
-        let lock = self.data.read().unwrap();
+    /// Given a file name, save the data of the
+    /// database in it.
+    /// PRE: The DataStorage structure must be created.
+    /// POST: The file contains the information that had
+    /// in the structure.
+    pub fn save_data(&mut self, file: &str) -> Result<(), &'static str> {
+        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
         parser::store_data(file, &lock);
+        Ok(())
     }
 
-    ///Dada una clave y un valor los alamacena en la base de datos.
-    ///PRE: La estructura DataStorage debe estar creada.
-    ///POST: La clave es almacenada en la estructura con su valor
-    ///correspondiente y con tiempo de vencimiento 0 dado que las
-    ///claves por default nunca expiran.
-    pub fn add_key_value(&self, key: &str, value: Value) {
-        let mut lock = self.data.write().unwrap();
+    /// Given a key and a value, it stores them in the database.
+    /// PRE: The DataStorage structure must be created.
+    /// POST: The key is stored in the structure with its value
+    /// corresponding and with expiration time 0 given that the
+    /// default keys never expire.
+    pub fn add_key_value(&self, key: &str, value: Value) -> Result<(), &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let copy_key = key.to_string();
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .ok()
+            .ok_or("Failed to get duration since UNIX EPOCH")?;
 
         match value {
-            Value::String(s) => lock.insert(copy_key, (None, Value::String(s))),
-            Value::Vec(i) => lock.insert(copy_key, (None, Value::Vec(i))),
-            Value::HashSet(j) => lock.insert(copy_key, (None, Value::HashSet(j))),
+            Value::String(s) => lock.insert(copy_key, Entry::new(now, None, Value::String(s))),
+            Value::Vec(i) => lock.insert(copy_key, Entry::new(now, None, Value::Vec(i))),
+            Value::HashSet(j) => lock.insert(copy_key, Entry::new(now, None, Value::HashSet(j))),
         };
+
+        Ok(())
     }
 
-    ///Elimina la clave con su correspondiente valor de la estructura.
-    ///PRE: La estuctura DataStorage debe estar creada.
-    ///POST: La clave es eliminada y su correspondiente valor. En caso
-    ///de no estar la clave en la estructura se lanza error.
+    /// Remove the key with its corresponding value from the structure.
+    /// PRE: The DataStorage structure must be created.
+    /// POST: The key is removed and its corresponding value. In case
+    /// if the key is not in the structure, an error is thrown.
     pub fn delete_key(&self, key: &str) -> Result<(), &'static str> {
-        let mut lock = self.data.write().unwrap();
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         match lock.remove(key) {
             Some(_a) => Ok(()),
             None => Err("Not key in HashMap"),
         }
     }
 
-    ///Devuelve OK si la clave existe en la base de datos y error en caso contrario.
+    /// Returns OK if the key exists in the database and error otherwise.
     pub fn exists_key(&self, key: &str) -> Result<(), &'static str> {
-        let lock = self.data.read().unwrap();
+        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
         if lock.contains_key(key) {
             Ok(())
         } else {
@@ -118,8 +127,8 @@ impl DataStorage {
         }
     }
 
-    ///Devuelve una referencia de lectura para la estructura DataStorage.
-    pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, (Option<Duration>, Value)>> {
+    /// Returns a read reference for the DataStorage structure.
+    pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, Entry>> {
         self.data.read().unwrap()
     }
 
@@ -133,39 +142,43 @@ impl DataStorage {
         }
     }
 
+    /// Returns a tuple of expiration and value.
     pub fn get_with_expiration(&self, key: &str) -> Option<(Option<Duration>, Value)> {
         let lock = self.data.read().ok()?;
-        let result = lock.get(key);
-        if let Some((duration, val)) = result {
-            if let Some(seconds) = duration {
+
+        if lock.contains_key(key) {
+            let result = lock.get(key).unwrap();
+            let key_exp = result.key_expiration();
+            if key_exp != None {
                 let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-                if seconds > &now {
-                    return Some((Some(*seconds), val.clone()));
+                if key_exp.unwrap() > now {
+                    return Some((key_exp, result.value()));
                 }
                 // Key has expired, we should delete it
                 drop(lock);
                 self.delete_key(key).unwrap();
                 return None;
             }
-            return Some((None, val.clone()));
+            return Some((None, result.value()));
         }
         None
     }
 
     pub fn update(&self, key: &str, new_value: Value) -> Result<(), &'static str> {
         self.delete_key(key)?;
-        self.add_key_value(key, new_value);
+        self.add_key_value(key, new_value)?;
         Ok(())
     }
 
+    /// Renames a key and fails if it does not exist
     pub fn rename(&self, src: &str, dst: &str) -> Result<(), &'static str> {
         let lock = self.data.read().ok().ok_or("Failed to lock database")?;
-        let result = lock.get(src);
-        if let Some((duration, val)) = result {
-            let moved_duration = *duration;
-            let moved_val = val.clone();
+        if lock.contains_key(src) {
+            let result = lock.get(src).unwrap();
+            let moved_duration = result.key_expiration();
+            let moved_val = result.value();
             drop(lock);
-            self.add_key_value(dst, moved_val);
+            self.add_key_value(dst, moved_val)?;
             self.set_expiration_to_key(moved_duration, dst)?;
             self.delete_key(src)?;
             Ok(())
@@ -174,35 +187,65 @@ impl DataStorage {
         }
     }
 
+    /// Adds a key into the db with the specified expiration date
     pub fn add_with_expiration(
         &self,
         key: &str,
         value: Value,
         expiration_time_since_unix_epoch: Duration,
     ) -> Result<(), &'static str> {
-        self.add_key_value(key, value);
+        self.add_key_value(key, value)?;
         self.set_expiration_to_key(Some(expiration_time_since_unix_epoch), key)?;
         Ok(())
     }
 
-    ///Setea una expiracion a una clave dada.
-    ///PRE: La estructura DataStorage debe estar creada.
-    ///POST: La clave queda con un tiempo de expiracion seteado. En caso
-    ///de no existir la clave en la estructura se lanza un error.
+    /// Set an expiration to a given key.
+    /// PRE: The DataStorage structure must be created.
+    /// POST: The key has a set expiration time. In case
+    /// if the key does not exist in the structure, an error is thrown.
     pub fn set_expiration_to_key(
         &self,
         expiration_time_since_unix_epoch: Option<Duration>,
         key: &str,
     ) -> Result<u64, &'static str> {
-        let mut lock = self.data.write().unwrap();
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let copy_key = key.to_string();
 
         if lock.contains_key(&copy_key) {
-            lock.get_mut(&copy_key).unwrap().0 = expiration_time_since_unix_epoch;
+            lock.get_mut(&copy_key)
+                .unwrap()
+                .set_key_expiration(expiration_time_since_unix_epoch);
             Ok(1)
         } else {
             Err("Key not found in DataStorage")
         }
+    }
+
+    pub fn get_keys(&self) -> Vec<String> {
+        let lock = self.read();
+        let mut result = Vec::new();
+        for key in lock.keys() {
+            result.push(key.clone());
+        }
+        result
+    }
+
+    pub fn modify_last_key_access(
+        &self,
+        key: &str,
+        last_access_since_unix_epoch: Duration,
+    ) -> Result<(), &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let copy_key = key.to_string();
+
+        if lock.contains_key(&copy_key) {
+            lock.get_mut(&copy_key)
+                .unwrap()
+                .set_last_access(last_access_since_unix_epoch);
+            return Ok(());
+        }
+
+        Err("last access not modify")
     }
 }
 
@@ -221,12 +264,14 @@ mod tests {
         let key = String::from("Daniela");
         let value = String::from("hola");
 
-        data_storage.add_key_value(&key, Value::String(value));
+        data_storage
+            .add_key_value(&key, Value::String(value))
+            .unwrap();
         data_storage.delete_key(&key).unwrap();
 
         let read = data_storage.read();
 
-        if let Value::String(a) = &(*read.get(&key).unwrap()).1 {
+        if let Value::String(a) = read.get(&key).unwrap().value() {
             a
         } else {
             panic!("Value not found in storage")
@@ -240,7 +285,9 @@ mod tests {
         let value = String::from("hola");
         let duration = Duration::from_secs(5);
 
-        data_storage.add_key_value(&key, Value::String(value));
+        data_storage
+            .add_key_value(&key, Value::String(value))
+            .unwrap();
 
         let expiration_time = SystemTime::now()
             .checked_add(duration)
@@ -253,7 +300,7 @@ mod tests {
         };
 
         let read = data_storage.read();
-        let key_expiration: &Option<Duration> = &(*read.get(&key).unwrap()).0;
+        let key_expiration: &Option<Duration> = &read.get(&key).unwrap().key_expiration();
 
         assert_eq!(expiration_time.as_secs(), key_expiration.unwrap().as_secs());
     }
@@ -266,16 +313,16 @@ mod tests {
 
         let mut file = File::create(path).expect("Not file created");
 
-        writeln!(file, "Daniela;0;hola").expect("Not file write");
+        writeln!(file, "Daniela;|STRING|;12356;0;hola").expect("Not file write");
         let mut data_storage = DataStorage::new();
-        data_storage.load_data(&path_str);
+        data_storage.load_data(&path_str).unwrap();
 
         let key = String::from("Daniela");
         let value = String::from("hola");
 
         let read = data_storage.read();
 
-        let b = if let Value::String(a) = &(*read.get(&key).unwrap()).1 {
+        let b = if let Value::String(a) = read.get(&key).unwrap().value() {
             a
         } else {
             panic!("Not string value")
@@ -292,16 +339,16 @@ mod tests {
 
         let mut file = File::create(path).expect("Not file created");
 
-        writeln!(file, "Daniela;|LISTA|;0;buen,dia").expect("Not file write");
+        writeln!(file, "Daniela;|LISTA|;12345;0;buen,dia").expect("Not file write");
         let mut data_storage = DataStorage::new();
-        data_storage.load_data(&path_str);
+        data_storage.load_data(&path_str).unwrap();
 
         let key = String::from("Daniela");
         let first_value = String::from("buen");
 
         let read = data_storage.read();
 
-        let b = if let Value::Vec(a) = &(*read.get(&key).unwrap()).1 {
+        let b = if let Value::Vec(a) = read.get(&key).unwrap().value() {
             a
         } else {
             panic!("Not vector value")
@@ -318,16 +365,16 @@ mod tests {
 
         let mut file = File::create(path).expect("Not file created");
 
-        writeln!(file, "Daniela;|SET|;0;buen,dia").expect("Not file write");
+        writeln!(file, "Daniela;|SET|;12356;0;buen,dia").expect("Not file write");
         let mut data_storage = DataStorage::new();
-        data_storage.load_data(&path_str);
+        data_storage.load_data(&path_str).unwrap();
 
         let key = String::from("Daniela");
         let first_value = String::from("buen");
 
         let read = data_storage.read();
 
-        let b = if let Value::HashSet(a) = &(*read.get(&key).unwrap()).1 {
+        let b = if let Value::HashSet(a) = read.get(&key).unwrap().value() {
             a
         } else {
             panic!("Not set value")
@@ -342,16 +389,18 @@ mod tests {
         let key = String::from("Daniela");
         let value = String::from("hola");
 
-        data_storage.add_key_value(&key, Value::String(value));
+        data_storage
+            .add_key_value(&key, Value::String(value))
+            .unwrap();
         let read = data_storage.read();
 
-        let b = if let Value::String(a) = &(*read.get(&key).unwrap()).1 {
+        let b = if let Value::String(a) = read.get(&key).unwrap().value() {
             a
         } else {
             panic!("Not string value")
         };
 
-        assert_eq!("hola", *b);
+        assert_eq!("hola", b);
     }
 
     #[test]
@@ -360,10 +409,10 @@ mod tests {
         let key = String::from("Daniela");
         let value = vec!["a".to_string(), "b".to_string()];
 
-        data_storage.add_key_value(&key, Value::Vec(value));
+        data_storage.add_key_value(&key, Value::Vec(value)).unwrap();
         let read = data_storage.read();
 
-        let b = if let Value::Vec(a) = &(*read.get(&key).unwrap()).1 {
+        let b = if let Value::Vec(a) = read.get(&key).unwrap().value() {
             a
         } else {
             panic!("Not string value")
@@ -378,10 +427,12 @@ mod tests {
         let key = String::from("Daniela");
         let value: HashSet<String> = vec!["a".to_string(), "b".to_string()].into_iter().collect();
 
-        data_storage.add_key_value(&key, Value::HashSet(value));
+        data_storage
+            .add_key_value(&key, Value::HashSet(value))
+            .unwrap();
         let read = data_storage.read();
 
-        let b = if let Value::HashSet(a) = &(*read.get(&key).unwrap()).1 {
+        let b = if let Value::HashSet(a) = read.get(&key).unwrap().value() {
             a
         } else {
             panic!("Not string value")
@@ -389,7 +440,7 @@ mod tests {
 
         let a: HashSet<String> = vec!["a".to_string(), "b".to_string()].into_iter().collect();
 
-        assert_eq!(a, *b);
+        assert_eq!(a, b);
     }
 
     #[test]
@@ -397,7 +448,9 @@ mod tests {
         let data_storage = DataStorage::new();
         let key = String::from("key");
 
-        data_storage.add_key_value(&key, Value::String("value1".to_string()));
+        data_storage
+            .add_key_value(&key, Value::String("value1".to_string()))
+            .unwrap();
 
         data_storage
             .update(&key, Value::String("value2".to_string()))

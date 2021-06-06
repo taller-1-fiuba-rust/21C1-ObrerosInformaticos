@@ -31,7 +31,7 @@ impl Logger {
         return Some("No se pudo crear el archivo de logs.".to_string());
     }
 
-    pub fn  log(&self, msg: &str) -> bool {
+    pub fn log(&self, msg: &str) -> bool {
         if let None = self.file_handle {
             return false;
         }

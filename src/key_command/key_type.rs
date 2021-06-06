@@ -18,14 +18,11 @@ pub fn run(
 
     let value_option = data.get(&key);
 
-    if let Some(value) = value_option {
-        match value {
-            Value::String(_) => builder.add(ProtocolType::SimpleString("string".to_string())),
-            Value::Vec(_) => builder.add(ProtocolType::SimpleString("vec".to_string())),
-            Value::HashSet(_) => builder.add(ProtocolType::SimpleString("set".to_string())),
-        }
-    } else {
-        return Err("none");
+    match value_option {
+        Some(Value::String(_)) => builder.add(ProtocolType::SimpleString("string".to_string())),
+        Some(Value::Vec(_)) => builder.add(ProtocolType::SimpleString("vec".to_string())),
+        Some(Value::HashSet(_)) => builder.add(ProtocolType::SimpleString("set".to_string())),
+        None => builder.add(ProtocolType::SimpleString("none".to_string())),
     }
     Ok(())
 }
@@ -41,7 +38,8 @@ mod tests {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
-        data.add_key_value("src", Value::String("value".to_string()));
+        data.add_key_value("src", Value::String("value".to_string()))
+            .unwrap();
 
         run(
             vec![ProtocolType::String("src".to_string())],
@@ -58,7 +56,8 @@ mod tests {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
-        data.add_key_value("src", Value::String("value".to_string()));
+        data.add_key_value("src", Value::String("value".to_string()))
+            .unwrap();
 
         run(
             vec![ProtocolType::String("src".to_string())],
@@ -75,7 +74,8 @@ mod tests {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
-        data.add_key_value("src", Value::HashSet(HashSet::new()));
+        data.add_key_value("src", Value::HashSet(HashSet::new()))
+            .unwrap();
 
         run(
             vec![ProtocolType::String("src".to_string())],
@@ -91,18 +91,12 @@ mod tests {
     fn test_no_key() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        let run_result = run(
+        run(
             vec![ProtocolType::String("src".to_string())],
             &mut builder,
             &data.clone(),
-        );
-        match run_result {
-            Ok(_) => {
-                assert_eq!(true, false)
-            }
-            Err(msj) => {
-                assert_eq!(msj, "none")
-            }
-        }
+        )
+        .unwrap();
+        assert_eq!(builder.serialize(), "*1\r\n+none\r\n");
     }
 }

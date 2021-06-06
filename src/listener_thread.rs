@@ -27,7 +27,7 @@ impl ListenerThread {
             pool,
             addr,
             execution,
-            verbosity
+            verbosity,
             pubsub: Arc::new(Mutex::new(PublisherSubscriber::new())),
         }
     }
