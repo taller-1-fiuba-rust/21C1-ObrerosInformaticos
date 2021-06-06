@@ -229,6 +229,24 @@ impl DataStorage {
         }
         result
     }
+
+    pub fn modify_last_key_access(
+        &self,
+        key: &str,
+        last_access_since_unix_epoch: Duration,
+    ) -> Result<(), &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let copy_key = key.to_string();
+
+        if lock.contains_key(&copy_key) {
+            lock.get_mut(&copy_key)
+                .unwrap()
+                .set_last_access(last_access_since_unix_epoch);
+            return Ok(());
+        }
+
+        Err("last access not modify")
+    }
 }
 
 #[cfg(test)]
