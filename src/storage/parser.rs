@@ -1,4 +1,5 @@
 use crate::storage::data_storage::Value;
+use crate::storage::entry::Entry;
 use crate::storage::file_reader;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -6,99 +7,111 @@ use std::time::Duration;
 
 static LIST: &str = "|LISTA|";
 static SET: &str = "|SET|";
+static STRING: &str = "|STRING|";
 
-///Dado un archivo y una estructura de datos obtiene la informacion del archivo
-///y la almacena en la estructura, respetando los tipos de datos contenidos.
-pub fn parse_data(file: &str, data: &mut HashMap<String, (Option<Duration>, Value)>) {
+/// Given a file and a data structure get the information from the file
+/// and stores it in the structure, respecting the contained data types.
+pub fn parse_data(file: &str, data: &mut HashMap<String, Entry>) {
     let lines = file_reader::read_lines(file);
 
     for line in lines {
         let vec: Vec<&str> = line.split(|c| c == ';').collect();
 
         if vec[1].contains(LIST) {
-            let (key, key_expiration, vector) = get_vector_data(vec);
-            data.insert(key, (key_expiration, Value::Vec(vector)));
+            let (key, entry) = get_vector_data(vec);
+            data.insert(key, entry);
         } else if vec[1].contains(SET) {
-            let (key, key_expiration, set) = get_set_data(vec);
-            data.insert(key, (key_expiration, Value::HashSet(set)));
+            let (key, entry) = get_set_data(vec);
+            data.insert(key, entry);
         } else {
-            let (key, key_expiration, string) = get_string_data(vec);
-            data.insert(key, (key_expiration, Value::String(string)));
+            let (key, entry) = get_string_data(vec);
+            data.insert(key, entry);
         };
     }
 }
 
-///Dado un archivo y una estructura de datos toma la informacion de la estructura
-///y la almacena en el archivo, respetando la estructura de almacenamiento predefinida.
-pub fn store_data(file: &str, data: &HashMap<String, (Option<Duration>, Value)>) {
-    for (key, value) in &*data {
-        match &value.1 {
-            Value::String(s) => save_string_data(file, key, (value.0, s)),
-            Value::Vec(i) => save_vector_data(file, key, (value.0, i)),
-            Value::HashSet(j) => save_set_data(file, key, (value.0, j)),
+/// Given a file and a data structure take the information of the structure
+/// and stores it in the file, respecting the predefined storage structure.
+pub fn store_data(file: &str, data: &HashMap<String, Entry>) {
+    for (key, entry) in &*data {
+        match entry.value() {
+            Value::String(s) => save_string_data(file, key, entry, s),
+            Value::Vec(i) => save_vector_data(file, key, entry, &i),
+            Value::HashSet(j) => save_set_data(file, key, entry, &j),
         };
     }
 }
 
-///Almacena informacion en forma de string en el archivo 'file'.
-fn save_string_data(file: &str, key: &str, value: (Option<Duration>, &str)) {
+/// Stores information as a string in the file 'file'.
+fn save_string_data(file: &str, key: &str, entry: &Entry, value: String) {
     let save_data: String;
+    let last_access_secs = entry.last_access().as_secs();
 
-    if value.0 != None {
-        save_data = format!("{};{};{}", key, value.0.unwrap().as_secs(), value.1);
-    } else {
-        save_data = format!("{};{};{}", key, 0, value.1);
-    }
-
-    file_reader::data_to_file(file, save_data);
-}
-
-///Almacena informacion en forma de vector en el archivo 'file'.
-fn save_vector_data(file: &str, key: &str, value: (Option<Duration>, &[String])) {
-    let values_joined = (value.1).join(",");
-    let save_data: String;
-
-    if value.0 != None {
+    if entry.key_expiration() != None {
+        let key_expiration_secs = entry.key_expiration().unwrap().as_secs();
         save_data = format!(
-            "{};{};{};{}",
-            key,
-            LIST,
-            value.0.unwrap().as_secs(),
-            values_joined
+            "{};{};{};{};{}",
+            key, STRING, last_access_secs, key_expiration_secs, value
         );
     } else {
-        save_data = format!("{};{};{};{}", key, LIST, 0, values_joined);
+        save_data = format!("{};{};{};{};{}", key, STRING, last_access_secs, 0, value);
     }
 
     file_reader::data_to_file(file, save_data);
 }
 
-///Almacena informacion en forma de set en el archivo 'file'.
-fn save_set_data(file: &str, key: &str, value: (Option<Duration>, &HashSet<String>)) {
-    let set = value.1.clone();
+/// Stores information in vector form in the file 'file'.
+fn save_vector_data(file: &str, key: &str, entry: &Entry, value: &[String]) {
+    let values_joined = value.join(",");
+    let last_access_secs = entry.last_access().as_secs();
+    let save_data: String;
+
+    if entry.key_expiration() != None {
+        let key_expiration_secs = entry.key_expiration().unwrap().as_secs();
+        save_data = format!(
+            "{};{};{};{};{}",
+            key, LIST, last_access_secs, key_expiration_secs, values_joined
+        );
+    } else {
+        save_data = format!(
+            "{};{};{};{};{}",
+            key, LIST, last_access_secs, 0, values_joined
+        );
+    }
+
+    file_reader::data_to_file(file, save_data);
+}
+
+/// Stores information as a set in the file 'file'.
+fn save_set_data(file: &str, key: &str, entry: &Entry, value: &HashSet<String>) {
+    let set = value.clone();
     let values_joined = set.into_iter().collect::<Vec<String>>().join(",");
+    let last_access_secs = entry.last_access().as_secs();
     let save_data: String;
 
-    if value.0 != None {
+    if entry.key_expiration() != None {
+        let key_expiration_secs = entry.key_expiration().unwrap().as_secs();
         save_data = format!(
-            "{};{};{};{}",
-            key,
-            SET,
-            value.0.unwrap().as_secs(),
-            values_joined
+            "{};{};{};{};{}",
+            key, SET, last_access_secs, key_expiration_secs, values_joined
         );
     } else {
-        save_data = format!("{};{};{};{}", key, SET, 0, values_joined);
+        save_data = format!(
+            "{};{};{};{};{}",
+            key, SET, last_access_secs, 0, values_joined
+        );
     }
 
     file_reader::data_to_file(file, save_data);
 }
 
-///Obtiene la informacion en forma de string del archivo 'file'.
-fn get_string_data(vec: Vec<&str>) -> (String, Option<Duration>, String) {
+/// Get the information in the form of a string from the file 'file'.
+fn get_string_data(vec: Vec<&str>) -> (String, Entry) {
     let key = vec[0].to_string();
 
-    let key_expiration_number = vec[1].parse::<u64>().unwrap();
+    let last_access_number = vec[2].parse::<u64>().unwrap();
+    let last_access = Duration::from_secs(last_access_number);
+    let key_expiration_number = vec[3].parse::<u64>().unwrap();
     let key_expiration: Option<Duration>;
     if key_expiration_number != 0 {
         key_expiration = Some(Duration::from_secs(key_expiration_number));
@@ -106,16 +119,23 @@ fn get_string_data(vec: Vec<&str>) -> (String, Option<Duration>, String) {
         key_expiration = None;
     }
 
-    let value = vec[2].to_string();
+    let value = vec[4].to_string();
 
-    (key, key_expiration, value)
+    (
+        key,
+        Entry::new(last_access, key_expiration, Value::String(value)),
+    )
 }
 
-///Obtiene la informacion en forma de vector del archivo 'file'.
-fn get_vector_data(mut vec: Vec<&str>) -> (String, Option<Duration>, Vec<String>) {
+/// Get the information in vector form of the file 'file'.
+fn get_vector_data(mut vec: Vec<&str>) -> (String, Entry) {
     let mut data: Vec<String> = vec![];
     let key = vec[0].to_string();
     vec.remove(0);
+    vec.remove(0);
+
+    let last_access_number = vec[0].parse::<u64>().unwrap();
+    let last_access = Duration::from_secs(last_access_number);
     vec.remove(0);
 
     let key_expiration_number = vec[0].parse::<u64>().unwrap();
@@ -134,14 +154,21 @@ fn get_vector_data(mut vec: Vec<&str>) -> (String, Option<Duration>, Vec<String>
         data.push(element.to_string());
     }
 
-    (key, key_expiration, data)
+    (
+        key,
+        Entry::new(last_access, key_expiration, Value::Vec(data)),
+    )
 }
 
-///Obtiene la informacion en forma de set del archivo 'file'.
-fn get_set_data(mut vec: Vec<&str>) -> (String, Option<Duration>, HashSet<String>) {
+/// Get the information in the form of a set from the file 'file'.
+fn get_set_data(mut vec: Vec<&str>) -> (String, Entry) {
     let mut data: HashSet<String> = HashSet::new();
     let key = vec[0].to_string();
     vec.remove(0);
+    vec.remove(0);
+
+    let last_access_number = vec[0].parse::<u64>().unwrap();
+    let last_access = Duration::from_secs(last_access_number);
     vec.remove(0);
 
     let key_expiration_number = vec[0].parse::<u64>().unwrap();
@@ -160,5 +187,8 @@ fn get_set_data(mut vec: Vec<&str>) -> (String, Option<Duration>, HashSet<String
         data.insert(element.to_string());
     }
 
-    (key, key_expiration, data)
+    (
+        key,
+        Entry::new(last_access, key_expiration, Value::HashSet(data)),
+    )
 }

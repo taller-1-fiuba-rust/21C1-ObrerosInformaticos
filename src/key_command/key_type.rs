@@ -38,7 +38,8 @@ mod tests {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
-        data.add_key_value("src", Value::String("value".to_string()));
+        data.add_key_value("src", Value::String("value".to_string()))
+            .unwrap();
 
         run(
             vec![ProtocolType::String("src".to_string())],
@@ -55,7 +56,8 @@ mod tests {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
-        data.add_key_value("src", Value::String("value".to_string()));
+        data.add_key_value("src", Value::String("value".to_string()))
+            .unwrap();
 
         run(
             vec![ProtocolType::String("src".to_string())],
@@ -72,7 +74,8 @@ mod tests {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
-        data.add_key_value("src", Value::HashSet(HashSet::new()));
+        data.add_key_value("src", Value::HashSet(HashSet::new()))
+            .unwrap();
 
         run(
             vec![ProtocolType::String("src".to_string())],

@@ -1,13 +1,13 @@
-use crate::storage::data_storage::Value;
+use crate::storage::entry::Entry;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::RwLock;
-use std::time::Duration;
 
 //MODULOS
 pub mod data_storage;
+pub mod entry;
 mod file_reader;
 pub mod parser;
 
 //TIPOS
-type SafeDataStorage = Arc<RwLock<HashMap<String, (Option<Duration>, Value)>>>;
+type SafeDataStorage = Arc<RwLock<HashMap<String, Entry>>>;
