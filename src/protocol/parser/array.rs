@@ -38,7 +38,7 @@ impl ProtocolParser for ArrayParser {
                     Ok(val) => {
                         self.count = val;
                         self.parsed_header = true;
-                        Ok(false)
+                        Ok(self.count == 0)
                     }
                     Err(_) => Err(format!("Invalid array length '{}' received.", slice)),
                 };
@@ -87,6 +87,13 @@ mod tests {
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].integer().unwrap(), 3);
         assert_eq!(result[1].integer().unwrap(), 42);
+    }
+
+    #[test]
+    fn test_parse_empty_array() {
+        let lines = vec!["*0\r\n"];
+        let result = parse_array(lines);
+        assert_eq!(result.len(), 0);
     }
 
     #[test]
