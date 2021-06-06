@@ -160,9 +160,9 @@ impl DataStorage {
                 self.delete_key(key).unwrap();
                 return Ok(None);
             }
-            return Ok(Some(entry_cpy));
+            Ok(Some(entry_cpy))
         } else {
-            return Err("No value for that key");
+            Err("No value for that key")
         }
     }
 
@@ -280,8 +280,8 @@ fn now() -> Result<Duration, &'static str> {
     let _now = SystemTime::now().duration_since(UNIX_EPOCH);
 
     match _now {
-        Ok(now) => return Ok(now),
-        Err(_) => return Err("Cannot get actual timestamp"),
+        Ok(now) => Ok(now),
+        Err(_) => Err("Cannot get actual timestamp"),
     }
 }
 

@@ -12,7 +12,7 @@ pub fn run(
     let mut keys_touched = 0;
     let now_res = SystemTime::now().duration_since(UNIX_EPOCH);
 
-    if let Err(_) = now_res {
+    if now_res.is_err() {
         return Err("An error ocurred while getting the actual timestamp.");
     }
 
@@ -20,7 +20,7 @@ pub fn run(
 
     for key in arguments.iter() {
         let str_key = key.clone().string()?;
-        if let Ok(_) = data.modify_last_key_access(&str_key, now) {
+        if data.modify_last_key_access(&str_key, now).is_ok() {
             keys_touched += 1;
         }
     }
