@@ -16,6 +16,7 @@ pub enum Value {
     Vec(Vec<String>),
     HashSet(HashSet<String>),
 }
+
 #[allow(dead_code)]
 impl Value {
     pub fn string(&self) -> Result<String, &'static str> {
