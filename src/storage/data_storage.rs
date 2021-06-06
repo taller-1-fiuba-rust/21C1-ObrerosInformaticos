@@ -166,7 +166,7 @@ impl DataStorage {
 
     pub fn update(&self, key: &str, new_value: Value) -> Result<(), &'static str> {
         self.delete_key(key)?;
-        self.add_key_value(key, new_value).unwrap();
+        self.add_key_value(key, new_value)?;
         Ok(())
     }
 
@@ -178,7 +178,7 @@ impl DataStorage {
             let moved_duration = result.key_expiration();
             let moved_val = result.value();
             drop(lock);
-            self.add_key_value(dst, moved_val).unwrap();
+            self.add_key_value(dst, moved_val)?;
             self.set_expiration_to_key(moved_duration, dst)?;
             self.delete_key(src)?;
             Ok(())
@@ -194,7 +194,7 @@ impl DataStorage {
         value: Value,
         expiration_time_since_unix_epoch: Duration,
     ) -> Result<(), &'static str> {
-        self.add_key_value(key, value).unwrap();
+        self.add_key_value(key, value)?;
         self.set_expiration_to_key(Some(expiration_time_since_unix_epoch), key)?;
         Ok(())
     }

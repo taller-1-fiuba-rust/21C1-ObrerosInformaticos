@@ -28,8 +28,7 @@ pub fn run(
                     }
                     let values = basic_sort(key.clone(), data)?;
                     let new_key = arguments[i + 1].clone().string()?;
-                    data.add_key_value(&new_key, Value::Vec(values.clone()))
-                        .unwrap();
+                    data.add_key_value(&new_key, Value::Vec(values.clone()))?;
                     sort_values = Some(values);
                 }
                 _ => (),
