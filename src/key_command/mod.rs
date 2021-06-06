@@ -4,6 +4,7 @@ pub mod exists;
 pub mod expire;
 pub mod expireat;
 pub mod key_type;
+pub mod keys;
 pub mod persist;
 pub mod rename;
 pub mod sort;

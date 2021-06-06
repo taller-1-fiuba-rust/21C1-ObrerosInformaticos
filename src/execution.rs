@@ -1,7 +1,5 @@
 use crate::config::configuration::Configuration;
-use crate::key_command::{
-    copy, del, exists, expire, expireat, key_type, persist, rename, sort, ttl,
-};
+use crate::key_command::{copy, del, exists, expire, key_type, keys, persist, rename, sort, ttl, expireat};
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
@@ -41,6 +39,7 @@ impl Execution {
             "expire" => expire::run(builder, cmd, &self.data),
             "expireat" => expireat::run(builder, cmd.arguments(), &self.data),
             "copy" => copy::run(self.data.clone(), cmd.arguments(), builder),
+            "keys" => keys::run(self.data.clone(), cmd.arguments(), builder),
             "rename" => rename::run(self.data.clone(), cmd.arguments(), builder),
             "persist" => persist::run(self.data.clone(), cmd.arguments(), builder),
             "config" => config::run(cmd.arguments(), builder, self.config.clone()),
