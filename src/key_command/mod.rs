@@ -8,4 +8,5 @@ pub mod keys;
 pub mod persist;
 pub mod rename;
 pub mod sort;
+pub mod touch;
 pub mod ttl;

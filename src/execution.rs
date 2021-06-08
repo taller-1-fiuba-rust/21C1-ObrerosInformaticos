@@ -1,6 +1,6 @@
 use crate::config::configuration::Configuration;
 use crate::key_command::{
-    copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, ttl,
+    copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
 use crate::Logger;
 use crate::protocol::command::Command;
@@ -54,6 +54,7 @@ impl Execution {
             "sort" => sort::run(builder, cmd.arguments(), &self.data),
             "exists" => exists::run(builder, cmd.arguments(), &self.data),
             "ttl" => ttl::run(builder, cmd.arguments(), &self.data),
+            "touch" => touch::run(builder, cmd.arguments(), &self.data),
             _ => Err("Unknown command."),
         }
     }
