@@ -2,6 +2,7 @@ use crate::execution::Execution;
 use crate::protocol::command::Command;
 use crate::protocol::request::Request;
 use crate::protocol::response::ResponseBuilder;
+use crate::logging::logger::Logger;
 use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 use crate::threadpool::ThreadPool;
@@ -17,17 +18,19 @@ pub struct ListenerThread {
     addr: String,
     execution: Arc<Execution>,
     verbosity: u8,
+    logger: Arc<Mutex<Logger>>,
     pubsub: Arc<Mutex<PublisherSubscriber>>,
 }
 
 impl ListenerThread {
-    pub fn new(addr: String, execution: Arc<Execution>, verbosity: u8) -> Self {
+    pub fn new(addr: String, execution: Arc<Execution>, verbosity: u8, logger: Arc<Mutex<Logger>>) -> Self {
         let pool = ThreadPool::new(32);
         ListenerThread {
             pool,
             addr,
             execution,
             verbosity,
+            logger,
             pubsub: Arc::new(Mutex::new(PublisherSubscriber::new())),
         }
     }
@@ -36,9 +39,6 @@ impl ListenerThread {
     pub fn run(&self, _ttl: u32) {
         let listener = TcpListener::bind(&self.addr).unwrap();
         println!("REDIS server started on address '{}'...", self.addr);
-        // if ttl > 0 {
-        //     listener.set_ttl(ttl).unwrap();
-        // }
 
         for stream in listener.incoming() {
             let stream = stream.unwrap();
