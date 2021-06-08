@@ -1,48 +1,51 @@
-use std::fs::remove_file;
+    use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc;
+use std::thread;
 use std::fs::File;
 use std::io::prelude::*;
 
 pub struct Logger {
-    file_handle: Option<File>,
-    file_dir: Option<String>,
+    sender: Sender<String>,
 }
 
 impl Logger {
-    pub fn new() -> Logger {
-        Logger {
-            file_handle: None,
-            file_dir: None,
-        }
-    }
+    pub fn new(file_dir: &str) -> Result<Self, &'static str> {
 
-    pub fn set_logfile(&mut self, file_dir: &str) -> Option<String> {
-        if let Some(dir) = self.file_dir.clone() {
-            if let Err(_) = remove_file(dir) {
-                return Some("No se pudo borrar el archivo de logs por default.".to_string());
+        let file = create_logfile(file_dir)?;
+        let (sender, receiver): (Sender<String>, Receiver<String>) = mpsc::channel();
+        let child = thread::spawn(move || loop { 
+            for message in receiver.recv() {
+                println!("{}", message);
+                write(&message, &file);
             }
-        }
-
-        if let Ok(file) = File::create(file_dir) {
-            self.file_handle = Some(file);
-            self.file_dir = Some(file_dir.to_string());
-            self.log("Log file creado.");
-            return None;
-        }
-        return Some("No se pudo crear el archivo de logs.".to_string());
+        });
+        
+        Ok(Logger {
+            sender
+        })
     }
 
-    pub fn log(&self, msg: &str) -> bool {
-        if let None = self.file_handle {
-            return false;
-        }
-        if let Err(_) = self
-            .file_handle
-            .as_ref()
-            .unwrap()
-            .write(format!("{}{}", msg, '\n').as_bytes())
-        {
-            return false;
-        }
-        true
+    pub fn log(&self, msg: &str) -> Result<(), &'static str> {
+        if self.sender.send(msg.to_string()).is_err() {
+            return Err("No se pudo loggear el mensaje.")
+        };
+        Ok(())
     }
+}
+
+
+pub fn create_logfile(file_dir: &str) -> Result<File, &'static str>{
+    if let Ok(file) = File::create(file_dir) {
+        return Ok(file);
+    }
+    return Err("No se pudo crear el archivo de logs.");
+}
+
+pub fn write(msg: &str, mut file: &File) -> Result<(), &'static str> {
+    if let Err(_) = file
+        .write(format!("{}{}", msg, '\n').as_bytes())
+    {
+        return Err("No se pudo escribir en el archivo");
+    }
+    Ok(())
 }

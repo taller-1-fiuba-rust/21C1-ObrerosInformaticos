@@ -1,10 +1,8 @@
-use crate::logging::logger::Logger;
 use std::collections::HashMap;
 use std::fs;
-use std::sync::{Arc, Mutex};
 
 const DEFAULT_VERBOSE: u8 = 0;
-const DEFAULT_PORT: u16 = 6379;
+const DEFAULT_PORT: u16 = 6380;
 const DEFAULT_TIMEOUT: u32 = 0;
 const DEFAULT_DBFILENAME: &str = "dump.rdb";
 const DEFAULT_LOGFILE: &str = "logfile.txt";
@@ -19,7 +17,6 @@ const DEFAULT_IP: &str = "127.0.0.1";
 
 #[allow(dead_code)]
 pub struct Configuration {
-    logger: Arc<Mutex<Logger>>,
     verbose: u8,
     port: u16,
     timeout: u32,
@@ -30,15 +27,9 @@ pub struct Configuration {
 
 #[allow(dead_code)]
 impl Configuration {
-    pub fn new(logger: Arc<Mutex<Logger>>) -> Self {
-        //Returns the default configuration and sets the default logfile for the logger.
-        logger.lock().unwrap().set_logfile(DEFAULT_LOGFILE);
-        // logger.lock().unwrap().log(&format!(
-        //     "Configuración del archivo de logs cargada por default: {}",
-        //     DEFAULT_LOGFILE
-        // ));
+    pub fn new() -> Self {
+        //Returns the default configuration 
         Configuration {
-            logger,
             verbose: DEFAULT_VERBOSE,
             port: DEFAULT_PORT,
             timeout: DEFAULT_TIMEOUT,
@@ -107,9 +98,6 @@ impl Configuration {
 
         if let Some(logfile_) = map.get("logfile") {
             self.logfile = logfile_.to_string();
-            if let Some(msg) = self.logger.lock().unwrap().set_logfile(&self.logfile) {
-                panic!("{}", msg)
-            }
             if self.verbose == 1 {
                 println!(
                     "Configuración del archivo de logs cargada : {}",

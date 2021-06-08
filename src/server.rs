@@ -40,8 +40,7 @@ impl Server {
             self.sys_time.clone(),
             self.logger.clone(),
         ));
-        let verbosity = self.config.get_verbose();
-        let ttl = self.config.lock().unwrap().get_timeout();
+        let verbosity = self.config.lock().unwrap().get_verbose();
         let handle = thread::spawn(move || {
             let listener = ListenerThread::new(addr_and_port, execution, verbosity);
             listener.run(ttl);

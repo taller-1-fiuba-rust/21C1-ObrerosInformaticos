@@ -16,9 +16,9 @@ mod threadpool;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let logger = Logger::new();
+    let mut configuration = Configuration::new();
+    let logger = Logger::new(configuration.get_logfile()).unwrap();
     let logger_ref = Arc::new(Mutex::new(logger));
-    let mut configuration = Configuration::new(logger_ref.clone());
 
     if args.len() > 1 {
         if let Err(msj) = configuration.set_config(&args[1]) {

@@ -1,4 +1,0 @@
-Log file creado.
-Configuración del archivo de logs cargada : texto.txt
-Configuración del puerto cargada : 8080
-Configuración del timeout cargada : 100
