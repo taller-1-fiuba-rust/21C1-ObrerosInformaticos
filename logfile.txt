@@ -1,0 +1,13 @@
+REDIS server started on address '127.0.0.1:6380'...
+Received command 'COMMAND '
+*1
+-Unknown command.
+
+Received command 'type 3'
+*1
++none
+
+Received command 'sort 234'
+*1
+-None
+

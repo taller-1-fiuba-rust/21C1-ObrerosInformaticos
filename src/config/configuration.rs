@@ -28,7 +28,7 @@ pub struct Configuration {
 #[allow(dead_code)]
 impl Configuration {
     pub fn new() -> Self {
-        //Returns the default configuration 
+        //Returns the default configuration
         Configuration {
             verbose: DEFAULT_VERBOSE,
             port: DEFAULT_PORT,

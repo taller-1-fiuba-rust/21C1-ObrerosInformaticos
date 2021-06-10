@@ -40,9 +40,14 @@ impl Server {
             self.sys_time.clone(),
             self.logger.clone(),
         ));
-        let verbosity = self.config.lock().unwrap().get_verbose();
+        let config = self.config.lock().unwrap();
+        let verbosity = config.get_verbose();
+        let ttl = config.get_timeout();
+
+        let logger_cpy = self.logger.clone();
+
         let handle = thread::spawn(move || {
-            let listener = ListenerThread::new(addr_and_port, execution, verbosity);
+            let listener = ListenerThread::new(addr_and_port, execution, verbosity, logger_cpy);
             listener.run(ttl);
         });
         self.handle = Some(handle);
