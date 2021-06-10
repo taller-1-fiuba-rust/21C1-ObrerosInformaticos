@@ -10,6 +10,7 @@ pub fn run(
     builder: &mut ResponseBuilder,
 ) -> Result<(), &'static str> {
     assert!(arguments.len() > 1);
+
     let name = arguments[0].clone().string()?;
     let value = Value::String(arguments[1].clone().string()?);
     let mut xx = false;
@@ -49,9 +50,11 @@ pub fn run(
             if get {
                 builder.add(ProtocolType::String(v.string()?));
             }
-        } else {
-            builder.add(ProtocolType::SimpleString("OK".to_string()));
         }
+    }
+
+    if builder.is_empty() {
+        builder.add(ProtocolType::SimpleString("OK".to_string()));
     }
 
     Ok(())
@@ -77,17 +80,94 @@ mod tests {
         )
             .unwrap();
 
+        assert!(data.get_with_expiration("key1").unwrap().0.is_none());
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
         assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
     }
 
     #[test]
-    fn test_empty_set() {
+    fn test_set_xx() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
+        data.set("key1", Value::String("previous".to_string())).unwrap();
 
-        run(data.clone(), vec![], &mut builder).unwrap();
+        run(
+            data.clone(),
+            vec![
+                ProtocolType::String("key1".to_string()),
+                ProtocolType::String("Hello World".to_string()),
+                ProtocolType::String("XX".to_string()),
+            ],
+            &mut builder,
+        )
+            .unwrap();
 
+        assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
+        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
+    }
+
+    #[test]
+    fn test_set_nx() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+        data.set("key1", Value::String("previous".to_string())).unwrap();
+
+        run(
+            data.clone(),
+            vec![
+                ProtocolType::String("key1".to_string()),
+                ProtocolType::String("Hello World".to_string()),
+                ProtocolType::String("NX".to_string()),
+            ],
+            &mut builder,
+        )
+            .unwrap();
+
+        assert_eq!(data.get("key1").unwrap().string().unwrap(), "previous");
+        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
+    }
+
+    #[test]
+    fn test_set_get() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+        data.set("key1", Value::String("PREV".to_string())).unwrap();
+
+        run(
+            data.clone(),
+            vec![
+                ProtocolType::String("key1".to_string()),
+                ProtocolType::String("Hello World".to_string()),
+                ProtocolType::String("GET".to_string()),
+            ],
+            &mut builder,
+        )
+            .unwrap();
+
+        assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
+        assert_eq!(builder.serialize(), "*1\r\n$4\r\nPREV\r\n");
+    }
+
+    #[test]
+    fn test_set_ex() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+        data.set("key1", Value::String("PREV".to_string())).unwrap();
+
+        run(
+            data.clone(),
+            vec![
+                ProtocolType::String("key1".to_string()),
+                ProtocolType::String("Hello World".to_string()),
+                ProtocolType::String("EX".to_string()),
+                ProtocolType::String("60".to_string()),
+            ],
+            &mut builder,
+        )
+            .unwrap();
+
+        assert!(data.get_with_expiration("key1").unwrap().0.is_some());
+        assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
         assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
     }
 }
