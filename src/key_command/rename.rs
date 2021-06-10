@@ -28,7 +28,7 @@ mod tests {
     fn test_rename() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.add_key_value("key", Value::String("value".to_string()))
+        data.set("key", Value::String("value".to_string()))
             .unwrap();
 
         run(

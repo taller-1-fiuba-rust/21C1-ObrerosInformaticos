@@ -83,7 +83,7 @@ mod tests {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
-        data.add_key_value("asd", Value::String("value".to_string()))
+        data.set("asd", Value::String("value".to_string()))
             .unwrap();
 
         run(

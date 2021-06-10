@@ -16,7 +16,7 @@ pub fn run(
     let option = db.get(&src);
     let mut result = 0;
     if let Some(value) = option {
-        db.add_key_value(&dst, value)?;
+        db.set(&dst, value)?;
         result = 1;
     }
 
@@ -34,7 +34,7 @@ mod tests {
     fn test_copy() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.add_key_value("key", Value::String("value".to_string()))
+        data.set("key", Value::String("value".to_string()))
             .unwrap();
 
         run(
