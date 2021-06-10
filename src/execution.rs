@@ -51,6 +51,7 @@ impl Execution {
             "exists" => exists::run(builder, cmd.arguments(), &self.data),
             "ttl" => ttl::run(builder, cmd.arguments(), &self.data),
             "touch" => touch::run(builder, cmd.arguments(), &self.data),
+            "mset" => mset::run(self.data.clone(), cmd.arguments(), builder),
             _ => Err("Unknown command."),
         }
     }
