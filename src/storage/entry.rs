@@ -37,6 +37,10 @@ impl Entry {
         self.value.clone()
     }
 
+    pub fn update_value(&mut self, new_value: Value) {
+        self.value = new_value;
+    }
+    
     ///Modify the last access to the key
     pub fn set_last_access(&mut self, new_access: Duration) {
         self.last_access = new_access;

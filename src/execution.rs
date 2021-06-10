@@ -8,6 +8,7 @@ use crate::pubsub::PublisherSubscriber;
 use crate::server_command::{config, info, ping, pubsub};
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{mset, set, strlen};
+use crate::string_command::decrby;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
@@ -55,6 +56,7 @@ impl Execution {
             "mset" => mset::run(self.data.clone(), cmd.arguments(), builder),
             "set" => set::run(self.data.clone(), cmd.arguments(), builder),
             "strlen" => strlen::run(self.data.clone(), cmd.arguments(), builder),
+            "decrby" => decrby::run(self.data.clone(), cmd.arguments(), builder),
             _ => Err("Unknown command."),
         }
     }
