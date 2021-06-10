@@ -7,6 +7,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
 use crate::server_command::{config, info, ping, pubsub};
 use crate::storage::data_storage::DataStorage;
+use crate::string_command::mset;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
@@ -51,6 +52,7 @@ impl Execution {
             "exists" => exists::run(builder, cmd.arguments(), &self.data),
             "ttl" => ttl::run(builder, cmd.arguments(), &self.data),
             "touch" => touch::run(builder, cmd.arguments(), &self.data),
+            "mset" => mset::run(self.data.clone(), cmd.arguments(), builder),
             _ => Err("Unknown command."),
         }
     }

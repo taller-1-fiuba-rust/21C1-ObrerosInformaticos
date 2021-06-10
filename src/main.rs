@@ -9,6 +9,7 @@ mod pubsub;
 mod server;
 mod server_command;
 mod storage;
+mod string_command;
 mod threadpool;
 
 fn main() {

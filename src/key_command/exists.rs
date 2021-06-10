@@ -46,7 +46,7 @@ mod tests {
     fn exists_one_key() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.add_key_value("Test", Value::String("value".to_string()))
+        data.set("Test", Value::String("value".to_string()))
             .unwrap();
 
         run(
@@ -63,14 +63,10 @@ mod tests {
     fn exists_keys() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.add_key_value("1", Value::String("value".to_string()))
-            .unwrap();
-        data.add_key_value("2", Value::String("value".to_string()))
-            .unwrap();
-        data.add_key_value("3", Value::String("value".to_string()))
-            .unwrap();
-        data.add_key_value("4", Value::String("value".to_string()))
-            .unwrap();
+        data.set("1", Value::String("value".to_string())).unwrap();
+        data.set("2", Value::String("value".to_string())).unwrap();
+        data.set("3", Value::String("value".to_string())).unwrap();
+        data.set("4", Value::String("value".to_string())).unwrap();
 
         run(
             &mut builder,

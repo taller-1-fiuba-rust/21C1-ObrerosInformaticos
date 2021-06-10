@@ -47,8 +47,7 @@ mod tests {
             "ate",
             "abe",
         ] {
-            data.add_key_value(x, Value::String("value".to_string()))
-                .unwrap();
+            data.set(x, Value::String("value".to_string())).unwrap();
         }
         return (data, ResponseBuilder::new());
     }
