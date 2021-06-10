@@ -101,7 +101,15 @@ impl DataStorage {
             Value::Vec(i) => lock.insert(copy_key, Entry::new(now()?, None, Value::Vec(i))),
             Value::HashSet(j) => lock.insert(copy_key, Entry::new(now()?, None, Value::HashSet(j))),
         };
+        Ok(())
+    }
 
+    /// Set multiple keys at once
+    pub fn set_multiple(&self, keys: Vec<String>, values: Vec<Value>) -> Result<(), &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        for (key, value) in keys.iter().zip(values) {
+            self.do_set(&mut lock, key, value)?;
+        }
         Ok(())
     }
 
