@@ -137,9 +137,8 @@ impl DataStorage {
                 Value::HashSet(_j) => Err("Value must be a string not a set"),
             }
         } else {
-            drop(lock);
             let value_copy = value.clone();
-            match self.set(&key, Value::String(value_copy)) {
+            match self.do_set(&mut lock, &key, Value::String(value_copy)) {
                 Ok(_s) => Ok(value.len()),
                 Err(_i) => Err("String value not created"),
             }
