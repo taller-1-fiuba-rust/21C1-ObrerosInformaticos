@@ -3,9 +3,9 @@ use crate::storage::parser;
 use crate::storage::SafeDataStorage;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::sync::{Arc, RwLockWriteGuard};
 use std::sync::RwLock;
 use std::sync::RwLockReadGuard;
+use std::sync::{Arc, RwLockWriteGuard};
 use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -94,7 +94,12 @@ impl DataStorage {
         Ok(())
     }
 
-    fn do_set(&self, lock: &mut RwLockWriteGuard<HashMap<String, Entry>>, key: &str, value: Value) -> Result<(), &'static str> {
+    fn do_set(
+        &self,
+        lock: &mut RwLockWriteGuard<HashMap<String, Entry>>,
+        key: &str,
+        value: Value,
+    ) -> Result<(), &'static str> {
         let copy_key = key.to_string();
         match value {
             Value::String(s) => lock.insert(copy_key, Entry::new(now()?, None, Value::String(s))),
@@ -313,9 +318,7 @@ mod tests {
         let key = String::from("Daniela");
         let value = String::from("hola");
 
-        data_storage
-            .set(&key, Value::String(value))
-            .unwrap();
+        data_storage.set(&key, Value::String(value)).unwrap();
         data_storage.delete_key(&key).unwrap();
 
         let read = data_storage.read();
@@ -334,9 +337,7 @@ mod tests {
         let value = String::from("hola");
         let duration = Duration::from_secs(5);
 
-        data_storage
-            .set(&key, Value::String(value))
-            .unwrap();
+        data_storage.set(&key, Value::String(value)).unwrap();
 
         let expiration_time = SystemTime::now()
             .checked_add(duration)
@@ -438,9 +439,7 @@ mod tests {
         let key = String::from("Daniela");
         let value = String::from("hola");
 
-        data_storage
-            .set(&key, Value::String(value))
-            .unwrap();
+        data_storage.set(&key, Value::String(value)).unwrap();
         let read = data_storage.read();
 
         let b = if let Value::String(a) = read.get(&key).unwrap().value() {
@@ -476,9 +475,7 @@ mod tests {
         let key = String::from("Daniela");
         let value: HashSet<String> = vec!["a".to_string(), "b".to_string()].into_iter().collect();
 
-        data_storage
-            .set(&key, Value::HashSet(value))
-            .unwrap();
+        data_storage.set(&key, Value::HashSet(value)).unwrap();
         let read = data_storage.read();
 
         let b = if let Value::HashSet(a) = read.get(&key).unwrap().value() {

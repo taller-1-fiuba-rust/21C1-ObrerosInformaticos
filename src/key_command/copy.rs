@@ -34,8 +34,7 @@ mod tests {
     fn test_copy() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("key", Value::String("value".to_string()))
-            .unwrap();
+        data.set("key", Value::String("value".to_string())).unwrap();
 
         run(
             data.clone(),

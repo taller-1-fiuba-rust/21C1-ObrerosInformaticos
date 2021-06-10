@@ -9,8 +9,8 @@ mod pubsub;
 mod server;
 mod server_command;
 mod storage;
-mod threadpool;
 mod string_command;
+mod threadpool;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

@@ -58,14 +58,10 @@ mod tests {
     fn delete_keys() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("1", Value::String("value".to_string()))
-            .unwrap();
-        data.set("2", Value::String("value".to_string()))
-            .unwrap();
-        data.set("3", Value::String("value".to_string()))
-            .unwrap();
-        data.set("4", Value::String("value".to_string()))
-            .unwrap();
+        data.set("1", Value::String("value".to_string())).unwrap();
+        data.set("2", Value::String("value".to_string())).unwrap();
+        data.set("3", Value::String("value".to_string())).unwrap();
+        data.set("4", Value::String("value".to_string())).unwrap();
 
         run(
             &mut builder,

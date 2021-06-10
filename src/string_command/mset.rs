@@ -1,5 +1,5 @@
-use crate::protocol::types::ProtocolType;
 use crate::protocol::response::ResponseBuilder;
+use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::{DataStorage, Value};
 use std::sync::Arc;
 
@@ -45,7 +45,8 @@ mod tests {
                 ProtocolType::String("World".to_string()),
             ],
             &mut builder,
-        ).unwrap();
+        )
+        .unwrap();
 
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello");
         assert_eq!(data.get("key2").unwrap().string().unwrap(), "World");
@@ -57,12 +58,7 @@ mod tests {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
-        run(
-            data.clone(),
-            vec![],
-            &mut builder,
-        )
-            .unwrap();
+        run(data.clone(), vec![], &mut builder).unwrap();
 
         assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
     }

@@ -56,8 +56,7 @@ mod tests {
     fn test_persist_fails() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("src", Value::String("value".to_string()))
-            .unwrap();
+        data.set("src", Value::String("value".to_string())).unwrap();
 
         run(
             data.clone(),
