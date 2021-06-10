@@ -293,31 +293,28 @@ impl DataStorage {
         Err("last access not modify")
     }
 
-    pub fn decrement_value(&self, key: String, numeric_value: i64) -> Result<i64, &'static str>{
+    pub fn decrement_value(&self, key: String, numeric_value: i64) -> Result<i64, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
 
         if lock.contains_key(&key) {
             let entry: &mut Entry = lock.get_mut(&key).unwrap();
             match entry.value() {
-                Value::String(s) => {
-                    match s.parse::<i64>() {
-                        Ok(number) => {
-                            let new_value = number - numeric_value;
-                            entry.update_value(Value::String(new_value.to_string()));
-                            Ok(number - numeric_value)
-                        }
-                        Err(_j) => Err("Cant decrement a value to a not integer value"),
+                Value::String(s) => match s.parse::<i64>() {
+                    Ok(number) => {
+                        let new_value = number - numeric_value;
+                        entry.update_value(Value::String(new_value.to_string()));
+                        Ok(number - numeric_value)
                     }
-                }
+                    Err(_j) => Err("Cant decrement a value to a not integer value"),
+                },
                 Value::Vec(_i) => Err("Cant decrement a value to a vector"),
                 Value::HashSet(_j) => Err("Cant decrement a value to a set"),
-            }   
-        } else{
+            }
+        } else {
             let negative_value = 0 - numeric_value;
             self.do_set(&mut lock, &key, Value::String(negative_value.to_string()))?;
             Ok(0 - numeric_value)
         }
-
     }
 }
 

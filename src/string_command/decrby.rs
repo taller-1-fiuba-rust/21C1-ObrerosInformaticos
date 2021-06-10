@@ -4,21 +4,21 @@ use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
 pub fn run(
-	data: Arc<DataStorage>,
-	arguments: Vec<ProtocolType>,
-    builder: &mut ResponseBuilder
+    data: Arc<DataStorage>,
+    arguments: Vec<ProtocolType>,
+    builder: &mut ResponseBuilder,
 ) -> Result<(), &'static str> {
-	assert_eq!(arguments.len(), 2);
+    assert_eq!(arguments.len(), 2);
 
-	let key = arguments[0].clone().string()?;
-	let number = arguments[1].clone().integer()?;
+    let key = arguments[0].clone().string()?;
+    let number = arguments[1].clone().integer()?;
 
-	match data.decrement_value(key, number){
-		Ok(s) => builder.add(ProtocolType::Integer(s as i64)),
-		Err(j) => builder.add(ProtocolType::Error(j.to_string())),
-	}
+    match data.decrement_value(key, number) {
+        Ok(s) => builder.add(ProtocolType::Integer(s as i64)),
+        Err(j) => builder.add(ProtocolType::Error(j.to_string())),
+    }
 
-	Ok(())
+    Ok(())
 }
 
 #[cfg(test)]
@@ -34,13 +34,14 @@ mod tests {
     fn decrement_existing_key() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("Key", Value::String("10".to_string()))
-            .unwrap();
+        data.set("Key", Value::String("10".to_string())).unwrap();
 
         run(
-        	data.clone(),
-            vec![ProtocolType::String("Key".to_string()),
-            	 ProtocolType::String("5".to_string())],
+            data.clone(),
+            vec![
+                ProtocolType::String("Key".to_string()),
+                ProtocolType::String("5".to_string()),
+            ],
             &mut builder,
         )
         .unwrap();
@@ -54,9 +55,11 @@ mod tests {
         let mut builder = ResponseBuilder::new();
 
         run(
-        	data.clone(),
-            vec![ProtocolType::String("Key".to_string()),
-            	 ProtocolType::String("5".to_string())],
+            data.clone(),
+            vec![
+                ProtocolType::String("Key".to_string()),
+                ProtocolType::String("5".to_string()),
+            ],
             &mut builder,
         )
         .unwrap();
@@ -68,17 +71,21 @@ mod tests {
     fn decrement_not_integer_key() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("Key", Value::String("value".to_string()))
-            .unwrap();
+        data.set("Key", Value::String("value".to_string())).unwrap();
 
         run(
-        	data.clone(),
-            vec![ProtocolType::String("Key".to_string()),
-            	 ProtocolType::String("5".to_string())],
+            data.clone(),
+            vec![
+                ProtocolType::String("Key".to_string()),
+                ProtocolType::String("5".to_string()),
+            ],
             &mut builder,
         )
         .unwrap();
 
-        assert_eq!("*1\r\n-Cant decrement a value to a not integer value\r\n", builder.serialize());
+        assert_eq!(
+            "*1\r\n-Cant decrement a value to a not integer value\r\n",
+            builder.serialize()
+        );
     }
 }
