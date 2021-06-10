@@ -136,7 +136,6 @@ impl ListenerThread {
 
         if !execution.is_pubsub_command(&command) {
             if let Err(e) = execution.run(&command, &mut response) {
-                // println!("Error '{}' while running command", e);
                 match logger.lock() {
                     Ok(lock) => lock.log("Error").unwrap(),
                     Err(_) => println!("Error while getting the logger lock"),
@@ -145,7 +144,6 @@ impl ListenerThread {
             }
         } else if let Err(e) = execution.run_pubsub(&command, &mut response, socket.clone(), pubsub)
         {
-            // println!("Error '{}' while running pubsub command", e);
             match logger.lock() {
                 Ok(lock) => lock.log("Error").unwrap(),
                 Err(_) => println!("Error while getting the logger lock"),
