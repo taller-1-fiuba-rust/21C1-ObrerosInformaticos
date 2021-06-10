@@ -24,6 +24,10 @@ impl ResponseBuilder {
     pub fn serialize(&self) -> String {
         ProtocolType::Array(self.results.clone()).serialize()
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.results.is_empty()
+    }
 }
 
 #[cfg(test)]
