@@ -10,15 +10,14 @@ pub fn run(
 ) -> Result<(), &'static str> {
     let mut names = vec![];
     let mut values = vec![];
-    let mut i = 0;
-    for argument in arguments {
+
+    for (i, argument) in arguments.into_iter().enumerate() {
         let str = argument.clone().string()?;
         if i % 2 == 0 {
             names.push(str);
         } else {
             values.push(Value::String(str));
         }
-        i += 1;
     }
 
     db.set_multiple(names, values)?;
