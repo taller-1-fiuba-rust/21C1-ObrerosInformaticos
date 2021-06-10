@@ -21,12 +21,29 @@ pub fn run(
 
     for i in 2..arguments.len() {
         let str = arguments[i].clone().string()?;
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).ok().ok_or("Cannot cast time")?;
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .ok()
+            .ok_or("Cannot cast time")?;
         match &str.to_ascii_uppercase()[..] {
-            "EX" => maybe_exp = Some(Duration::from_secs(arguments[i+1].clone().integer()? as u64) + now),
-            "PX" => maybe_exp = Some(Duration::from_millis(arguments[i+1].clone().integer()? as u64) + now),
-            "EXAT" => maybe_exp = Some(Duration::from_secs(arguments[i+1].clone().integer()? as u64)),
-            "PXAT" => maybe_exp = Some(Duration::from_millis(arguments[i+1].clone().integer()? as u64)),
+            "EX" => {
+                maybe_exp =
+                    Some(Duration::from_secs(arguments[i + 1].clone().integer()? as u64) + now)
+            }
+            "PX" => {
+                maybe_exp =
+                    Some(Duration::from_millis(arguments[i + 1].clone().integer()? as u64) + now)
+            }
+            "EXAT" => {
+                maybe_exp = Some(Duration::from_secs(
+                    arguments[i + 1].clone().integer()? as u64
+                ))
+            }
+            "PXAT" => {
+                maybe_exp = Some(Duration::from_millis(
+                    arguments[i + 1].clone().integer()? as u64
+                ))
+            }
             "NX" => nx = true,
             "XX" => xx = true,
             "KEEPTTL" => keepttl = true,
@@ -78,7 +95,7 @@ mod tests {
             ],
             &mut builder,
         )
-            .unwrap();
+        .unwrap();
 
         assert!(data.get_with_expiration("key1").unwrap().0.is_none());
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
@@ -89,7 +106,8 @@ mod tests {
     fn test_set_xx() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("key1", Value::String("previous".to_string())).unwrap();
+        data.set("key1", Value::String("previous".to_string()))
+            .unwrap();
 
         run(
             data.clone(),
@@ -100,7 +118,7 @@ mod tests {
             ],
             &mut builder,
         )
-            .unwrap();
+        .unwrap();
 
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
         assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
@@ -110,7 +128,8 @@ mod tests {
     fn test_set_nx() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("key1", Value::String("previous".to_string())).unwrap();
+        data.set("key1", Value::String("previous".to_string()))
+            .unwrap();
 
         run(
             data.clone(),
@@ -121,7 +140,7 @@ mod tests {
             ],
             &mut builder,
         )
-            .unwrap();
+        .unwrap();
 
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "previous");
         assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
@@ -142,7 +161,7 @@ mod tests {
             ],
             &mut builder,
         )
-            .unwrap();
+        .unwrap();
 
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
         assert_eq!(builder.serialize(), "*1\r\n$4\r\nPREV\r\n");
@@ -164,7 +183,7 @@ mod tests {
             ],
             &mut builder,
         )
-            .unwrap();
+        .unwrap();
 
         assert!(data.get_with_expiration("key1").unwrap().0.is_some());
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
