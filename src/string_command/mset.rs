@@ -26,3 +26,45 @@ pub fn run(
     builder.add(ProtocolType::SimpleString("OK".to_string()));
     Ok(())
 }
+
+#[cfg(test)]
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mset() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+
+        run(
+            data.clone(),
+            vec![
+                ProtocolType::String("key1".to_string()),
+                ProtocolType::String("Hello".to_string()),
+                ProtocolType::String("key2".to_string()),
+                ProtocolType::String("World".to_string()),
+            ],
+            &mut builder,
+        ).unwrap();
+
+        assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello");
+        assert_eq!(data.get("key2").unwrap().string().unwrap(), "World");
+        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
+    }
+
+    #[test]
+    fn test_empty_mset() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+
+        run(
+            data.clone(),
+            vec![],
+            &mut builder,
+        )
+            .unwrap();
+
+        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
+    }
+}
