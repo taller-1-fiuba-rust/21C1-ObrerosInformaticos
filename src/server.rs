@@ -26,7 +26,7 @@ impl Server {
             data: Arc::new(DataStorage::new()),
             config: Arc::new(Mutex::new(config)),
             sys_time: Arc::new(SystemTime::now()),
-            logger: logger,
+            logger,
         }
     }
 
@@ -41,13 +41,13 @@ impl Server {
             self.logger.clone(),
         ));
         let config = self.config.lock().unwrap();
-        let verbosity = config.get_verbose();
+        // let verbosity = config.get_verbose();
         let ttl = config.get_timeout();
 
         let logger_cpy = self.logger.clone();
 
         let handle = thread::spawn(move || {
-            let listener = ListenerThread::new(addr_and_port, execution, verbosity, logger_cpy);
+            let listener = ListenerThread::new(addr_and_port, execution, logger_cpy);
             listener.run(ttl);
         });
         self.handle = Some(handle);

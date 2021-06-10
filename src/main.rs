@@ -28,7 +28,7 @@ fn main() {
         }
     }
 
-    let mut server = server::Server::new(configuration, logger_ref.clone());
+    let mut server = server::Server::new(configuration, logger_ref);
     server.run();
     server.join();
 }

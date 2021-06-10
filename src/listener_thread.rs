@@ -17,24 +17,17 @@ pub struct ListenerThread {
     pool: ThreadPool,
     addr: String,
     execution: Arc<Execution>,
-    verbosity: u8,
     logger: Arc<Mutex<Logger>>,
     pubsub: Arc<Mutex<PublisherSubscriber>>,
 }
 
 impl ListenerThread {
-    pub fn new(
-        addr: String,
-        execution: Arc<Execution>,
-        verbosity: u8,
-        logger: Arc<Mutex<Logger>>,
-    ) -> Self {
+    pub fn new(addr: String, execution: Arc<Execution>, logger: Arc<Mutex<Logger>>) -> Self {
         let pool = ThreadPool::new(32);
         ListenerThread {
             pool,
             addr,
             execution,
-            verbosity,
             logger,
             pubsub: Arc::new(Mutex::new(PublisherSubscriber::new())),
         }
@@ -43,11 +36,12 @@ impl ListenerThread {
     /// Listen for connections on the configured settings.
     pub fn run(&self, _ttl: u32) {
         let listener = TcpListener::bind(&self.addr).unwrap();
-        let msg = format!("REDIS server started on address '{}'...", self.addr);
-        println!("{}", msg);
         match self.logger.lock() {
-            Ok(lock) => lock.log(&msg).unwrap(),
-            Err(_) => println!("Error while getting the logger lock")
+            Ok(lock) => {
+                let msg = format!("REDIS server started on address '{}'...", self.addr);
+                lock.log(&msg).unwrap();
+            }
+            Err(_) => println!("Error while getting the logger lock"),
         };
 
         for stream in listener.incoming() {
@@ -70,10 +64,9 @@ impl ListenerThread {
     ) {
         let command_result = Self::parse_command(&stream);
         if let Err(e) = command_result {
-            println!("{}", e);
             match logger.lock() {
                 Ok(lock) => lock.log(&e).unwrap(),
-                Err(_) => println!("Error while getting the logger lock")
+                Err(_) => println!("Error while getting the logger lock"),
             };
             return;
         }
@@ -81,25 +74,26 @@ impl ListenerThread {
 
         Self::print_command(&command, logger.clone());
 
-        Self::execute_command(&command, stream, execution, pubsub, logger.clone());
+        Self::execute_command(&command, stream, execution, pubsub, logger);
     }
 
     /// Prints a given command
     fn print_command(command: &Command, logger: Arc<Mutex<Logger>>) {
-        let msg = format!(
-            "Received command '{} {}'",
-            command.name(),
-            command
-                .arguments()
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<_>>()
-                .join(" ")
-        );
-        println!("{}", msg);
         match logger.lock() {
-            Ok(lock) => lock.log(&msg).unwrap(),
-            Err(_) => println!("Error while getting the logger lock")
+            Ok(lock) => {
+                let msg = format!(
+                    "Received command '{} {}'",
+                    command.name(),
+                    command
+                        .arguments()
+                        .iter()
+                        .map(|x| x.to_string())
+                        .collect::<Vec<_>>()
+                        .join(" ")
+                );
+                lock.log(&msg).unwrap();
+            }
+            Err(_) => println!("Error while getting the logger lock"),
         };
     }
 
@@ -142,15 +136,23 @@ impl ListenerThread {
 
         if !execution.is_pubsub_command(&command) {
             if let Err(e) = execution.run(&command, &mut response) {
-                println!("Error '{}' while running command", e);
+                // println!("Error '{}' while running command", e);
+                match logger.lock() {
+                    Ok(lock) => lock.log("Error").unwrap(),
+                    Err(_) => println!("Error while getting the logger lock"),
+                };
                 response.add(ProtocolType::Error(e.to_string()));
             }
         } else if let Err(e) = execution.run_pubsub(&command, &mut response, socket.clone(), pubsub)
         {
-            println!("Error '{}' while running pubsub command", e);
+            // println!("Error '{}' while running pubsub command", e);
+            match logger.lock() {
+                Ok(lock) => lock.log("Error").unwrap(),
+                Err(_) => println!("Error while getting the logger lock"),
+            };
             response.add(ProtocolType::Error(e));
         }
-        Self::write_response(socket, &response, logger.clone());
+        Self::write_response(socket, &response, logger);
     }
 
     /// Write a response from a response builder to the desired socket.
@@ -170,7 +172,7 @@ impl ListenerThread {
 
         match logger.lock() {
             Ok(lock) => lock.log(&response_str).unwrap(),
-            Err(_) => println!("Error while getting the logger lock")
+            Err(_) => println!("Error while getting the logger lock"),
         };
 
         locked_stream.write_all(response_str.as_bytes()).unwrap();
