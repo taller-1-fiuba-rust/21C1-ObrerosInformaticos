@@ -12,7 +12,7 @@ pub fn run(
     let mut values = vec![];
 
     for (i, argument) in arguments.into_iter().enumerate() {
-        let str = argument.clone().string()?;
+        let str = argument.string()?;
         if i % 2 == 0 {
             names.push(str);
         } else {
