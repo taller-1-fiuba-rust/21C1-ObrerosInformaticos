@@ -23,3 +23,45 @@ pub fn run(
     }
     Ok(())
 }
+
+#[cfg(test)]
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_strlen() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+        data.set("key", Value::String("value".to_string())).unwrap();
+
+        run(
+            data.clone(),
+            vec![
+                ProtocolType::String("key".to_string()),
+            ],
+            &mut builder,
+        ).unwrap();
+
+        assert_eq!(builder.serialize(), "*1\r\n:5\r\n");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_non_string() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+
+        run(data.clone(), vec![], &mut builder).unwrap();
+    }
+
+    #[test]
+    fn test_inexistant() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+
+        run(data.clone(), vec![ProtocolType::String("no_such_key".to_string())], &mut builder).unwrap();
+
+        assert_eq!(builder.serialize(), "*1\r\n:0\r\n");
+    }
+}
