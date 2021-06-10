@@ -37,11 +37,10 @@ mod tests {
 
         run(
             data.clone(),
-            vec![
-                ProtocolType::String("key".to_string()),
-            ],
+            vec![ProtocolType::String("key".to_string())],
             &mut builder,
-        ).unwrap();
+        )
+        .unwrap();
 
         assert_eq!(builder.serialize(), "*1\r\n:5\r\n");
     }
@@ -60,7 +59,12 @@ mod tests {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
-        run(data.clone(), vec![ProtocolType::String("no_such_key".to_string())], &mut builder).unwrap();
+        run(
+            data.clone(),
+            vec![ProtocolType::String("no_such_key".to_string())],
+            &mut builder,
+        )
+        .unwrap();
 
         assert_eq!(builder.serialize(), "*1\r\n:0\r\n");
     }
