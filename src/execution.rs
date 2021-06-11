@@ -11,6 +11,7 @@ use crate::string_command::{append, decrby, mset, set, strlen};
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
+use crate::Logger;
 
 #[allow(dead_code)]
 pub struct Execution {
