@@ -137,6 +137,7 @@ impl ListenerThread {
             }
         };
         let response_str = response.serialize();
+        println!("Writing response {}", response_str);
         locked_stream.write_all(response_str.as_bytes()).unwrap();
     }
 }
