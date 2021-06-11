@@ -15,11 +15,11 @@ pub struct Server {
     data: Arc<DataStorage>,
     config: Arc<Mutex<Configuration>>,
     sys_time: Arc<SystemTime>,
-    logger: Arc<Mutex<Logger>>,
+    logger: Arc<Logger>,
 }
 
 impl Server {
-    pub fn new(config: Configuration, logger: Arc<Mutex<Logger>>) -> Self {
+    pub fn new(config: Configuration, logger: Arc<Logger>) -> Self {
         Server {
             addr: config.get_ip().to_string(),
             handle: None,
@@ -40,9 +40,8 @@ impl Server {
             self.sys_time.clone(),
             self.logger.clone(),
         ));
-        let config = self.config.lock().unwrap();
         // let verbosity = config.get_verbose();
-        let ttl = config.get_timeout();
+        let ttl = self.config.lock().unwrap().get_timeout();
 
         let logger_cpy = self.logger.clone();
 

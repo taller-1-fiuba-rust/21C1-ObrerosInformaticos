@@ -1,6 +1,6 @@
 use crate::config::configuration::Configuration;
 use crate::logging::logger::Logger;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 mod logging;
 use std::env;
 mod config;
@@ -19,7 +19,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let mut configuration = Configuration::new();
     let logger = Logger::new(configuration.get_logfile()).unwrap();
-    let logger_ref = Arc::new(Mutex::new(logger));
+    let logger_ref = Arc::new(logger);
 
     if args.len() > 1 {
         if let Err(msj) = configuration.set_config(&args[1]) {

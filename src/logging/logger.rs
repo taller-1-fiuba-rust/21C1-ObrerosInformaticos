@@ -2,10 +2,11 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
+use std::sync::Mutex;
 use std::thread;
 
 pub struct Logger {
-    sender: Sender<String>,
+    sender: Mutex<Sender<String>>,
 }
 
 impl Logger {
@@ -18,14 +19,21 @@ impl Logger {
                 write(&msg, &file)
             }
         });
-
-        Ok(Logger { sender })
+        let sender_mutex = Mutex::new(sender);
+        Ok(Logger {
+            sender: sender_mutex,
+        })
     }
 
     pub fn log(&self, msg: &str) -> Result<(), &'static str> {
-        if self.sender.send(msg.to_string()).is_err() {
-            return Err("No se pudo loggear el mensaje.");
-        };
+        match self.sender.lock() {
+            Ok(sender) => {
+                if sender.send(msg.to_string()).is_err() {
+                    return Err("No se pudo loggear el mensaje.");
+                };
+            }
+            Err(_) => return Err("No se pudo loggear el mensaje."),
+        }
         Ok(())
     }
 }
