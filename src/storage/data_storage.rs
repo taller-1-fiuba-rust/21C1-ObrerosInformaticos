@@ -118,6 +118,33 @@ impl DataStorage {
         Ok(())
     }
 
+    ///Append the value at the end of the string if key already exists and is a string
+    ///If key does not exist it is created and set as an empty string.
+    pub fn append(&self, key: String, value: String) -> Result<usize, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+
+        if lock.contains_key(&key) {
+            let entry: &mut Entry = lock.get_mut(&key).unwrap();
+
+            match entry.value() {
+                Value::String(s) => {
+                    let new_string = s + &value;
+                    let length = new_string.len();
+                    entry.update_value(Value::String(new_string));
+                    Ok(length)
+                }
+                Value::Vec(_i) => Err("Value must be a string not a vector"),
+                Value::HashSet(_j) => Err("Value must be a string not a set"),
+            }
+        } else {
+            let value_copy = value.clone();
+            match self.do_set(&mut lock, &key, Value::String(value_copy)) {
+                Ok(_s) => Ok(value.len()),
+                Err(_i) => Err("String value not created"),
+            }
+        }
+    }
+
     /// Remove the key with its corresponding value from the structure.
     /// PRE: The DataStorage structure must be created.
     /// POST: The key is removed and its corresponding value. In case
