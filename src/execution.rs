@@ -7,7 +7,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
 use crate::server_command::{config, info, ping, pubsub};
 use crate::storage::data_storage::DataStorage;
-use crate::string_command::{append, mset, set, strlen, decrby};
+use crate::string_command::{append, decrby, getdel, mset, set, strlen};
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
@@ -57,6 +57,7 @@ impl Execution {
             "strlen" => strlen::run(self.data.clone(), cmd.arguments(), builder),
             "decrby" => decrby::run(self.data.clone(), cmd.arguments(), builder),
             "append" => append::run(cmd.arguments(), builder, self.data.clone()),
+            "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
             _ => Err("Unknown command."),
         }
     }
