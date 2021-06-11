@@ -51,4 +51,17 @@ impl Server {
         let real_handle = self.handle.take().unwrap();
         real_handle.join().unwrap();
     }
+
+    pub fn shutdown(&mut self) {
+        if self.handle.is_none() {
+            panic!("Server was shutdown before ran.");
+        }
+        //TODO
+    }
+}
+
+impl Drop for Server {
+    fn drop(&mut self) {
+        self.shutdown();
+    }
 }
