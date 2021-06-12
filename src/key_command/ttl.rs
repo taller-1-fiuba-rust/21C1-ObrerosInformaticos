@@ -61,7 +61,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n:100\r\n");
+        assert_eq!(builder.serialize(), ":100\r\n");
     }
 
     #[test]
@@ -75,7 +75,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n:-2\r\n");
+        assert_eq!(builder.serialize(), ":-2\r\n");
     }
 
     #[test]
@@ -92,6 +92,6 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n:-1\r\n");
+        assert_eq!(builder.serialize(), ":-1\r\n");
     }
 }

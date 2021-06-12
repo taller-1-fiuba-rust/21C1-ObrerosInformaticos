@@ -133,7 +133,7 @@ mod tests {
 
         assert_eq!(
             builder.serialize(),
-            "*1\r\n*5\r\n$1\r\n1\r\n$1\r\n2\r\n$1\r\n3\r\n$3\r\nasd\r\n$3\r\nbsd\r\n"
+            "*5\r\n$1\r\n1\r\n$1\r\n2\r\n$1\r\n3\r\n$3\r\nasd\r\n$3\r\nbsd\r\n"
         );
     }
 
@@ -160,7 +160,7 @@ mod tests {
 
         assert_eq!(
             builder.serialize(),
-            "*1\r\n*5\r\n$1\r\n1\r\n$1\r\n2\r\n$1\r\n3\r\n$3\r\nasd\r\n$3\r\nbsd\r\n"
+            "*5\r\n$1\r\n1\r\n$1\r\n2\r\n$1\r\n3\r\n$3\r\nasd\r\n$3\r\nbsd\r\n"
         );
     }
 
