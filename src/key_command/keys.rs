@@ -21,7 +21,13 @@ pub fn run(
     let re = Regex::new(&pattern).ok().ok_or("Error parsing the regex")?;
     let all_keys = db.get_keys();
 
-    builder.add(ProtocolType::Array(all_keys.into_iter().filter(move |x| re.is_match(x)).map(ProtocolType::String).collect()));
+    builder.add(ProtocolType::Array(
+        all_keys
+            .into_iter()
+            .filter(move |x| re.is_match(x))
+            .map(ProtocolType::String)
+            .collect(),
+    ));
     Ok(())
 }
 

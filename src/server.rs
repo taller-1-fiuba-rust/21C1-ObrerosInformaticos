@@ -2,12 +2,12 @@ use crate::config::configuration::Configuration;
 use crate::execution::Execution;
 use crate::listener_thread::ListenerThread;
 use crate::storage::data_storage::DataStorage;
+use std::net::TcpStream;
+use std::sync::mpsc::{channel, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::SystemTime;
-use std::sync::mpsc::{Sender, channel};
-use std::net::TcpStream;
 
 #[allow(dead_code)]
 pub struct Server {
@@ -16,7 +16,7 @@ pub struct Server {
     data: Arc<DataStorage>,
     config: Arc<Mutex<Configuration>>,
     sys_time: Arc<SystemTime>,
-    sender: Option<Sender<()>>
+    sender: Option<Sender<()>>,
 }
 
 impl Server {

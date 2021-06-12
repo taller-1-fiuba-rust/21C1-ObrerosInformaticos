@@ -9,8 +9,8 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::TcpListener;
 use std::net::TcpStream;
+use std::sync::mpsc::{Receiver, TryRecvError};
 use std::sync::{Arc, Mutex};
-use std::sync::mpsc::{TryRecvError, Receiver};
 
 /// Struct which listens for connections and executes the given commands.
 pub struct ListenerThread {
@@ -44,7 +44,6 @@ impl ListenerThread {
         println!("REDIS server started on address '{}'...", self.addr);
 
         for stream in listener.incoming() {
-
             match rx.try_recv() {
                 Ok(_) | Err(TryRecvError::Disconnected) => {
                     println!("Terminating.");

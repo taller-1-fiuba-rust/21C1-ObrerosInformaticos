@@ -24,7 +24,7 @@ impl ResponseBuilder {
     pub fn serialize(&self) -> String {
         match self.results.len() {
             1 => self.results[0].serialize(),
-            _ => ProtocolType::Array(self.results.clone()).serialize()
+            _ => ProtocolType::Array(self.results.clone()).serialize(),
         }
     }
 
