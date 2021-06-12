@@ -33,7 +33,13 @@ impl ListenerThread {
 
     /// Listen for connections on the configured settings.
     pub fn run(&self, _ttl: u32) {
-        let listener = TcpListener::bind(&self.addr).unwrap();
+        let listener = match TcpListener::bind(&self.addr) {
+            Ok(s) => s,
+            Err(e) => {
+                println!("Failed to bind to socket with error: '{}'", e);
+                panic!("{}", e);
+            }
+        };
         println!("REDIS server started on address '{}'...", self.addr);
 
         for stream in listener.incoming() {
