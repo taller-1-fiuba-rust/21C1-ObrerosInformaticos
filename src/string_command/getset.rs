@@ -32,3 +32,17 @@ pub fn run(
     }
     Ok(())
 }
+
+
+#[cfg(test)]
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_getset() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+    }
+
+}
