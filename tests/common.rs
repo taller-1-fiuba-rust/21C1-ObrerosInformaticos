@@ -2,7 +2,7 @@ use proyecto_taller_1::server::Server;
 use proyecto_taller_1::config::configuration::Configuration;
 use redis::{Client, FromRedisValue};
 
-const PORT: u16 = 10001;
+const PORT: u16 = 12345;
 
 pub fn setup() -> (Server, Client) {
     let mut config = Configuration::new();
