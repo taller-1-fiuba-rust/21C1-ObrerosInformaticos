@@ -10,15 +10,20 @@ use std::io::Write;
 /// PRE: The file must exist.
 /// POST: A vector is returned with all the content of the
 /// file in the.
-pub fn read_lines(filename: &str) -> Vec<String> {
-    let file = File::open(filename).expect("no such file");
-    let buf = BufReader::new(file);
-    let lines: Vec<String> = buf
-        .lines()
-        .map(|l| l.expect("Could not parse line"))
-        .collect();
+pub fn read_lines(filename: &str) -> Result<Vec<String>,  &'static str> {
+    let file = File::open(filename);
+    match file {
+        Ok(file_name) => {
+            let buf = BufReader::new(file_name);
+            let lines: Vec<String> = buf
+                .lines()
+                .map(|l| l.expect("Could not parse line"))
+                .collect();
 
-    lines
+            Ok(lines)
+        }
+        Err(_i) => Err("Not existing file")
+    }
 }
 
 /// Given a filename and a string stores the

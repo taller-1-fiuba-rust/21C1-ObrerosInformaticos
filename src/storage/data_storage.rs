@@ -66,10 +66,12 @@ impl DataStorage {
     /// previously created.
     /// POST: DataStorage is loaded with the data
     /// that contained the file.
-    pub fn load_data(&mut self, file: &str) -> Result<(), &'static str> {
+    pub fn load_data(&self, file: &str) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
-        parser::parse_data(file, &mut lock);
-        Ok(())
+        match parser::parse_data(file, &mut lock){
+            Ok(_s) => Ok(()),
+            Err(_i) => Err("Could not parse the file"),
+        }
     }
 
     /// Given a file name, save the data of the
@@ -77,7 +79,7 @@ impl DataStorage {
     /// PRE: The DataStorage structure must be created.
     /// POST: The file contains the information that had
     /// in the structure.
-    pub fn save_data(&mut self, file: &str) -> Result<(), &'static str> {
+    pub fn save_data(&self, file: &str) -> Result<(), &'static str> {
         let lock = self.data.read().ok().ok_or("Failed to lock database")?;
         parser::store_data(file, &lock);
         Ok(())
