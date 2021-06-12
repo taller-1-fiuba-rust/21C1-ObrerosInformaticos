@@ -166,6 +166,10 @@ impl Configuration {
         self.verbose = new_verb;
         Ok("Ok")
     }
+
+    pub fn set_port(&mut self, new_port: u16) {
+        self.port = new_port;
+    }
 }
 
 #[cfg(test)]
