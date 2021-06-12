@@ -5,8 +5,8 @@ use crate::storage::data_storage::DataStorage;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
-use std::time::SystemTime;
 use std::time::Duration;
+use std::time::SystemTime;
 
 #[allow(dead_code)]
 pub struct Server {
@@ -33,9 +33,9 @@ impl Server {
     pub fn run(&mut self) {
         let dbfile = self.config.lock().unwrap().get_dbfilename().clone();
         let result = self.data.load_data(&dbfile);
-        if  result.is_err() { 
+        if result.is_err() {
             println!("Error loading data from dbfile");
-        };  
+        };
         let mut new_addr = self.addr.clone();
         new_addr.push(':');
         let addr_and_port = new_addr + &self.config.lock().unwrap().get_port().to_string();

@@ -30,14 +30,13 @@ pub fn parse_data(file: &str, data: &mut HashMap<String, Entry>) -> Result<(), &
             }
             Ok(())
         }
-        Err(_i) => Err("Could not parse the file") 
-    }    
+        Err(_i) => Err("Could not parse the file"),
+    }
 }
 
 /// Given a file and a data structure take the information of the structure
 /// and stores it in the file, respecting the predefined storage structure.
 pub fn store_data(file: &str, data: &HashMap<String, Entry>) {
-    //Si el archivo no existe crearlo. 
     for (key, entry) in &*data {
         match entry.value() {
             Value::String(s) => save_string_data(file, key, entry, s),

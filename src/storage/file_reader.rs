@@ -10,7 +10,7 @@ use std::io::Write;
 /// PRE: The file must exist.
 /// POST: A vector is returned with all the content of the
 /// file in the.
-pub fn read_lines(filename: &str) -> Result<Vec<String>,  &'static str> {
+pub fn read_lines(filename: &str) -> Result<Vec<String>, &'static str> {
     let file = File::open(filename);
     match file {
         Ok(file_name) => {
@@ -22,7 +22,7 @@ pub fn read_lines(filename: &str) -> Result<Vec<String>,  &'static str> {
 
             Ok(lines)
         }
-        Err(_i) => Err("Not existing file")
+        Err(_i) => Err("Not existing file"),
     }
 }
 
@@ -32,6 +32,7 @@ pub fn read_lines(filename: &str) -> Result<Vec<String>,  &'static str> {
 pub fn data_to_file(file: &str, data: String) {
     let mut file = OpenOptions::new()
         .append(true)
+        .create(true)
         .open(file)
         .expect("Unable to open");
 
