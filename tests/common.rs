@@ -1,15 +1,17 @@
 use proyecto_taller_1::config::configuration::Configuration;
 use proyecto_taller_1::server::Server;
 use redis::{Client, FromRedisValue};
+use std::sync::atomic::{AtomicU16, Ordering};
 
-const PORT: u16 = 10005;
+static PORT: AtomicU16 = AtomicU16::new(10001);
 
 pub fn setup() -> (Server, Client) {
+    let port = PORT.fetch_add(1, Ordering::SeqCst);
     let mut config = Configuration::new();
-    config.set_port(PORT);
+    config.set_port(port);
     let mut sv = Server::new(config);
     sv.run();
-    let client = redis::Client::open(format!("redis://127.0.0.1:{}/", PORT)).unwrap();
+    let client = redis::Client::open(format!("redis://127.0.0.1:{}/", port)).unwrap();
     return (sv, client);
 }
 
