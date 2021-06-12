@@ -26,7 +26,7 @@ fn test_copy() {
     let result: i32 = common::query_string(&client, "COPY my_key clone");
     let val: String = common::query_string(&client, "GET clone");
     assert_eq!(result, 1);
-    assert_eq!(val, "Hola");
+    assert_eq!(val, "hola");
 }
 
 #[test]
