@@ -16,6 +16,7 @@ const DEFAULT_IP: &str = "127.0.0.1";
 //  5) Add the get_/attribute/ function to return the value.
 
 #[allow(dead_code)]
+#[derive(Default)]
 pub struct Configuration {
     verbose: u8,
     port: u16,
