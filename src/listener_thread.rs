@@ -10,6 +10,7 @@ use std::io::BufReader;
 use std::net::TcpListener;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
+use std::sync::mpsc::{TryRecvError, Receiver};
 
 /// Struct which listens for connections and executes the given commands.
 pub struct ListenerThread {
@@ -32,7 +33,7 @@ impl ListenerThread {
     }
 
     /// Listen for connections on the configured settings.
-    pub fn run(&self, _ttl: u32) {
+    pub fn run(&self, _ttl: u32, rx: Receiver<()>) {
         let listener = match TcpListener::bind(&self.addr) {
             Ok(s) => s,
             Err(e) => {
@@ -43,6 +44,15 @@ impl ListenerThread {
         println!("REDIS server started on address '{}'...", self.addr);
 
         for stream in listener.incoming() {
+
+            match rx.try_recv() {
+                Ok(_) | Err(TryRecvError::Disconnected) => {
+                    println!("Terminating.");
+                    break;
+                }
+                Err(TryRecvError::Empty) => {}
+            }
+
             let stream = stream.unwrap();
             let exec = self.execution.clone();
             let pubsub = self.pubsub.clone();
