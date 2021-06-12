@@ -4,9 +4,9 @@ mod common;
 
 #[test]
 fn test_set() {
-    let (mut server, mut con) = common::setup();
-    let _ : () = con.set("my_key", 42).unwrap();
-    let clone_val : i32 = con.get("my_key").unwrap();
+    let (mut server, mut client) = common::setup();
+    let _ : () = redis::cmd("set").arg("my_key").arg(42).query(&mut client.get_connection().unwrap()).unwrap();
+    let clone_val : i32 = redis::cmd("get").arg("my_key").query(&mut client.get_connection().unwrap()).unwrap();
     assert_eq!(clone_val, 42);
     server.shutdown();
 }
