@@ -2,7 +2,7 @@ mod common;
 
 #[test]
 fn test_set() {
-    let (_, client) = common::setup();
+    let (_server, client) = common::setup();
     let _ : () = common::query(&client, "set", &["my_key", "42"]);
     let val : i32 = common::query(&client, "get", &["my_key"]);
     assert_eq!(val, 42);
@@ -10,7 +10,7 @@ fn test_set() {
 
 #[test]
 fn test_copy() {
-    let (_, client) = common::setup();
+    let (_server, client) = common::setup();
     let _ : () = common::query(&client, "set", &["my_key", "Hola"]);
     let _ : () = common::query(&client, "copy", &["my_key", "clone"]);
     let val : String = common::query(&client, "get", &["clone"]);
