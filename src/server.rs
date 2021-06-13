@@ -3,7 +3,7 @@ use crate::execution::Execution;
 use crate::listener_thread::ListenerThread;
 use crate::storage::data_storage::DataStorage;
 use std::net::TcpStream;
-use std::sync::mpsc::{channel, Sender, Receiver};
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
