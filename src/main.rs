@@ -1,8 +1,8 @@
 use crate::config::configuration::Configuration;
 use crate::logging::logger::Logger;
 use std::sync::Arc;
-mod logging;
 use std::env;
+mod logging;
 mod config;
 mod execution;
 mod key_command;

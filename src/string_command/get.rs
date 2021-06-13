@@ -50,7 +50,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n$5\r\nValue\r\n");
+        assert_eq!(builder.serialize(), "$5\r\nValue\r\n");
     }
 
     #[test]
@@ -65,6 +65,6 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n$5\r\n(nil)\r\n");
+        assert_eq!(builder.serialize(), "$5\r\n(nil)\r\n");
     }
 }
