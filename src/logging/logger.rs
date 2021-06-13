@@ -44,7 +44,8 @@ impl Logger {
         }
         Ok(())
     }
-
+    
+    #[allow(dead_code)]
     pub fn drop(&self) -> Result<(), &'static str> {
         match self.sender.lock() {
             Ok(sender) => {
