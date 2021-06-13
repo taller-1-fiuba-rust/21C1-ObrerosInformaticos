@@ -1,0 +1,6 @@
+REDIS server started on address '127.0.0.1:10001'...
+Received command 'PING '
+$4
+PONG
+
+Terminating.
