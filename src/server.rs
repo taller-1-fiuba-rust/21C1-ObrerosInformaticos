@@ -99,7 +99,7 @@ impl Server {
             panic!("Server was joined before ran.");
         }
         self.handle_store_data.take().unwrap().join().unwrap();
-        self.ha        let real_handle_store_data = ;ndle.take().unwrap().join().unwrap();
+        self.handle.take().unwrap().join().unwrap();
     }
 
     pub fn shutdown(&mut self) {
