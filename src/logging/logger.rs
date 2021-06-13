@@ -6,17 +6,25 @@ use std::sync::Mutex;
 use std::thread;
 
 pub struct Logger {
-    sender: Mutex<Sender<String>>,
+    sender: Mutex<Sender<Message>>,
+}
+
+enum Message {
+    String(String),
+    Terminate
 }
 
 impl Logger {
     pub fn new(file_dir: &str) -> Result<Self, &'static str> {
         let file = create_logfile(file_dir)?;
-        let (sender, receiver): (Sender<String>, Receiver<String>) = mpsc::channel();
+        let (sender, receiver): (Sender<Message>, Receiver<Message>) = mpsc::channel();
         thread::spawn(move || loop {
             let message = receiver.recv();
             if let Ok(msg) = message {
-                write(&msg, &file)
+                match msg {
+                    Message::String(string) => write(&string, &file),
+                    Message::Terminate => break,
+                }
             }
         });
         let sender_mutex = Mutex::new(sender);
@@ -28,7 +36,19 @@ impl Logger {
     pub fn log(&self, msg: &str) -> Result<(), &'static str> {
         match self.sender.lock() {
             Ok(sender) => {
-                if sender.send(msg.to_string()).is_err() {
+                if sender.send(Message::String(msg.to_string())).is_err() {
+                    return Err("No se pudo loggear el mensaje.");
+                };
+            }
+            Err(_) => return Err("No se pudo loggear el mensaje."),
+        }
+        Ok(())
+    }
+
+    pub fn drop(&self) -> Result<(), &'static str> {
+        match self.sender.lock() {
+            Ok(sender) => {
+                if sender.send(Message::Terminate).is_err() {
                     return Err("No se pudo loggear el mensaje.");
                 };
             }
