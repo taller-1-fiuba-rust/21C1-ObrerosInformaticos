@@ -34,6 +34,7 @@ impl ListenerThread {
 
     /// Listen for connections on the configured settings.
     pub fn run(&self, _ttl: u32, rx: Receiver<()>) {
+        println!("Trying to bind on address {}", self.addr);
         let listener = match TcpListener::bind(&self.addr) {
             Ok(s) => s,
             Err(e) => {

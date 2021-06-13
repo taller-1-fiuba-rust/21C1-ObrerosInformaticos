@@ -10,6 +10,7 @@ pub fn setup() -> (Server, Client) {
     let mut config = Configuration::new();
     config.set_port(port);
     let mut sv = Server::new(config);
+    println!("Opening server on port {}", port);
     sv.run();
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", port)).unwrap();
     return (sv, client);

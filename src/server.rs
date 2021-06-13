@@ -40,6 +40,7 @@ impl Server {
         ));
         let ttl = self.config.lock().unwrap().get_timeout();
         let (sender, receiver) = channel();
+        println!("Creating listener thread");
         let handle = thread::spawn(move || {
             let listener = ListenerThread::new(addr_and_port, execution);
             listener.run(ttl, receiver);
