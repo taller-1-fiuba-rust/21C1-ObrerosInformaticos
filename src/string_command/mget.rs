@@ -36,10 +36,26 @@ mod tests {
     use std::collections::HashSet;
 
     #[test]
-    fn test_unnable_to_sort_string() {
+    fn test_gets_key1_and_2_nils() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
-        
+        data.set("key1", Value::String("value".to_string()))
+            .unwrap();
+        data.set("key2", Value::Vec(vec![]))
+            .unwrap();
+
+        run(
+            vec![
+                ProtocolType::String("key1".to_string()),
+                ProtocolType::String("key2".to_string()),
+                ProtocolType::String("XX".to_string()),
+            ],
+            &mut builder,
+            data,
+        )
+        .unwrap();
+
+        assert_eq!(builder.serialize(), "*1\r\n*3\r\n$5\r\nvalue\r\n$3\r\nnil\r\n$3\r\nnil\r\n");        
     }
 }
