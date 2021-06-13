@@ -1,6 +1,7 @@
 use crate::config::configuration::Configuration;
 use crate::execution::Execution;
 use crate::listener_thread::ListenerThread;
+use crate::logging::logger::Logger;
 use crate::storage::data_storage::DataStorage;
 use std::net::TcpStream;
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -16,19 +17,21 @@ pub struct Server {
     data: Arc<DataStorage>,
     config: Arc<Mutex<Configuration>>,
     sys_time: Arc<SystemTime>,
+    logger: Arc<Logger>,
     sender: Option<Sender<()>>,
     receiver: Option<Receiver<()>>,
     is_running: bool,
 }
 
 impl Server {
-    pub fn new(config: Configuration) -> Self {
+    pub fn new(config: Configuration, logger: Arc<Logger>) -> Self {
         Server {
             addr: config.get_ip().to_string(),
             handle: None,
             data: Arc::new(DataStorage::new()),
             config: Arc::new(Mutex::new(config)),
             sys_time: Arc::new(SystemTime::now()),
+            logger,
             sender: None,
             receiver: None,
             is_running: false,
@@ -41,13 +44,17 @@ impl Server {
             self.data.clone(),
             self.config.clone(),
             self.sys_time.clone(),
+            self.logger.clone(),
         ));
+        // let verbosity = config.get_verbose();
         let ttl = self.config.lock().unwrap().get_timeout();
+
+        let logger_cpy = self.logger.clone();
         let (server_sender, listener_receiver) = channel();
         let (listener_sender, server_receiver) = channel();
 
         let handle = thread::spawn(move || {
-            let listener = ListenerThread::new(addr_and_port, execution);
+            let listener = ListenerThread::new(addr_and_port, execution, logger_cpy);
             listener.run(ttl, listener_sender, listener_receiver);
         });
         self.sender = Some(server_sender);
