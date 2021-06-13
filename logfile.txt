@@ -1,12 +1,6 @@
-REDIS server started on address '127.0.0.1:6380'...
-Received command 'mget asd dsa'
-Error
--Unknown command.
+REDIS server started on address '127.0.0.1:10001'...
+Received command 'PING '
+$4
+PONG
 
-Received command 'set asd ola'
-+OK
-
-Received command 'get asd'
-$3
-ola
-
+Terminating.
