@@ -44,18 +44,13 @@ impl Logger {
         }
         Ok(())
     }
+}
 
+impl Drop for Logger {
     #[allow(dead_code)]
-    pub fn drop(&self) -> Result<(), &'static str> {
-        match self.sender.lock() {
-            Ok(sender) => {
-                if sender.send(Message::Terminate).is_err() {
-                    return Err("No se pudo loggear el mensaje.");
-                };
-            }
-            Err(_) => return Err("No se pudo loggear el mensaje."),
-        }
-        Ok(())
+    fn drop(&mut self) {
+        let sender = self.sender.lock().unwrap();
+        sender.send(Message::Terminate).unwrap();
     }
 }
 

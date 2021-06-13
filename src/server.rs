@@ -31,7 +31,6 @@ impl Server {
     }
 
     pub fn run(&mut self) {
-        self.data.get("asd");
         let mut new_addr = self.addr.clone();
         new_addr.push(':');
         let addr_and_port = new_addr + &self.config.lock().unwrap().get_port().to_string();
