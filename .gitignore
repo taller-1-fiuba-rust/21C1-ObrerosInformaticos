@@ -15,4 +15,4 @@ Cargo.lock
 dump.rdb
 
 # Ignore Logfile.txt
-/logfile.txt
+logfile.txt
