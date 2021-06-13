@@ -51,7 +51,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n$5\r\nvalue\r\n");
+        assert_eq!(builder.serialize(), "$5\r\nvalue\r\n");
 
         assert_eq!(data.exists_key("key"), Err("Not key in HashMap"));
     }
@@ -68,6 +68,6 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n$5\r\n(nil)\r\n");
+        assert_eq!(builder.serialize(), "$5\r\n(nil)\r\n");
     }
 }
