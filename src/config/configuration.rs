@@ -5,7 +5,7 @@ const DEFAULT_VERBOSE: u8 = 0;
 const DEFAULT_PORT: u16 = 6379;
 const DEFAULT_TIMEOUT: u32 = 0;
 const DEFAULT_DBFILENAME: &str = "dump.rdb";
-const DEFAULT_LOGFILE: &str = "logfile";
+const DEFAULT_LOGFILE: &str = "logfile.txt";
 const DEFAULT_IP: &str = "127.0.0.1";
 
 //To add a new configuration attribute:
@@ -86,11 +86,25 @@ impl Configuration {
         // Sets all the params and checks the validity of some of them.
         // If everything is OK, it returns none.
         // If any problem happens, it returns a string describing the problem.
+
         if let Some(verbose_) = map.get("verbose") {
             if !self.check_number_between(verbose_, 0, 1) {
                 return Some("Verbosidad mal configurada.".to_string());
             }
             self.verbose = verbose_.parse().unwrap();
+            if self.verbose == 1 {
+                println!("Configuración de la verbosidad cargada : 1");
+            }
+        }
+
+        if let Some(logfile_) = map.get("logfile") {
+            self.logfile = logfile_.to_string();
+            if self.verbose == 1 {
+                println!(
+                    "Configuración del archivo de logs cargada : {}",
+                    self.logfile
+                );
+            }
         }
 
         if let Some(port_) = map.get("port") {
@@ -98,6 +112,9 @@ impl Configuration {
                 return Some("Puerto mal configurado.".to_string());
             }
             self.port = port_.parse().unwrap();
+            if self.verbose == 1 {
+                println!("Configuración del puerto cargada : {}", self.port);
+            }
         }
 
         if let Some(timeout_) = map.get("timeout") {
@@ -105,20 +122,27 @@ impl Configuration {
                 Ok(number) => self.timeout = number,
                 Err(_) => return Some("Timeout mal configurado.".to_string()),
             }
+            if self.verbose == 1 {
+                println!("Configuración del timeout cargada : {}", self.timeout);
+            }
         }
 
         if let Some(dbfilename_) = map.get("dbfilename") {
             self.dbfilename = dbfilename_.to_string();
-        }
-
-        if let Some(logfile_) = map.get("logfile") {
-            self.logfile = logfile_.to_string();
+            if self.verbose == 1 {
+                println!(
+                    "Configuración del archivo de almacenamiento cargada : {}",
+                    self.dbfilename
+                );
+            }
         }
 
         if let Some(ip_) = map.get("ip") {
             self.ip = ip_.to_string();
+            if self.verbose == 1 {
+                println!("Configuración de la ip cargada : {}", self.ip);
+            }
         }
-
         None
     }
 
