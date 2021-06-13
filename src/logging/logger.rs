@@ -11,7 +11,7 @@ pub struct Logger {
 
 enum Message {
     String(String),
-    Terminate
+    Terminate,
 }
 
 impl Logger {
