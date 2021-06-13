@@ -2,12 +2,6 @@ use crate::protocol::types::ProtocolType;
 
 ///
 /// Representation of a RESP command. e.g. The command "SET key value" will be equivalent to
-/// ```rust
-/// Command {
-///     symbol: "SET"
-///     arguments: vec![ProtocolType::String("key"), ProtocolType::String("value")]
-/// }
-/// ```
 ///
 pub struct Command {
     symbol: String,

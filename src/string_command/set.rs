@@ -99,7 +99,7 @@ mod tests {
 
         assert!(data.get_with_expiration("key1").unwrap().0.is_none());
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
-        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
+        assert_eq!(builder.serialize(), "+OK\r\n");
     }
 
     #[test]
@@ -121,7 +121,7 @@ mod tests {
         .unwrap();
 
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
-        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
+        assert_eq!(builder.serialize(), "+OK\r\n");
     }
 
     #[test]
@@ -143,7 +143,7 @@ mod tests {
         .unwrap();
 
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "previous");
-        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
+        assert_eq!(builder.serialize(), "+OK\r\n");
     }
 
     #[test]
@@ -164,7 +164,7 @@ mod tests {
         .unwrap();
 
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
-        assert_eq!(builder.serialize(), "*1\r\n$4\r\nPREV\r\n");
+        assert_eq!(builder.serialize(), "$4\r\nPREV\r\n");
     }
 
     #[test]
@@ -187,6 +187,6 @@ mod tests {
 
         assert!(data.get_with_expiration("key1").unwrap().0.is_some());
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello World");
-        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
+        assert_eq!(builder.serialize(), "+OK\r\n");
     }
 }

@@ -79,6 +79,6 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!("*1\r\n:1\r\n", builder.serialize());
+        assert_eq!(":1\r\n", builder.serialize());
     }
 }

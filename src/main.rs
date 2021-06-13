@@ -1,9 +1,12 @@
 use crate::config::configuration::Configuration;
+use crate::logging::logger::Logger;
 use std::env;
+use std::sync::Arc;
 mod config;
 mod execution;
 mod key_command;
 mod listener_thread;
+mod logging;
 mod protocol;
 mod pubsub;
 mod server;
@@ -15,6 +18,8 @@ mod threadpool;
 fn main() {
     let args: Vec<String> = env::args().collect();
     let mut configuration = Configuration::new();
+    let logger = Logger::new(configuration.get_logfile()).unwrap();
+    let logger_ref = Arc::new(logger);
 
     if args.len() > 1 {
         if let Err(msj) = configuration.set_config(&args[1]) {
@@ -23,7 +28,7 @@ fn main() {
         }
     }
 
-    let mut server = server::Server::new(configuration);
+    let mut server = server::Server::new(configuration, logger_ref);
     server.run();
     server.join();
 }

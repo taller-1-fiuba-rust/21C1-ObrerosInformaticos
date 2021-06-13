@@ -2,6 +2,7 @@ use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
+use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
@@ -18,6 +19,7 @@ pub struct Execution {
     config: Arc<Mutex<Configuration>>,
     sys_time: Arc<SystemTime>,
     client_connected: u64,
+    logger: Arc<Logger>,
 }
 
 impl Execution {
@@ -25,12 +27,14 @@ impl Execution {
         data: Arc<DataStorage>,
         config: Arc<Mutex<Configuration>>,
         sys_time: Arc<SystemTime>,
+        logger: Arc<Logger>,
     ) -> Self {
         Execution {
             data,
             config,
             sys_time,
             client_connected: 0,
+            logger,
         }
     }
 

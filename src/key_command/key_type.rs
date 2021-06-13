@@ -47,7 +47,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n+string\r\n");
+        assert_eq!(builder.serialize(), "+string\r\n");
     }
 
     #[test]
@@ -64,7 +64,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n+string\r\n");
+        assert_eq!(builder.serialize(), "+string\r\n");
     }
 
     #[test]
@@ -81,7 +81,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n+set\r\n");
+        assert_eq!(builder.serialize(), "+set\r\n");
     }
 
     #[test]
@@ -94,6 +94,6 @@ mod tests {
             &data.clone(),
         )
         .unwrap();
-        assert_eq!(builder.serialize(), "*1\r\n+none\r\n");
+        assert_eq!(builder.serialize(), "+none\r\n");
     }
 }

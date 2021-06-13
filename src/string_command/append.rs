@@ -52,7 +52,7 @@ mod tests {
             data.get("key").unwrap().string().unwrap(),
             "value_append_value"
         );
-        assert_eq!(builder.serialize(), "*1\r\n:18\r\n");
+        assert_eq!(builder.serialize(), ":18\r\n");
     }
 
     #[test]
@@ -71,6 +71,6 @@ mod tests {
         .unwrap();
 
         assert_eq!(data.get("key").unwrap().string().unwrap(), "value");
-        assert_eq!(builder.serialize(), "*1\r\n:5\r\n");
+        assert_eq!(builder.serialize(), ":5\r\n");
     }
 }

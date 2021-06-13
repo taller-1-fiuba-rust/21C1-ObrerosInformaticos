@@ -46,7 +46,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!("*1\r\n:5\r\n", builder.serialize());
+        assert_eq!(":5\r\n", builder.serialize());
     }
 
     #[test]
@@ -64,7 +64,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!("*1\r\n:-5\r\n", builder.serialize());
+        assert_eq!(":-5\r\n", builder.serialize());
     }
 
     #[test]
@@ -84,7 +84,7 @@ mod tests {
         .unwrap();
 
         assert_eq!(
-            "*1\r\n-Cant decrement a value to a not integer value\r\n",
+            "-Cant decrement a value to a not integer value\r\n",
             builder.serialize()
         );
     }

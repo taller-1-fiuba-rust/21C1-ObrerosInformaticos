@@ -42,7 +42,7 @@ mod tests {
 
         assert_eq!(data.get("new_key").unwrap().string().unwrap(), "value");
         assert!(data.get("key").is_none());
-        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
+        assert_eq!(builder.serialize(), "+OK\r\n");
     }
 
     #[test]

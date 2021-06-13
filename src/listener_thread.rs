@@ -1,4 +1,5 @@
 use crate::execution::Execution;
+use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::request::Request;
 use crate::protocol::response::ResponseBuilder;
@@ -9,6 +10,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::TcpListener;
 use std::net::TcpStream;
+use std::sync::mpsc::{Receiver, Sender, TryRecvError};
 use std::sync::{Arc, Mutex};
 
 /// Struct which listens for connections and executes the given commands.
@@ -16,32 +18,53 @@ pub struct ListenerThread {
     pool: ThreadPool,
     addr: String,
     execution: Arc<Execution>,
+    logger: Arc<Logger>,
     pubsub: Arc<Mutex<PublisherSubscriber>>,
 }
 
 impl ListenerThread {
-    /// Create a new ListenerThread
-    pub fn new(addr: String, execution: Arc<Execution>) -> Self {
+    pub fn new(addr: String, execution: Arc<Execution>, logger: Arc<Logger>) -> Self {
         let pool = ThreadPool::new(32);
         ListenerThread {
             pool,
             addr,
             execution,
+            logger,
             pubsub: Arc::new(Mutex::new(PublisherSubscriber::new())),
         }
     }
 
     /// Listen for connections on the configured settings.
-    pub fn run(&self, _ttl: u32) {
-        let listener = TcpListener::bind(&self.addr).unwrap();
-        println!("REDIS server started on address '{}'...", self.addr);
+    pub fn run(&self, _ttl: u32, sx: Sender<()>, rx: Receiver<()>) {
+        println!("Trying to bind on address {}", self.addr);
+        let listener = match TcpListener::bind(&self.addr) {
+            Ok(s) => s,
+            Err(e) => {
+                self.print_and_log(format!("Failed to bind to socket with error: '{}'", e));
+                panic!("{}", e);
+            }
+        };
+        self.print_and_log(format!(
+            "REDIS server started on address '{}'...",
+            self.addr
+        ));
+        sx.send(()).unwrap();
 
         for stream in listener.incoming() {
+            match rx.try_recv() {
+                Ok(_) | Err(TryRecvError::Disconnected) => {
+                    self.print_and_log("Terminating.".to_string());
+                    break;
+                }
+                Err(TryRecvError::Empty) => {}
+            }
+
             let stream = stream.unwrap();
             let exec = self.execution.clone();
             let pubsub = self.pubsub.clone();
+            let logger = self.logger.clone();
             self.pool.spawn(move || {
-                ListenerThread::handle_connection(stream, exec, pubsub);
+                ListenerThread::handle_connection(stream, exec, pubsub, logger);
             });
         }
     }
@@ -51,22 +74,23 @@ impl ListenerThread {
         stream: TcpStream,
         execution: Arc<Execution>,
         pubsub: Arc<Mutex<PublisherSubscriber>>,
+        logger: Arc<Logger>,
     ) {
         let command_result = Self::parse_command(&stream);
         if let Err(e) = command_result {
-            println!("{}", e);
+            logger.log(&e).unwrap();
             return;
         }
         let command = command_result.unwrap();
 
-        Self::print_command(&command);
+        Self::log_command(&command, logger.clone());
 
-        Self::execute_command(&command, stream, execution, pubsub);
+        Self::execute_command(&command, stream, execution, pubsub, logger);
     }
 
-    /// Prints a given command
-    fn print_command(command: &Command) {
-        println!(
+    /// Logs a given command
+    fn log_command(command: &Command, logger: Arc<Logger>) {
+        let msg = format!(
             "Received command '{} {}'",
             command.name(),
             command
@@ -76,6 +100,7 @@ impl ListenerThread {
                 .collect::<Vec<_>>()
                 .join(" ")
         );
+        logger.log(&msg).unwrap();
     }
 
     /// Parses a command from a socket connection
@@ -110,25 +135,30 @@ impl ListenerThread {
         stream: TcpStream,
         execution: Arc<Execution>,
         pubsub: Arc<Mutex<PublisherSubscriber>>,
+        logger: Arc<Logger>,
     ) {
         let socket = Arc::new(Mutex::new(stream));
         let mut response = ResponseBuilder::new();
 
         if !execution.is_pubsub_command(&command) {
             if let Err(e) = execution.run(&command, &mut response) {
-                println!("Error '{}' while running command", e);
+                logger.log("Error").unwrap();
                 response.add(ProtocolType::Error(e.to_string()));
             }
         } else if let Err(e) = execution.run_pubsub(&command, &mut response, socket.clone(), pubsub)
         {
-            println!("Error '{}' while running pubsub command", e);
+            logger.log("Error").unwrap();
             response.add(ProtocolType::Error(e));
         }
-        Self::write_response(socket, &response);
+        Self::write_response(socket, &response, logger);
     }
 
     /// Write a response from a response builder to the desired socket.
-    fn write_response(stream: Arc<Mutex<TcpStream>>, response: &ResponseBuilder) {
+    fn write_response(
+        stream: Arc<Mutex<TcpStream>>,
+        response: &ResponseBuilder,
+        logger: Arc<Logger>,
+    ) {
         let mut locked_stream = match stream.lock() {
             Ok(s) => s,
             Err(_) => {
@@ -137,6 +167,12 @@ impl ListenerThread {
             }
         };
         let response_str = response.serialize();
+        logger.log(&response_str).unwrap();
         locked_stream.write_all(response_str.as_bytes()).unwrap();
+    }
+
+    fn print_and_log(&self, msg: String) {
+        println!("{}", msg);
+        self.logger.log(&msg).unwrap();
     }
 }
