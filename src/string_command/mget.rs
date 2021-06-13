@@ -28,7 +28,6 @@ pub fn run(
     Ok(())
 }
 
-
 #[cfg(test)]
 
 mod tests {
@@ -42,8 +41,7 @@ mod tests {
 
         data.set("key1", Value::String("value".to_string()))
             .unwrap();
-        data.set("key2", Value::Vec(vec![]))
-            .unwrap();
+        data.set("key2", Value::Vec(vec![])).unwrap();
 
         run(
             vec![
@@ -56,6 +54,9 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n*3\r\n$5\r\nvalue\r\n$3\r\nnil\r\n$3\r\nnil\r\n");        
+        assert_eq!(
+            builder.serialize(),
+            "*1\r\n*3\r\n$5\r\nvalue\r\n$3\r\nnil\r\n$3\r\nnil\r\n"
+        );
     }
 }
