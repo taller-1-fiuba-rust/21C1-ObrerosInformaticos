@@ -2,8 +2,10 @@ use proyecto_taller_1::config::configuration::Configuration;
 use proyecto_taller_1::server::Server;
 use redis::{Client, FromRedisValue};
 use std::sync::atomic::{AtomicU16, Ordering};
+use std::time::SystemTime;
 
 static PORT: AtomicU16 = AtomicU16::new(10001);
+const TIMEOUT: u64 = 5;
 
 pub fn setup() -> (Server, Client) {
     let port = PORT.fetch_add(1, Ordering::SeqCst);
@@ -12,6 +14,12 @@ pub fn setup() -> (Server, Client) {
     let mut sv = Server::new(config);
     println!("Opening server on port {}", port);
     sv.run();
+    let start = SystemTime::now();
+    while !sv.poll_running() {
+        if SystemTime::now().duration_since(start).unwrap().as_secs() > TIMEOUT {
+            panic!("Failed to start REDIS server");
+        }
+    }
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", port)).unwrap();
     return (sv, client);
 }
