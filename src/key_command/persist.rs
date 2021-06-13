@@ -49,7 +49,7 @@ mod tests {
         .unwrap();
 
         assert!(data.get_with_expiration("src").unwrap().0.is_none());
-        assert_eq!(builder.serialize(), "*1\r\n:1\r\n");
+        assert_eq!(builder.serialize(), ":1\r\n");
     }
 
     #[test]
@@ -66,6 +66,6 @@ mod tests {
         .unwrap();
 
         assert!(data.get_with_expiration("src").unwrap().0.is_none());
-        assert_eq!(builder.serialize(), "*1\r\n:0\r\n");
+        assert_eq!(builder.serialize(), ":0\r\n");
     }
 }

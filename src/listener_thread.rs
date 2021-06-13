@@ -9,6 +9,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::TcpListener;
 use std::net::TcpStream;
+use std::sync::mpsc::{Receiver, Sender, TryRecvError};
 use std::sync::{Arc, Mutex};
 
 /// Struct which listens for connections and executes the given commands.
@@ -32,11 +33,27 @@ impl ListenerThread {
     }
 
     /// Listen for connections on the configured settings.
-    pub fn run(&self, _ttl: u32) {
-        let listener = TcpListener::bind(&self.addr).unwrap();
+    pub fn run(&self, _ttl: u32, sx: Sender<()>, rx: Receiver<()>) {
+        println!("Trying to bind on address {}", self.addr);
+        let listener = match TcpListener::bind(&self.addr) {
+            Ok(s) => s,
+            Err(e) => {
+                println!("Failed to bind to socket with error: '{}'", e);
+                panic!("{}", e);
+            }
+        };
         println!("REDIS server started on address '{}'...", self.addr);
+        sx.send(()).unwrap();
 
         for stream in listener.incoming() {
+            match rx.try_recv() {
+                Ok(_) | Err(TryRecvError::Disconnected) => {
+                    println!("Terminating.");
+                    break;
+                }
+                Err(TryRecvError::Empty) => {}
+            }
+
             let stream = stream.unwrap();
             let exec = self.execution.clone();
             let pubsub = self.pubsub.clone();
@@ -137,6 +154,7 @@ impl ListenerThread {
             }
         };
         let response_str = response.serialize();
+        println!("Writing response {}", response_str);
         locked_stream.write_all(response_str.as_bytes()).unwrap();
     }
 }

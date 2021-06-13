@@ -50,7 +50,7 @@ mod tests {
 
         assert_eq!(data.get("key1").unwrap().string().unwrap(), "Hello");
         assert_eq!(data.get("key2").unwrap().string().unwrap(), "World");
-        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
+        assert_eq!(builder.serialize(), "+OK\r\n");
     }
 
     #[test]
@@ -60,6 +60,6 @@ mod tests {
 
         run(data.clone(), vec![], &mut builder).unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n+OK\r\n");
+        assert_eq!(builder.serialize(), "+OK\r\n");
     }
 }

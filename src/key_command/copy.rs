@@ -48,7 +48,7 @@ mod tests {
 
         assert_eq!(data.get("new_key").unwrap().string().unwrap(), "value");
         assert!(data.get("key").is_some());
-        assert_eq!(builder.serialize(), "*1\r\n:1\r\n");
+        assert_eq!(builder.serialize(), ":1\r\n");
     }
 
     #[test]
@@ -66,6 +66,6 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n:0\r\n");
+        assert_eq!(builder.serialize(), ":0\r\n");
     }
 }

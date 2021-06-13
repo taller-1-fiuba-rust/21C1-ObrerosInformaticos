@@ -22,7 +22,10 @@ impl ResponseBuilder {
 
     /// Serialiazes the objects into a RESP compatible format.
     pub fn serialize(&self) -> String {
-        ProtocolType::Array(self.results.clone()).serialize()
+        match self.results.len() {
+            1 => self.results[0].serialize(),
+            _ => ProtocolType::Array(self.results.clone()).serialize(),
+        }
     }
 
     pub fn is_empty(&self) -> bool {
