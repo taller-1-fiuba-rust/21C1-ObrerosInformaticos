@@ -16,23 +16,19 @@ pub fn run(
     let key = arguments[0].clone().string()?;
 
     match data.get(&key) {
-        Some(value) => {
-            match value {
-                Value::String(old_value) => {
-                    let new_value = arguments[1].clone().string()?;
-                    data.set(&key, Value::String(new_value))?;
-                    builder.add(ProtocolType::SimpleString(old_value.to_string()));
-                },
-                Value::Vec(_) => return Err("The value stored is not a string"),
-                Value::HashSet(_) => return Err("The value stored is not a string"),
+        Some(value) => match value {
+            Value::String(old_value) => {
+                let new_value = arguments[1].clone().string()?;
+                data.set(&key, Value::String(new_value))?;
+                builder.add(ProtocolType::SimpleString(old_value.to_string()));
             }
-            
+            Value::Vec(_) => return Err("The value stored is not a string"),
+            Value::HashSet(_) => return Err("The value stored is not a string"),
         },
-        None => builder.add(ProtocolType::SimpleString("nil".to_string()))
+        None => builder.add(ProtocolType::SimpleString("nil".to_string())),
     }
     Ok(())
 }
-
 
 #[cfg(test)]
 
@@ -44,5 +40,4 @@ mod tests {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
     }
-
 }
