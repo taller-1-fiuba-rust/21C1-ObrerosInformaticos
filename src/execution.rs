@@ -2,12 +2,13 @@ use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
+use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
 use crate::server_command::{config, info, ping, pubsub};
 use crate::storage::data_storage::DataStorage;
-use crate::string_command::{append, decrby, mset, set, strlen};
+use crate::string_command::{append, decrby, get, getdel, mset, set, strlen};
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
@@ -18,6 +19,7 @@ pub struct Execution {
     config: Arc<Mutex<Configuration>>,
     sys_time: Arc<SystemTime>,
     client_connected: u64,
+    logger: Arc<Logger>,
 }
 
 impl Execution {
@@ -25,12 +27,14 @@ impl Execution {
         data: Arc<DataStorage>,
         config: Arc<Mutex<Configuration>>,
         sys_time: Arc<SystemTime>,
+        logger: Arc<Logger>,
     ) -> Self {
         Execution {
             data,
             config,
             sys_time,
             client_connected: 0,
+            logger,
         }
     }
 
@@ -57,6 +61,8 @@ impl Execution {
             "strlen" => strlen::run(self.data.clone(), cmd.arguments(), builder),
             "decrby" => decrby::run(self.data.clone(), cmd.arguments(), builder),
             "append" => append::run(cmd.arguments(), builder, self.data.clone()),
+            "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
+            "get" => get::run(cmd.arguments(), builder, self.data.clone()),
             _ => Err("Unknown command."),
         }
     }

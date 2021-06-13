@@ -345,6 +345,22 @@ impl DataStorage {
             Ok(0 - numeric_value)
         }
     }
+
+    pub fn get_string_value(&self, key: String) -> Result<Option<String>, &'static str> {
+        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
+
+        if lock.contains_key(&key) {
+            let entry = lock.get(&key).unwrap();
+
+            match entry.value() {
+                Value::String(string_value) => Ok(Some(string_value)),
+                Value::Vec(_i) => Err("value not a string"),
+                Value::HashSet(_j) => Err("value not a string"),
+            }
+        } else {
+            Ok(None)
+        }
+    }
 }
 
 fn now() -> Result<Duration, &'static str> {

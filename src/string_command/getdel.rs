@@ -8,21 +8,27 @@ pub fn run(
     builder: &mut ResponseBuilder,
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
-    if arguments.len() != 2 {
+    if arguments.len() != 1 {
         return Err("Wrong quantity of arguments.");
     }
 
     let key = arguments[0].clone().string()?;
-    let value = arguments[1].clone().string()?;
+    let value = data.get_string_value(key);
 
-    let value_length = data.append(key, value);
-
-    match value_length {
-        Ok(s) => {
-            builder.add(ProtocolType::Integer(s as i64));
-            Ok(())
-        }
-        Err(_i) => Err("string not appended"),
+    match value {
+        Ok(s) => match s {
+            Some(value) => {
+                let key = arguments[0].clone().string()?;
+                data.delete_key(&key)?;
+                builder.add(ProtocolType::String(value));
+                Ok(())
+            }
+            None => {
+                builder.add(ProtocolType::String("(nil)".to_string()));
+                Ok(())
+            }
+        },
+        Err(_i) => Err("Value not a string"),
     }
 }
 
@@ -33,44 +39,35 @@ mod tests {
     use crate::storage::data_storage::Value;
 
     #[test]
-    fn test_append_existing_key() {
+    fn test_getdel_existing_key() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
         data.set("key", Value::String("value".to_string())).unwrap();
 
         run(
-            vec![
-                ProtocolType::String("key".to_string()),
-                ProtocolType::String("_append_value".to_string()),
-            ],
+            vec![ProtocolType::String("key".to_string())],
             &mut builder,
             data.clone(),
         )
         .unwrap();
 
-        assert_eq!(
-            data.get("key").unwrap().string().unwrap(),
-            "value_append_value"
-        );
-        assert_eq!(builder.serialize(), ":18\r\n");
+        assert_eq!(builder.serialize(), "*1\r\n$5\r\nvalue\r\n");
+
+        assert_eq!(data.exists_key("key"), Err("Not key in HashMap"));
     }
 
     #[test]
-    fn test_not_append_existing_key() {
+    fn test_getdel_not_existing_key() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
 
         run(
-            vec![
-                ProtocolType::String("key".to_string()),
-                ProtocolType::String("value".to_string()),
-            ],
+            vec![ProtocolType::String("key".to_string())],
             &mut builder,
             data.clone(),
         )
         .unwrap();
 
-        assert_eq!(data.get("key").unwrap().string().unwrap(), "value");
-        assert_eq!(builder.serialize(), ":5\r\n");
+        assert_eq!(builder.serialize(), "*1\r\n$5\r\n(nil)\r\n");
     }
 }
