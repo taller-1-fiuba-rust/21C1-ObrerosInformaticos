@@ -1,12 +1,12 @@
 use crate::config::configuration::Configuration;
 use crate::logging::logger::Logger;
-use std::sync::Arc;
 use std::env;
-mod logging;
+use std::sync::Arc;
 mod config;
 mod execution;
 mod key_command;
 mod listener_thread;
+mod logging;
 mod protocol;
 mod pubsub;
 mod server;

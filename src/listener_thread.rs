@@ -40,20 +40,20 @@ impl ListenerThread {
         let listener = match TcpListener::bind(&self.addr) {
             Ok(s) => s,
             Err(e) => {
-                print_and_log(format!("Failed to bind to socket with error: '{}'", e));
+                self.print_and_log(format!("Failed to bind to socket with error: '{}'", e));
                 panic!("{}", e);
             }
         };
-        print_and_log(format!("REDIS server started on address '{}'...", self.addr));
+        self.print_and_log(format!(
+            "REDIS server started on address '{}'...",
+            self.addr
+        ));
         sx.send(()).unwrap();
 
         for stream in listener.incoming() {
             match rx.try_recv() {
                 Ok(_) | Err(TryRecvError::Disconnected) => {
-                    let err_msg = format!("Failed to bind to socket with error: '{}'", e);
-                    println!("{}", err_msg);
-                    self.logger.log(&err_msg).unwrap();
-                    println!("Terminating.");
+                    self.print_and_log("Terminating.".to_string());
                     break;
                 }
                 Err(TryRecvError::Empty) => {}
@@ -170,9 +170,9 @@ impl ListenerThread {
         logger.log(&response_str).unwrap();
         locked_stream.write_all(response_str.as_bytes()).unwrap();
     }
-}
 
-fn print_and_log(msg: String){
-    println!("{}", err_msg);
-    self.logger.log(&err_msg).unwrap();
+    fn print_and_log(&self, msg: String) {
+        println!("{}", msg);
+        self.logger.log(&msg).unwrap();
+    }
 }
