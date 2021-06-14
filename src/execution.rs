@@ -8,7 +8,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
 use crate::server_command::{config, info, ping, pubsub};
 use crate::storage::data_storage::DataStorage;
-use crate::string_command::{append, decrby, get, getdel, getset, mset, set, strlen, mget};
+use crate::string_command::{append, decrby, get, getdel, getset, mget, mset, set, strlen};
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;

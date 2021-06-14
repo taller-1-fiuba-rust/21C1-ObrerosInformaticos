@@ -10,10 +10,11 @@ pub fn run(
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
     let mut response = Vec::new();
-
+    data.set("key2", Value::Vec(vec![])).unwrap();
     for key in arguments.iter() {
         let string_key = key.clone().string()?;
         let result = data.get(&string_key);
+        
         match result {
             Some(value) => match value {
                 Value::String(string) => response.push(ProtocolType::String(string)),
@@ -56,7 +57,7 @@ mod tests {
 
         assert_eq!(
             builder.serialize(),
-            "*1\r\n*3\r\n$5\r\nvalue\r\n$3\r\nnil\r\n$3\r\nnil\r\n"
+            "*3\r\n$5\r\nvalue\r\n$3\r\nnil\r\n$3\r\nnil\r\n"
         );
     }
 }
