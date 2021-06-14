@@ -238,10 +238,26 @@ impl DataStorage {
         None
     }
 
-    pub fn update(&self, key: &str, new_value: Value) -> Result<(), &'static str> {
-        self.delete_key(key)?;
-        self.set(key, new_value)?;
-        Ok(())
+    pub fn getset(&self, key: &str, new_value: Value) -> Result<String, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+
+        match lock.get(key) {
+            Some(entry) => match entry.value() {
+                Value::String(old_value) => {
+                    // lock.delete_key(key)?;
+                    self.do_set(&mut lock, key, new_value)?;
+                    drop(lock);
+                    Ok(old_value)
+                }
+                Value::Vec(_) => {
+                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                }
+                Value::HashSet(_) => {
+                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                }
+            },
+            None => Ok("nil".to_string()),
+        }
     }
 
     /// Renames a key and fails if it does not exist
@@ -556,20 +572,5 @@ mod tests {
         let a: HashSet<String> = vec!["a".to_string(), "b".to_string()].into_iter().collect();
 
         assert_eq!(a, b);
-    }
-
-    #[test]
-    fn test_update_data() {
-        let data_storage = DataStorage::new();
-        let key = String::from("key");
-
-        data_storage
-            .set(&key, Value::String("value1".to_string()))
-            .unwrap();
-
-        data_storage
-            .update(&key, Value::String("value2".to_string()))
-            .unwrap();
-        assert_eq!(data_storage.get(&key).unwrap().string().unwrap(), "value2");
     }
 }
