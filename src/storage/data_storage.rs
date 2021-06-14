@@ -247,16 +247,16 @@ impl DataStorage {
                     // lock.delete_key(key)?;
                     self.do_set(&mut lock, key, new_value)?;
                     drop(lock);
-                    return Ok(old_value);
+                    Ok(old_value)
                 }
                 Value::Vec(_) => {
-                    return Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
                 }
                 Value::HashSet(_) => {
-                    return Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
                 }
             },
-            None => return Ok("nil".to_string()),
+            None => Ok("nil".to_string()),
         }
     }
 
