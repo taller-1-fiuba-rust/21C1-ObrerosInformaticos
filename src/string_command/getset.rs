@@ -14,23 +14,10 @@ pub fn run(
     }
 
     let key = arguments[0].clone().string()?;
+    let new_value = arguments[1].clone().string()?;
 
-    match data.get(&key) {
-        Some(value) => match value {
-            Value::String(old_value) => {
-                let new_value = arguments[1].clone().string()?;
-                data.set(&key, Value::String(new_value))?;
-                builder.add(ProtocolType::String(old_value));
-            }
-            Value::Vec(_) => {
-                return Err("WRONGTYPE Operation against a key holding the wrong kind of value")
-            }
-            Value::HashSet(_) => {
-                return Err("WRONGTYPE Operation against a key holding the wrong kind of value")
-            }
-        },
-        None => builder.add(ProtocolType::String("nil".to_string())),
-    }
+    let response = data.getset(&key, Value::String(new_value))?;
+    builder.add(ProtocolType::String(response));
     Ok(())
 }
 
@@ -57,7 +44,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n$5\r\nvalue\r\n");
+        assert_eq!(builder.serialize(), "$5\r\nvalue\r\n");
         assert_eq!(data.get("src").unwrap().string().unwrap(), "new_value");
     }
 
@@ -76,7 +63,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n$3\r\nnil\r\n");
+        assert_eq!(builder.serialize(), "$3\r\nnil\r\n");
     }
 
     #[test]
