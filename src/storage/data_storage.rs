@@ -66,10 +66,12 @@ impl DataStorage {
     /// previously created.
     /// POST: DataStorage is loaded with the data
     /// that contained the file.
-    pub fn load_data(&mut self, file: &str) -> Result<(), &'static str> {
+    pub fn load_data(&self, file: &str) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
-        parser::parse_data(file, &mut lock);
-        Ok(())
+        match parser::parse_data(file, &mut lock) {
+            Ok(_s) => Ok(()),
+            Err(_i) => Err("Could not parse the file"),
+        }
     }
 
     /// Given a file name, save the data of the
@@ -77,7 +79,7 @@ impl DataStorage {
     /// PRE: The DataStorage structure must be created.
     /// POST: The file contains the information that had
     /// in the structure.
-    pub fn save_data(&mut self, file: &str) -> Result<(), &'static str> {
+    pub fn save_data(&self, file: &str) -> Result<(), &'static str> {
         let lock = self.data.read().ok().ok_or("Failed to lock database")?;
         parser::store_data(file, &lock);
         Ok(())
@@ -236,10 +238,26 @@ impl DataStorage {
         None
     }
 
-    pub fn update(&self, key: &str, new_value: Value) -> Result<(), &'static str> {
-        self.delete_key(key)?;
-        self.set(key, new_value)?;
-        Ok(())
+    pub fn getset(&self, key: &str, new_value: Value) -> Result<String, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+
+        match lock.get(key) {
+            Some(entry) => match entry.value() {
+                Value::String(old_value) => {
+                    // lock.delete_key(key)?;
+                    self.do_set(&mut lock, key, new_value)?;
+                    drop(lock);
+                    Ok(old_value)
+                }
+                Value::Vec(_) => {
+                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                }
+                Value::HashSet(_) => {
+                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                }
+            },
+            None => Ok("nil".to_string()),
+        }
     }
 
     /// Renames a key and fails if it does not exist
@@ -431,7 +449,7 @@ mod tests {
         let mut file = File::create(path).expect("Not file created");
 
         writeln!(file, "Daniela;|STRING|;12356;0;hola").expect("Not file write");
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         data_storage.load_data(&path_str).unwrap();
 
         let key = String::from("Daniela");
@@ -457,7 +475,7 @@ mod tests {
         let mut file = File::create(path).expect("Not file created");
 
         writeln!(file, "Daniela;|LISTA|;12345;0;buen,dia").expect("Not file write");
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         data_storage.load_data(&path_str).unwrap();
 
         let key = String::from("Daniela");
@@ -483,7 +501,7 @@ mod tests {
         let mut file = File::create(path).expect("Not file created");
 
         writeln!(file, "Daniela;|SET|;12356;0;buen,dia").expect("Not file write");
-        let mut data_storage = DataStorage::new();
+        let data_storage = DataStorage::new();
         data_storage.load_data(&path_str).unwrap();
 
         let key = String::from("Daniela");
@@ -554,20 +572,5 @@ mod tests {
         let a: HashSet<String> = vec!["a".to_string(), "b".to_string()].into_iter().collect();
 
         assert_eq!(a, b);
-    }
-
-    #[test]
-    fn test_update_data() {
-        let data_storage = DataStorage::new();
-        let key = String::from("key");
-
-        data_storage
-            .set(&key, Value::String("value1".to_string()))
-            .unwrap();
-
-        data_storage
-            .update(&key, Value::String("value2".to_string()))
-            .unwrap();
-        assert_eq!(data_storage.get(&key).unwrap().string().unwrap(), "value2");
     }
 }

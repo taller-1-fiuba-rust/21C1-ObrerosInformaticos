@@ -8,12 +8,14 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
+use std::time::Duration;
 use std::time::SystemTime;
 
 #[allow(dead_code)]
 pub struct Server {
     addr: String,
     handle: Option<JoinHandle<()>>,
+    handle_store_data: Option<JoinHandle<()>>,
     data: Arc<DataStorage>,
     config: Arc<Mutex<Configuration>>,
     sys_time: Arc<SystemTime>,
@@ -28,6 +30,7 @@ impl Server {
         Server {
             addr: config.get_ip().to_string(),
             handle: None,
+            handle_store_data: None,
             data: Arc::new(DataStorage::new()),
             config: Arc::new(Mutex::new(config)),
             sys_time: Arc::new(SystemTime::now()),
@@ -39,6 +42,11 @@ impl Server {
     }
 
     pub fn run(&mut self) {
+        let dbfile = self.config.lock().unwrap().get_dbfilename().clone();
+        let result = self.data.load_data(&dbfile);
+        if result.is_err() {
+            println!("Error loading data from dbfile");
+        };
         let addr_and_port = self.get_addr_and_port();
         let execution = Arc::new(Execution::new(
             self.data.clone(),
@@ -48,18 +56,28 @@ impl Server {
         ));
         // let verbosity = config.get_verbose();
         let ttl = self.config.lock().unwrap().get_timeout();
-
         let logger_cpy = self.logger.clone();
         let (server_sender, listener_receiver) = channel();
         let (listener_sender, server_receiver) = channel();
-
         let handle = thread::spawn(move || {
             let listener = ListenerThread::new(addr_and_port, execution, logger_cpy);
             listener.run(ttl, listener_sender, listener_receiver);
         });
+        let data_storage = self.data.clone();
+        let handle_store_data = thread::spawn(move || loop {
+            loop {
+                let result = data_storage.save_data(&dbfile);
+                if result.is_err() {
+                    println!("Error saving data from dbfile");
+                };
+                let ten_mins = Duration::from_secs(600);
+                thread::sleep(ten_mins);
+            }
+        });
         self.sender = Some(server_sender);
         self.receiver = Some(server_receiver);
         self.handle = Some(handle);
+        self.handle_store_data = Some(handle_store_data);
     }
 
     fn get_addr_and_port(&self) -> String {
@@ -77,9 +95,10 @@ impl Server {
     }
 
     pub fn join(&mut self) {
-        if self.handle.is_none() {
+        if self.handle.is_none() || self.handle_store_data.is_none() {
             panic!("Server was joined before ran.");
         }
+        self.handle_store_data.take().unwrap().join().unwrap();
         self.handle.take().unwrap().join().unwrap();
     }
 
