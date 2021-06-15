@@ -1,5 +1,5 @@
 pub mod publish;
+pub mod pubsub;
 pub mod punsubscribe;
 pub mod subscribe;
 pub mod unsubscribe;
-pub mod pubsub;

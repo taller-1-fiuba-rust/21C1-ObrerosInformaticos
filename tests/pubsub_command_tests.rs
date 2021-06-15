@@ -130,7 +130,7 @@ fn test_numsub() {
     pubsub1.subscribe("CHANNEL3").unwrap();
     pubsub1.unsubscribe("CHANNEL2").unwrap();
 
-    let r : Vec<u32> = common::query_string(&client2,"PUBSUB NUMSUB CHANNEL1 CHANNEL2 CHANNEL3");
+    let r: Vec<u32> = common::query_string(&client2, "PUBSUB NUMSUB CHANNEL1 CHANNEL2 CHANNEL3");
     assert_eq!(r, vec![1, 0, 1]);
 }
 
@@ -148,7 +148,7 @@ fn test_pubsub_channels_no_pattern() {
     pubsub1.subscribe("CHANNEL3").unwrap();
     pubsub1.unsubscribe("CHANNEL2").unwrap();
 
-    let mut r : Vec<String> = common::query_string(&client2,"PUBSUB CHANNELS");
+    let mut r: Vec<String> = common::query_string(&client2, "PUBSUB CHANNELS");
     r.sort();
     assert_eq!(r, vec!["CHANNEL1", "CHANNEL3"]);
 }
@@ -166,8 +166,7 @@ fn test_pubsub_channels_pattern() {
     pubsub1.subscribe("ATE").unwrap();
     pubsub1.subscribe("HOLA").unwrap();
 
-    let mut r : Vec<String> = common::query_string(&client2,"PUBSUB CHANNELS A?E");
+    let mut r: Vec<String> = common::query_string(&client2, "PUBSUB CHANNELS A?E");
     r.sort();
     assert_eq!(r, vec!["AGE", "ATE"]);
 }
-

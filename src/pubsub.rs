@@ -142,7 +142,11 @@ impl PublisherSubscriber {
 
     /// Return a list of all the active channels
     pub fn get_channels(&self) -> Vec<String> {
-        self.subscriptions.keys().cloned().filter(|x| self.subscriber_count(x) > 0).collect::<Vec<String>>()
+        self.subscriptions
+            .keys()
+            .cloned()
+            .filter(|x| self.subscriber_count(x) > 0)
+            .collect::<Vec<String>>()
     }
 
     /// Return the subscriber count for a channel
@@ -151,6 +155,6 @@ impl PublisherSubscriber {
             s.len()
         } else {
             0
-        }
+        };
     }
 }
