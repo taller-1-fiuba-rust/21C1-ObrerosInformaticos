@@ -20,6 +20,15 @@ pub fn run(
         channels = locked_pubsub.get_subscriptions(client.clone());
     }
 
+    if channels.is_empty() {
+        builder.add(ProtocolType::Array(vec![
+            ProtocolType::String("unsubscribe".to_string()),
+            ProtocolType::String("none".to_string()),
+            ProtocolType::Integer(channels.len() as i64),
+        ]));
+        return Ok(())
+    }
+
     for channel in channels {
         let current_subs = locked_pubsub.unsubscribe_from_channel(client.clone(), &channel);
         builder.add(ProtocolType::Array(vec![
