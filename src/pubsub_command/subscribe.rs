@@ -14,7 +14,7 @@ pub fn run(
 ) -> Result<(), &'static str> {
     assert!(!arguments.is_empty());
 
-    let channels = parse_channels(&arguments)?;
+    let mut channels = arguments.iter().map(|x| x.clone().string().unwrap()).collect::<Vec<String>>();
 
     let mut locked_pubsub = pubsub.lock().ok().ok_or("Failed to lock")?;
 
@@ -28,18 +28,4 @@ pub fn run(
     }
 
     Ok(())
-}
-
-fn parse_channels(arguments: &[ProtocolType]) -> Result<Vec<String>, &'static str> {
-    let mut channels = Vec::new();
-    for argument in arguments {
-        let channel = match (*argument).clone().string() {
-            Ok(s) => s,
-            Err(_) => {
-                return Err("Error while parsing channels");
-            }
-        };
-        channels.push(channel);
-    }
-    Ok(channels)
 }

@@ -6,7 +6,7 @@ use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
-use crate::pubsub_command::{publish, subscribe, pubsub, unsubscribe};
+use crate::pubsub_command::{publish, subscribe, unsubscribe};
 use crate::server_command::{config, info, ping};
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{append, decrby, get, getdel, getset, mset, set, strlen};
@@ -82,7 +82,7 @@ impl Execution {
             "unsubscribe" => unsubscribe::run(pubsub, client, response, cmd.arguments()),
             "subscribe" => subscribe::run(pubsub, client, response, cmd.arguments()),
             "publish" => publish::run(pubsub, response, cmd.arguments()),
-            "pubsub" => pubsub::run(pubsub, response, cmd.arguments()),
+            //"pubsub" => pubsub::run(pubsub, response, cmd.arguments()),
             _ => Err("Unknown command."),
         }
     }
