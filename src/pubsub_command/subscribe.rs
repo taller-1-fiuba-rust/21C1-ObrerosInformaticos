@@ -3,29 +3,20 @@ use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
+use crate::client::Client;
 
 /// Execute the pub/sub subscribe command.
 pub fn run(
     pubsub: Arc<Mutex<PublisherSubscriber>>,
-    client: Arc<Mutex<TcpStream>>,
+    client: Arc<Client>,
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,
-) -> Result<(), String> {
+) -> Result<(), &'static str> {
     assert!(!arguments.is_empty());
 
-    let channels = match parse_channels(&arguments) {
-        Ok(c) => c,
-        Err(s) => {
-            return Err(s);
-        }
-    };
+    let channels = parse_channels(&arguments)?;
 
-    let mut locked_pubsub = match pubsub.lock() {
-        Err(_) => {
-            return Err("Failed to execute subscribe".to_string());
-        }
-        Ok(t) => t,
-    };
+    let mut locked_pubsub = pubsub.lock().ok().ok_or("Failed to lock")?;
 
     for channel in channels {
         let current_subs = locked_pubsub.subscribe(client.clone(), &channel);
@@ -39,17 +30,13 @@ pub fn run(
     Ok(())
 }
 
-fn parse_channels(arguments: &[ProtocolType]) -> Result<Vec<String>, String> {
+fn parse_channels(arguments: &[ProtocolType]) -> Result<Vec<String>, &'static str> {
     let mut channels = Vec::new();
     for argument in arguments {
         let channel = match (*argument).clone().string() {
             Ok(s) => s,
-            Err(s) => {
-                return Err(format!(
-                    "Error '{}' while parsing channel'{}'",
-                    s,
-                    arguments[1].to_string()
-                ));
+            Err(_) => {
+                return Err("Error while parsing channels");
             }
         };
         channels.push(channel);
