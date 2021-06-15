@@ -1,11 +1,11 @@
 use std::net::TcpStream;
-use std::sync::{RwLock, RwLockWriteGuard, Mutex};
+use std::sync::{Mutex};
 use crate::protocol::command::Command;
 use crate::protocol::request::Request;
-use std::io::{BufReader, BufRead, Write, Read};
+use std::io::{BufReader, BufRead, Write};
 use std::sync::atomic::{AtomicBool, Ordering, AtomicU64};
 use std::hash::{Hash, Hasher};
-use std::collections::VecDeque;
+
 use std::time::Duration;
 
 static CLIENT_ID: AtomicU64 = AtomicU64::new(0);
@@ -55,7 +55,7 @@ impl Client {
 
     /// Parses a command from a socket connection
     pub fn parse_commands(&self) -> Result<Vec<Command>, String> {
-        let mut locked_socket = self.read_socket.lock().ok().ok_or_else(||"Failed to lock socket".to_string())?;
+        let locked_socket = self.read_socket.lock().ok().ok_or_else(||"Failed to lock socket".to_string())?;
         let mut request = Request::new();
         let mut result: Result<bool, String> = Err("Empty message".to_string());
         let mut commands = Vec::new();

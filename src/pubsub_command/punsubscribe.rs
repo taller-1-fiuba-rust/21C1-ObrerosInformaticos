@@ -9,7 +9,7 @@ pub fn run(
     pubsub: Arc<Mutex<PublisherSubscriber>>,
     client: Arc<Client>,
     builder: &mut ResponseBuilder,
-    arguments: Vec<ProtocolType>,
+    _arguments: Vec<ProtocolType>,
 ) -> Result<(), &'static str> {
 
     let lock = pubsub.lock().ok().ok_or_else(|| "Error locking pubsub")?;
