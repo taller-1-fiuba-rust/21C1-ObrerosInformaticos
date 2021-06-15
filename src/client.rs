@@ -1,10 +1,10 @@
-use std::net::TcpStream;
-use std::sync::{Mutex};
 use crate::protocol::command::Command;
 use crate::protocol::request::Request;
-use std::io::{BufReader, BufRead, Write};
-use std::sync::atomic::{AtomicBool, Ordering, AtomicU64};
 use std::hash::{Hash, Hasher};
+use std::io::{BufRead, BufReader, Write};
+use std::net::TcpStream;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::Mutex;
 
 use std::time::Duration;
 
@@ -48,18 +48,29 @@ impl Client {
 
     /// Send a string message to this client
     pub fn send(&self, msg: &str) -> Result<(), &'static str> {
-        let mut lock = self.write_socket.lock().ok().ok_or("Failed to lock socket")?;
-        lock.write_all(msg.as_bytes()).ok().ok_or("Error while writing to client")?;
+        let mut lock = self
+            .write_socket
+            .lock()
+            .ok()
+            .ok_or("Failed to lock socket")?;
+        lock.write_all(msg.as_bytes())
+            .ok()
+            .ok_or("Error while writing to client")?;
         Ok(())
     }
 
     /// Parses a command from a socket connection
     pub fn parse_commands(&self) -> Result<Vec<Command>, String> {
-        let locked_socket = self.read_socket.lock().ok().ok_or_else(||"Failed to lock socket".to_string())?;
+        let locked_socket = self
+            .read_socket
+            .lock()
+            .ok()
+            .ok_or_else(|| "Failed to lock socket".to_string())?;
         let mut request = Request::new();
         let mut commands = Vec::new();
         let copy = locked_socket.try_clone().unwrap();
-        copy.set_read_timeout(Some(Duration::from_millis(10))).unwrap();
+        copy.set_read_timeout(Some(Duration::from_millis(10)))
+            .unwrap();
         let mut reader = BufReader::new(copy);
         let mut line = String::new();
         let mut offset = 0;
@@ -72,7 +83,7 @@ impl Client {
                         self.closed.store(true, Ordering::SeqCst);
                         return Err("Client closed the connection".to_string());
                     } else {
-                        let l = &line[offset..offset+s];
+                        let l = &line[offset..offset + s];
                         offset += s;
                         println!("{}", &l.replace("\r\n", ""));
                         let result = request.feed(&l);
@@ -80,12 +91,13 @@ impl Client {
                             if val {
                                 commands.push(request.build());
                                 request = Request::new();
-                            } else {}
+                            } else {
+                            }
                         } else if let Err(e) = result {
                             return Err(e);
                         }
                     }
-                },
+                }
                 Err(_) => {
                     if !commands.is_empty() {
                         break;
@@ -104,9 +116,7 @@ impl PartialEq for Client {
     }
 }
 
-impl Eq for Client {
-
-}
+impl Eq for Client {}
 
 impl Hash for Client {
     fn hash<H: Hasher>(&self, state: &mut H) {

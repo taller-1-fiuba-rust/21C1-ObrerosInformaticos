@@ -6,14 +6,14 @@ use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
-use crate::pubsub_command::{publish, subscribe, unsubscribe, punsubscribe};
+use crate::pubsub_command::{publish, punsubscribe, subscribe, unsubscribe};
 use crate::server_command::{config, info, ping};
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{append, decrby, get, getdel, getset, mset, set, strlen};
 
+use crate::client::Client;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
-use crate::client::Client;
 
 #[allow(dead_code)]
 pub struct Execution {
@@ -44,8 +44,18 @@ impl Execution {
     }
 
     /// Matches a command with it's executing function and runs it.
-    pub fn run(&self, cmd: &Command, builder: &mut ResponseBuilder, client: Arc<Client>) -> Result<(), &'static str> {
-        if client.in_pubsub_mode() && !matches!(&cmd.name().to_uppercase()[..], "SUBSCRIBE" | "PSUBSCRIBE" | "UNSUBSCRIBE" | "PUNSUBSCRIBE" | "PING" | "QUIT") {
+    pub fn run(
+        &self,
+        cmd: &Command,
+        builder: &mut ResponseBuilder,
+        client: Arc<Client>,
+    ) -> Result<(), &'static str> {
+        if client.in_pubsub_mode()
+            && !matches!(
+                &cmd.name().to_uppercase()[..],
+                "SUBSCRIBE" | "PSUBSCRIBE" | "UNSUBSCRIBE" | "PUNSUBSCRIBE" | "PING" | "QUIT"
+            )
+        {
             return Err("A client in pub/sub mode can only use SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE, PUNSUBSCRIBE, PING and QUIT");
         }
         println!("{}", cmd.arguments().len());
@@ -73,10 +83,14 @@ impl Execution {
             "append" => append::run(cmd.arguments(), builder, self.data.clone()),
             "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
             "get" => get::run(cmd.arguments(), builder, self.data.clone()),
-            "unsubscribe" => unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments()),
+            "unsubscribe" => {
+                unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments())
+            }
             "subscribe" => subscribe::run(self.pubsub.clone(), client, builder, cmd.arguments()),
             "publish" => publish::run(self.pubsub.clone(), builder, cmd.arguments()),
-            "punsubscribe" => punsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments()),
+            "punsubscribe" => {
+                punsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments())
+            }
             _ => Err("Unknown command."),
         }
     }

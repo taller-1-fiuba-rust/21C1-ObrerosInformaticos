@@ -2,8 +2,8 @@ use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 
-use std::sync::{Arc, Mutex};
 use crate::client::Client;
+use std::sync::{Arc, Mutex};
 
 /// Execute the pub/sub unsubscribe command.
 pub fn run(
@@ -12,9 +12,11 @@ pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,
 ) -> Result<(), &'static str> {
-
     let mut locked_pubsub = pubsub.lock().ok().ok_or("Failed to lock")?;
-    let mut channels = arguments.iter().map(|x| x.clone().string().unwrap()).collect::<Vec<String>>();
+    let mut channels = arguments
+        .iter()
+        .map(|x| x.clone().string().unwrap())
+        .collect::<Vec<String>>();
 
     if channels.is_empty() {
         channels = locked_pubsub.get_subscriptions(client.clone());
@@ -26,7 +28,7 @@ pub fn run(
             ProtocolType::String("none".to_string()),
             ProtocolType::Integer(channels.len() as i64),
         ]));
-        return Ok(())
+        return Ok(());
     }
 
     for channel in channels {

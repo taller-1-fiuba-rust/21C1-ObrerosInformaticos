@@ -2,15 +2,13 @@ use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use std::collections::{HashMap, HashSet};
 
-
-
-use std::sync::{Arc};
 use crate::client::Client;
+use std::sync::Arc;
 
 /// A pub/sub subscribers. Stores a list of channels and a socket to relay messages to.
 struct Subscriber {
     channels: HashSet<String>,
-    socket: Arc<Client>
+    socket: Arc<Client>,
 }
 
 impl Subscriber {
@@ -37,7 +35,7 @@ impl PublisherSubscriber {
     pub fn new() -> Self {
         PublisherSubscriber {
             subscriber_ids: HashMap::new(),
-            subscriptions: HashMap::new()
+            subscriptions: HashMap::new(),
         }
     }
 
@@ -101,15 +99,11 @@ impl PublisherSubscriber {
     /// Build RESP response
     fn build_response(channel: &str, message: &str) -> String {
         let mut response = ResponseBuilder::new();
-        response.add(
-            ProtocolType::Array(
-                vec![
-                    ProtocolType::String("message".to_string()),
-                    ProtocolType::String(channel.to_string()),
-                    ProtocolType::String(message.to_string()),
-                ]
-            )
-        );
+        response.add(ProtocolType::Array(vec![
+            ProtocolType::String("message".to_string()),
+            ProtocolType::String(channel.to_string()),
+            ProtocolType::String(message.to_string()),
+        ]));
         response.serialize()
     }
 
@@ -119,7 +113,7 @@ impl PublisherSubscriber {
             sub.channels.iter().cloned().collect::<Vec<String>>()
         } else {
             Vec::new()
-        }
+        };
     }
 
     /// Unsubscribes a user from all the channels it's subscribed.

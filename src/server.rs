@@ -2,6 +2,7 @@ use crate::config::configuration::Configuration;
 use crate::execution::Execution;
 use crate::listener_thread::ListenerThread;
 use crate::logging::logger::Logger;
+use crate::pubsub::PublisherSubscriber;
 use crate::storage::data_storage::DataStorage;
 use std::net::TcpStream;
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -10,7 +11,6 @@ use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
 use std::time::SystemTime;
-use crate::pubsub::PublisherSubscriber;
 
 #[allow(dead_code)]
 pub struct Server {
@@ -55,7 +55,7 @@ impl Server {
             self.config.clone(),
             self.sys_time.clone(),
             self.logger.clone(),
-            pubsub
+            pubsub,
         ));
         // let verbosity = config.get_verbose();
         let ttl = self.config.lock().unwrap().get_timeout();

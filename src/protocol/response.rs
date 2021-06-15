@@ -22,7 +22,11 @@ impl ResponseBuilder {
 
     /// Serialiazes the objects into a RESP compatible format.
     pub fn serialize(&self) -> String {
-        self.results.iter().map(|x| x.serialize()).collect::<Vec<String>>().join("")
+        self.results
+            .iter()
+            .map(|x| x.serialize())
+            .collect::<Vec<String>>()
+            .join("")
     }
 
     pub fn is_empty(&self) -> bool {

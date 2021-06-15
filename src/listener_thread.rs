@@ -6,12 +6,11 @@ use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::threadpool::ThreadPool;
 
-
 use std::net::TcpListener;
 
-use std::sync::mpsc::{Receiver, Sender, TryRecvError};
-use std::sync::{Arc};
 use crate::client::Client;
+use std::sync::mpsc::{Receiver, Sender, TryRecvError};
+use std::sync::Arc;
 
 /// Struct which listens for connections and executes the given commands.
 pub struct ListenerThread {
@@ -67,18 +66,16 @@ impl ListenerThread {
     }
 
     /// Handles a socket connection and executes the command extracted from it.
-    fn handle_connection(
-        client: Arc<Client>,
-        execution: Arc<Execution>,
-        logger: Arc<Logger>,
-    ) {
+    fn handle_connection(client: Arc<Client>, execution: Arc<Execution>, logger: Arc<Logger>) {
         let commands_result = client.parse_commands();
         if let Err(e) = commands_result {
             logger.log(&e).unwrap();
             return;
         }
         let commands = commands_result.unwrap();
-        logger.log(&format!("Received {} command", commands.len())).unwrap();
+        logger
+            .log(&format!("Received {} command", commands.len()))
+            .unwrap();
         for command in commands {
             Self::log_command(&command, logger.clone());
             Self::execute_command(&command, client.clone(), execution.clone(), logger.clone());
@@ -121,11 +118,7 @@ impl ListenerThread {
     }
 
     /// Write a response from a response builder to the desired socket.
-    fn write_response(
-        client: Arc<Client>,
-        response: &ResponseBuilder,
-        logger: Arc<Logger>,
-    ) {
+    fn write_response(client: Arc<Client>, response: &ResponseBuilder, logger: Arc<Logger>) {
         let response_str = response.serialize();
         logger.log(&response_str).unwrap();
         client.send(&response_str).unwrap();

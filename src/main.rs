@@ -2,6 +2,7 @@ use crate::config::configuration::Configuration;
 use crate::logging::logger::Logger;
 use std::env;
 use std::sync::Arc;
+mod client;
 mod config;
 mod execution;
 mod key_command;
@@ -9,13 +10,12 @@ mod listener_thread;
 mod logging;
 mod protocol;
 mod pubsub;
+mod pubsub_command;
 mod server;
 mod server_command;
 mod storage;
 mod string_command;
 mod threadpool;
-mod client;
-mod pubsub_command;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
