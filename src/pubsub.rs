@@ -98,29 +98,36 @@ impl PublisherSubscriber {
         count
     }
 
-    fn build_response(channel: &String, message: &String) -> String {
+    /// Build RESP response
+    fn build_response(channel: &str, message: &str) -> String {
         let mut response = ResponseBuilder::new();
         response.add(
             ProtocolType::Array(
                 vec![
                     ProtocolType::String("message".to_string()),
-                    ProtocolType::String(channel.clone()),
-                    ProtocolType::String(message.clone()),
+                    ProtocolType::String(channel.to_string()),
+                    ProtocolType::String(message.to_string()),
                 ]
             )
         );
         response.serialize()
     }
 
+    /// Returns the subscriptions list for a specific client
     pub fn get_subscriptions(&self, user: Arc<Client>) -> Vec<String> {
-        let sub = self.subscriber_ids.get(&user).unwrap();
-        sub.channels.iter().map(|x| x.clone()).collect::<Vec<String>>()
+        return if let Some(sub) = self.subscriber_ids.get(&user) {
+            sub.channels.iter().cloned().collect::<Vec<String>>()
+        } else {
+            Vec::new()
+        }
     }
 
     /// Unsubscribes a user from all the channels it's subscribed.
-    pub fn unsubscribe_from_channel(&mut self, user: Arc<Client>, channel: &String) -> usize {
+    pub fn unsubscribe_from_channel(&mut self, user: Arc<Client>, channel: &str) -> usize {
         if let Some(sub) = self.subscriber_ids.get_mut(&user) {
-            self.subscriptions.get_mut(channel).unwrap().remove(&user);
+            if let Some(set) = self.subscriptions.get_mut(channel) {
+                set.remove(&user);
+            }
             sub.channels.remove(channel);
             let len = sub.channels.len();
             if sub.channels.is_empty() {
