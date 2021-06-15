@@ -112,6 +112,10 @@ impl Client {
                 drop(queue);
                 self.flush_messages()?;
             }
+
+            if self.is_closed() {
+                return Err("Stream closed the connection".to_string());
+            }
         }
         self.do_parse_command()
     }
