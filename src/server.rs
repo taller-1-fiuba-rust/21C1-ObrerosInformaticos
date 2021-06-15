@@ -2,6 +2,7 @@ use crate::config::configuration::Configuration;
 use crate::execution::Execution;
 use crate::listener_thread::ListenerThread;
 use crate::logging::logger::Logger;
+use crate::pubsub::PublisherSubscriber;
 use crate::storage::data_storage::DataStorage;
 use std::net::TcpStream;
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -48,11 +49,13 @@ impl Server {
             println!("Error loading data from dbfile");
         };
         let addr_and_port = self.get_addr_and_port();
+        let pubsub = Arc::new(Mutex::new(PublisherSubscriber::new()));
         let execution = Arc::new(Execution::new(
             self.data.clone(),
             self.config.clone(),
             self.sys_time.clone(),
             self.logger.clone(),
+            pubsub,
         ));
         // let verbosity = config.get_verbose();
         let ttl = self.config.lock().unwrap().get_timeout();

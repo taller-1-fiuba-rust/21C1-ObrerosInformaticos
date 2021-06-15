@@ -22,10 +22,11 @@ impl ResponseBuilder {
 
     /// Serialiazes the objects into a RESP compatible format.
     pub fn serialize(&self) -> String {
-        match self.results.len() {
-            1 => self.results[0].serialize(),
-            _ => ProtocolType::Array(self.results.clone()).serialize(),
-        }
+        self.results
+            .iter()
+            .map(|x| x.serialize())
+            .collect::<Vec<String>>()
+            .join("")
     }
 
     pub fn is_empty(&self) -> bool {
@@ -53,7 +54,7 @@ mod tests {
         response.add(ProtocolType::Integer(-15));
         assert_eq!(
             response.serialize(),
-            "*4\r\n$7\r\nTest 1!\r\n*3\r\n:1\r\n:2\r\n*2\r\n:2\r\n$7\r\nTest 2!\r\n:1\r\n:-15\r\n"
+            "$7\r\nTest 1!\r\n*3\r\n:1\r\n:2\r\n*2\r\n:2\r\n$7\r\nTest 2!\r\n:1\r\n:-15\r\n"
         )
     }
 }
