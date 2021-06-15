@@ -139,4 +139,22 @@ impl PublisherSubscriber {
             self.unsubscribe_from_channel(user.clone(), &channel);
         }
     }
+
+    /// Return a list of all the active channels
+    pub fn get_channels(&self) -> Vec<String> {
+        self.subscriptions
+            .keys()
+            .cloned()
+            .filter(|x| self.subscriber_count(x) > 0)
+            .collect::<Vec<String>>()
+    }
+
+    /// Return the subscriber count for a channel
+    pub fn subscriber_count(&self, channel: &str) -> usize {
+        return if let Some(s) = self.subscriptions.get(channel) {
+            s.len()
+        } else {
+            0
+        };
+    }
 }

@@ -115,3 +115,58 @@ fn test_multiple_unsubscribe() {
     pubsub1.subscribe("CHANNEL2").unwrap();
     pubsub1.subscribe("CHANNEL3").unwrap();
 }
+
+#[test]
+fn test_numsub() {
+    let (_server, port) = common::setup_server();
+    let client1 = common::setup_client(port);
+    let client2 = common::setup_client(port);
+
+    let mut conn1 = client1.get_connection().unwrap();
+    let mut pubsub1 = conn1.as_pubsub();
+
+    pubsub1.subscribe("CHANNEL1").unwrap();
+    pubsub1.subscribe("CHANNEL2").unwrap();
+    pubsub1.subscribe("CHANNEL3").unwrap();
+    pubsub1.unsubscribe("CHANNEL2").unwrap();
+
+    let r: Vec<u32> = common::query_string(&client2, "PUBSUB NUMSUB CHANNEL1 CHANNEL2 CHANNEL3");
+    assert_eq!(r, vec![1, 0, 1]);
+}
+
+#[test]
+fn test_pubsub_channels_no_pattern() {
+    let (_server, port) = common::setup_server();
+    let client1 = common::setup_client(port);
+    let client2 = common::setup_client(port);
+
+    let mut conn1 = client1.get_connection().unwrap();
+    let mut pubsub1 = conn1.as_pubsub();
+
+    pubsub1.subscribe("CHANNEL1").unwrap();
+    pubsub1.subscribe("CHANNEL2").unwrap();
+    pubsub1.subscribe("CHANNEL3").unwrap();
+    pubsub1.unsubscribe("CHANNEL2").unwrap();
+
+    let mut r: Vec<String> = common::query_string(&client2, "PUBSUB CHANNELS");
+    r.sort();
+    assert_eq!(r, vec!["CHANNEL1", "CHANNEL3"]);
+}
+
+#[test]
+fn test_pubsub_channels_pattern() {
+    let (_server, port) = common::setup_server();
+    let client1 = common::setup_client(port);
+    let client2 = common::setup_client(port);
+
+    let mut conn1 = client1.get_connection().unwrap();
+    let mut pubsub1 = conn1.as_pubsub();
+
+    pubsub1.subscribe("AGE").unwrap();
+    pubsub1.subscribe("ATE").unwrap();
+    pubsub1.subscribe("HOLA").unwrap();
+
+    let mut r: Vec<String> = common::query_string(&client2, "PUBSUB CHANNELS A?E");
+    r.sort();
+    assert_eq!(r, vec!["AGE", "ATE"]);
+}
