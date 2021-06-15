@@ -48,7 +48,7 @@ impl Client {
 
     /// Send a string message to this client
     pub fn send(&self, msg: &str) -> Result<(), &'static str> {
-        let mut lock = self.write_socket.lock().ok().ok_or_else(||"Failed to lock socket")?;
+        let mut lock = self.write_socket.lock().ok().ok_or("Failed to lock socket")?;
         lock.write_all(msg.as_bytes()).ok().ok_or("Error while writing to client")?;
         Ok(())
     }
@@ -57,7 +57,6 @@ impl Client {
     pub fn parse_commands(&self) -> Result<Vec<Command>, String> {
         let locked_socket = self.read_socket.lock().ok().ok_or_else(||"Failed to lock socket".to_string())?;
         let mut request = Request::new();
-        let mut result: Result<bool, String> = Err("Empty message".to_string());
         let mut commands = Vec::new();
         let copy = locked_socket.try_clone().unwrap();
         copy.set_read_timeout(Some(Duration::from_millis(10))).unwrap();
@@ -76,7 +75,7 @@ impl Client {
                         let l = &line[offset..offset+s];
                         offset += s;
                         println!("{}", &l.replace("\r\n", ""));
-                        result = request.feed(&l);
+                        let result = request.feed(&l);
                         if let Ok(val) = result {
                             if val {
                                 commands.push(request.build());
@@ -88,7 +87,7 @@ impl Client {
                     }
                 },
                 Err(_) => {
-                    if commands.len() > 0 {
+                    if !commands.is_empty() {
                         break;
                     }
                 }

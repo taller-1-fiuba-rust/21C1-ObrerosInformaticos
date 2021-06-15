@@ -12,7 +12,7 @@ pub fn run(
     _arguments: Vec<ProtocolType>,
 ) -> Result<(), &'static str> {
 
-    let lock = pubsub.lock().ok().ok_or_else(|| "Error locking pubsub")?;
+    let lock = pubsub.lock().ok().ok_or("Error locking pubsub")?;
 
     builder.add(ProtocolType::Array(
         vec![ProtocolType::String("punsubscribe".to_string()),
