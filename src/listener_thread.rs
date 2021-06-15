@@ -4,14 +4,13 @@ use crate::protocol::command::Command;
 
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
-use crate::pubsub::PublisherSubscriber;
 use crate::threadpool::ThreadPool;
 
 
 use std::net::TcpListener;
 
 use std::sync::mpsc::{Receiver, Sender, TryRecvError};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
 use crate::client::Client;
 
 /// Struct which listens for connections and executes the given commands.
@@ -20,7 +19,6 @@ pub struct ListenerThread {
     addr: String,
     execution: Arc<Execution>,
     logger: Arc<Logger>,
-    pubsub: Arc<Mutex<PublisherSubscriber>>,
 }
 
 impl ListenerThread {
@@ -31,7 +29,6 @@ impl ListenerThread {
             addr,
             execution,
             logger,
-            pubsub: Arc::new(Mutex::new(PublisherSubscriber::new())),
         }
     }
 
@@ -62,10 +59,9 @@ impl ListenerThread {
 
             let client = Arc::new(Client::new(stream.unwrap()));
             let exec = self.execution.clone();
-            let pubsub = self.pubsub.clone();
             let logger = self.logger.clone();
             self.pool.spawn(move || {
-                ListenerThread::handle_connection(client, exec, pubsub, logger);
+                ListenerThread::handle_connection(client, exec, logger);
             });
         }
     }
@@ -74,19 +70,23 @@ impl ListenerThread {
     fn handle_connection(
         client: Arc<Client>,
         execution: Arc<Execution>,
-        pubsub: Arc<Mutex<PublisherSubscriber>>,
         logger: Arc<Logger>,
     ) {
-        let command_result = client.parse_command();
-        if let Err(e) = command_result {
+        let commands_result = client.parse_commands();
+        if let Err(e) = commands_result {
             logger.log(&e).unwrap();
             return;
         }
-        let command = command_result.unwrap();
+        let commands = commands_result.unwrap();
+        logger.log(&format!("Received {} command", commands.len())).unwrap();
+        for command in commands {
+            Self::log_command(&command, logger.clone());
+            Self::execute_command(&command, client.clone(), execution.clone(), logger.clone());
+        }
 
-        Self::log_command(&command, logger.clone());
-
-        Self::execute_command(&command, client, execution, pubsub, logger);
+        if !client.is_closed() {
+            Self::handle_connection(client, execution, logger);
+        }
     }
 
     /// Logs a given command
@@ -109,25 +109,15 @@ impl ListenerThread {
         command: &Command,
         client: Arc<Client>,
         execution: Arc<Execution>,
-        pubsub: Arc<Mutex<PublisherSubscriber>>,
         logger: Arc<Logger>,
     ) {
         let mut response = ResponseBuilder::new();
 
-        if !execution.is_pubsub_command(&command) {
-            if let Err(e) = execution.run(&command, &mut response) {
-                logger.log("Error").unwrap();
-                response.add(ProtocolType::Error(e.to_string()));
-            }
-        } else if let Err(e) = execution.run_pubsub(&command, &mut response, client.clone(), pubsub.clone())
-        {
+        if let Err(e) = execution.run(&command, &mut response, client.clone()) {
             logger.log("Error").unwrap();
             response.add(ProtocolType::Error(e.to_string()));
         }
-        Self::write_response(client.clone(), &response, logger.clone());
-        if !client.is_closed() {
-            Self::handle_connection(client.clone(), execution, pubsub.clone(), logger.clone());
-        }
+        Self::write_response(client, &response, logger);
     }
 
     /// Write a response from a response builder to the desired socket.
