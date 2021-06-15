@@ -6,12 +6,14 @@ use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
-use crate::server_command::{config, info, ping, pubsub};
+use crate::pubsub_command::{publish, subscribe, pubsub, unsubscribe};
+use crate::server_command::{config, info, ping};
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{append, decrby, get, getdel, getset, mset, set, strlen};
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
+use crate::client::Client;
 
 #[allow(dead_code)]
 pub struct Execution {
@@ -73,13 +75,15 @@ impl Execution {
         &self,
         cmd: &Command,
         response: &mut ResponseBuilder,
-        socket: Arc<Mutex<TcpStream>>,
+        client: Arc<Client>,
         pubsub: Arc<Mutex<PublisherSubscriber>>,
-    ) -> Result<(), String> {
+    ) -> Result<(), &'static str> {
         match &cmd.name().to_ascii_lowercase()[..] {
-            "subscribe" => pubsub::subscribe::run(pubsub, socket, response, cmd.arguments()),
-            "publish" => pubsub::publish::run(pubsub, response, cmd.arguments()),
-            _ => Err("Unknown command.".to_string()),
+            "unsubscribe" => unsubscribe::run(pubsub, client, response, cmd.arguments()),
+            "subscribe" => subscribe::run(pubsub, client, response, cmd.arguments()),
+            "publish" => publish::run(pubsub, response, cmd.arguments()),
+            "pubsub" => pubsub::run(pubsub, response, cmd.arguments()),
+            _ => Err("Unknown command."),
         }
     }
 
@@ -87,7 +91,7 @@ impl Execution {
     pub fn is_pubsub_command(&self, cmd: &Command) -> bool {
         matches!(
             &cmd.name().to_ascii_lowercase()[..],
-            "subscribe" | "publish"
+            "subscribe" | "publish" | "unsubscribe" | "pubsub"
         )
     }
 }
