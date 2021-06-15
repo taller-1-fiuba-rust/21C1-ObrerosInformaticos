@@ -6,7 +6,7 @@ use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
-use crate::pubsub_command::{publish, punsubscribe, subscribe, unsubscribe};
+use crate::pubsub_command::{publish, punsubscribe, subscribe, unsubscribe, pubsub};
 use crate::server_command::{config, info, ping};
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{append, decrby, get, getdel, getset, mset, set, strlen};
@@ -58,7 +58,7 @@ impl Execution {
         {
             return Err("A client in pub/sub mode can only use SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE, PUNSUBSCRIBE, PING and QUIT");
         }
-        println!("{}", cmd.arguments().len());
+
         match &cmd.name().to_ascii_lowercase()[..] {
             "ping" => ping::run(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
@@ -89,8 +89,9 @@ impl Execution {
             "subscribe" => subscribe::run(self.pubsub.clone(), client, builder, cmd.arguments()),
             "publish" => publish::run(self.pubsub.clone(), builder, cmd.arguments()),
             "punsubscribe" => {
-                punsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments())
-            }
+                punsubscribe::run(self.pubsub.clone(), client, builder)
+            },
+            "pubsub" => pubsub::run(self.pubsub.clone(), builder, cmd.arguments()),
             _ => Err("Unknown command."),
         }
     }
