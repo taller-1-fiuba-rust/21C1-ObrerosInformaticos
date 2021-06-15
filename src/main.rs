@@ -14,6 +14,8 @@ mod server_command;
 mod storage;
 mod string_command;
 mod threadpool;
+mod client;
+mod pubsub_command;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

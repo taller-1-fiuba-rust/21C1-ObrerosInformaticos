@@ -10,3 +10,5 @@ mod server_command;
 mod storage;
 mod string_command;
 mod threadpool;
+mod pubsub_command;
+mod client;
