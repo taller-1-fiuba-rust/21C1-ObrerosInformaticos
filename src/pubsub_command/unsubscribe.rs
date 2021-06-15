@@ -1,7 +1,7 @@
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
-use std::net::TcpStream;
+
 use std::sync::{Arc, Mutex};
 use crate::client::Client;
 

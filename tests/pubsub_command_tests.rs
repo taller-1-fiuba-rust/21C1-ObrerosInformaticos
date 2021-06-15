@@ -1,4 +1,4 @@
-use redis::Client;
+
 
 mod common;
 
@@ -27,7 +27,7 @@ fn test_subscribe_and_publish() {
     pubsub1.subscribe("CHANNEL1").unwrap();
 
     let mut count1: u32 = common::query(&client2, "PUBLISH", &["CHANNEL1", "hola este es el canal 1"]);
-    let mut msg1 = pubsub1.get_message();
+    let msg1 = pubsub1.get_message();
 
     assert_eq!(count1, 1);
     assert!(msg1.is_ok());

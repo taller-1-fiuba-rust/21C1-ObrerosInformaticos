@@ -107,7 +107,7 @@ impl Client {
     pub fn parse_command(&self) -> Result<Command, String> {
         while !self.has_command() {
             //println!("waiting..");
-            let queue = self.msg_queue.lock().ok().ok_or("Failed to lock socket".to_string())?;
+            let queue = self.msg_queue.lock().ok().ok_or_else(|| "Failed to lock socket".to_string())?;
             if !queue.is_empty() {
                 drop(queue);
                 self.flush_messages()?;
@@ -118,7 +118,7 @@ impl Client {
 
     /// Parses a command from a socket connection
     fn do_parse_command(&self) -> Result<Command, String> {
-        let locked_socket = self.socket.read().ok().ok_or("Failed to lock socket".to_string())?;
+        let locked_socket = self.socket.read().ok().ok_or_else(||"Failed to lock socket".to_string())?;
         let mut request = Request::new();
         let reader = BufReader::new(locked_socket.try_clone().unwrap());
         let mut result: Result<bool, String> = Err("Empty message".to_string());

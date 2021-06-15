@@ -1,10 +1,10 @@
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use std::collections::{HashMap, HashSet};
-use std::io::Write;
-use std::net::TcpStream;
-use std::sync::atomic::{AtomicU32, Ordering};
-use std::sync::{Arc, Mutex};
+
+
+
+use std::sync::{Arc};
 use crate::client::Client;
 
 /// A pub/sub subscribers. Stores a list of channels and a socket to relay messages to.

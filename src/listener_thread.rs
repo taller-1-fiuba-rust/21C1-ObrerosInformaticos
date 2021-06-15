@@ -1,15 +1,15 @@
 use crate::execution::Execution;
 use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
-use crate::protocol::request::Request;
+
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 use crate::threadpool::ThreadPool;
-use std::io::prelude::*;
-use std::io::BufReader;
+
+
 use std::net::TcpListener;
-use std::net::TcpStream;
+
 use std::sync::mpsc::{Receiver, Sender, TryRecvError};
 use std::sync::{Arc, Mutex};
 use crate::client::Client;
