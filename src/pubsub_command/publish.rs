@@ -8,37 +8,13 @@ pub fn run(
     pubsub: Arc<Mutex<PublisherSubscriber>>,
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,
-) -> Result<(), String> {
+) -> Result<(), &'static str> {
     assert_eq!(arguments.len(), 2);
 
-    let channel = match arguments[0].clone().string() {
-        Ok(s) => s,
-        Err(s) => {
-            return Err(format!(
-                "Error '{}' while parsing channel'{}'",
-                s,
-                arguments[0].to_string()
-            ));
-        }
-    };
+    let channel = arguments[0].clone().string()?;
+    let msg = arguments[1].clone().string()?;
 
-    let msg = match arguments[1].clone().string() {
-        Ok(s) => s,
-        Err(s) => {
-            return Err(format!(
-                "Error '{}' while parsing message'{}'",
-                s,
-                arguments[1].to_string()
-            ));
-        }
-    };
-
-    let mut locked_pubsub = match pubsub.lock() {
-        Err(_) => {
-            return Err("Failed to execute publish".to_string());
-        }
-        Ok(t) => t,
-    };
+    let mut locked_pubsub = pubsub.lock().ok().ok_or("Failed to lock")?;
 
     builder.add(ProtocolType::Integer(
         locked_pubsub.publish(channel, msg) as i64
