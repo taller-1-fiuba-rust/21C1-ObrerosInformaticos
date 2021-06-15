@@ -2,7 +2,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 
-use crate::client::Client;
+
 use std::sync::{Arc, Mutex, MutexGuard};
 use regex::Regex;
 
