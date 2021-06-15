@@ -1,4 +1,4 @@
-
+use redis::Client;
 
 mod common;
 
@@ -41,7 +41,7 @@ fn test_subscribe_and_publish() {
     assert_eq!(count1, 0);
 }
 
-/*
+
 #[test]
 fn test_multiple_clients() {
     let (_server, port) = common::setup_server();
@@ -68,5 +68,21 @@ fn test_multiple_clients() {
     assert_eq!(count2, 1);
     assert!(msg2.is_ok());
     assert_eq!(msg2.unwrap().get_payload::<String>().unwrap(), "hola este es el canal 2");
+
+    pubsub1.unsubscribe("CHANNEL1").unwrap();
+    pubsub2.unsubscribe("CHANNEL2").unwrap();
 }
-*/
+
+
+#[test]
+fn test_multiple_unsubscribe() {
+    let (_server, port) = common::setup_server();
+    let client1 = common::setup_client(port);
+
+    let mut conn1 = client1.get_connection().unwrap();
+    let mut pubsub1 = conn1.as_pubsub();
+
+    pubsub1.subscribe("CHANNEL1").unwrap();
+    pubsub1.subscribe("CHANNEL2").unwrap();
+    pubsub1.subscribe("CHANNEL3").unwrap();
+}
