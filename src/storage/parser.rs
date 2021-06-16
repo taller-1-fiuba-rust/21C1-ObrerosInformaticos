@@ -39,9 +39,14 @@ pub fn parse_data(file: &str, data: &mut HashMap<String, Entry>) -> Result<(), &
 pub fn store_data(file: &str, data: &HashMap<String, Entry>) {
     for (key, entry) in &*data {
         match entry.value() {
-            Value::String(s) => save_string_data(file, key, entry, s),
-            Value::Vec(i) => save_vector_data(file, key, entry, &i),
-            Value::HashSet(j) => save_set_data(file, key, entry, &j),
+            Ok(value) => {
+                match value {
+                    Value::String(s) => save_string_data(file, key, entry, s),
+                    Value::Vec(i) => save_vector_data(file, key, entry, &i),
+                    Value::HashSet(j) => save_set_data(file, key, entry, &j),
+                }
+            }
+            Err(_) => continue,
         };
     }
 }
@@ -49,10 +54,10 @@ pub fn store_data(file: &str, data: &HashMap<String, Entry>) {
 /// Stores information as a string in the file 'file'.
 fn save_string_data(file: &str, key: &str, entry: &Entry, value: String) {
     let save_data: String;
-    let last_access_secs = entry.last_access().as_secs();
+    let last_access_secs = entry.last_access().unwrap().as_secs();
 
-    if entry.key_expiration() != None {
-        let key_expiration_secs = entry.key_expiration().unwrap().as_secs();
+    if entry.key_expiration() != Ok(None) {
+        let key_expiration_secs = entry.key_expiration().unwrap().unwrap().as_secs();
         save_data = format!(
             "{};{};{};{};{}",
             key, STRING, last_access_secs, key_expiration_secs, value
@@ -67,11 +72,11 @@ fn save_string_data(file: &str, key: &str, entry: &Entry, value: String) {
 /// Stores information in vector form in the file 'file'.
 fn save_vector_data(file: &str, key: &str, entry: &Entry, value: &[String]) {
     let values_joined = value.join(",");
-    let last_access_secs = entry.last_access().as_secs();
+    let last_access_secs = entry.last_access().unwrap().as_secs();
     let save_data: String;
 
-    if entry.key_expiration() != None {
-        let key_expiration_secs = entry.key_expiration().unwrap().as_secs();
+    if entry.key_expiration() != Ok(None) {
+        let key_expiration_secs = entry.key_expiration().unwrap().unwrap().as_secs();
         save_data = format!(
             "{};{};{};{};{}",
             key, LIST, last_access_secs, key_expiration_secs, values_joined
@@ -90,11 +95,11 @@ fn save_vector_data(file: &str, key: &str, entry: &Entry, value: &[String]) {
 fn save_set_data(file: &str, key: &str, entry: &Entry, value: &HashSet<String>) {
     let set = value.clone();
     let values_joined = set.into_iter().collect::<Vec<String>>().join(",");
-    let last_access_secs = entry.last_access().as_secs();
+    let last_access_secs = entry.last_access().unwrap().as_secs();
     let save_data: String;
 
-    if entry.key_expiration() != None {
-        let key_expiration_secs = entry.key_expiration().unwrap().as_secs();
+    if entry.key_expiration() != Ok(None) {
+        let key_expiration_secs = entry.key_expiration().unwrap().unwrap().as_secs();
         save_data = format!(
             "{};{};{};{};{}",
             key, SET, last_access_secs, key_expiration_secs, values_joined

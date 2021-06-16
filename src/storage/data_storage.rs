@@ -125,20 +125,33 @@ impl DataStorage {
     pub fn append(&self, key: String, value: String) -> Result<usize, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
 
-        if lock.contains_key(&key) {
+        if lock.contains_key(&key){
             let entry: &mut Entry = lock.get_mut(&key).unwrap();
 
             match entry.value() {
-                Value::String(s) => {
-                    let new_string = s + &value;
-                    let length = new_string.len();
-                    entry.update_value(Value::String(new_string));
-                    Ok(length)
+                Ok(val) => {
+                    match val { 
+                        Value::String(s) => {
+                            let new_string = s + &value;
+                            let length = new_string.len();
+                            entry.update_value(Value::String(new_string))?;
+                            Ok(length)
+                        }
+                        Value::Vec(_i) => Err("Value must be a string not a vector"),
+                        Value::HashSet(_j) => Err("Value must be a string not a set"),
+                    }
                 }
-                Value::Vec(_i) => Err("Value must be a string not a vector"),
-                Value::HashSet(_j) => Err("Value must be a string not a set"),
+                Err(_s) => {
+                    self.delete_key(&key)?;
+                    let value_copy = value.clone();
+                    match self.do_set(&mut lock, &key, Value::String(value_copy)) {
+                        Ok(_s) => Ok(value.len()),
+                        Err(_i) => Err("String value not created"),
+                    }
+                }
             }
-        } else {
+
+        }else {
             let value_copy = value.clone();
             match self.do_set(&mut lock, &key, Value::String(value_copy)) {
                 Ok(_s) => Ok(value.len()),
@@ -195,9 +208,9 @@ impl DataStorage {
             let key_exp = entry.key_expiration();
             let entry_cpy = entry.clone();
 
-            if key_exp != None {
+            if key_exp != Ok(None) {
                 let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-                if key_exp.unwrap() > now {
+                if key_exp.unwrap().unwrap() > now {
                     drop(lock);
                     self.modify_last_key_access(&key, now).unwrap();
                     return Ok(Some(entry_cpy));
@@ -220,21 +233,25 @@ impl DataStorage {
         if lock.contains_key(key) {
             let result = lock.get(key).unwrap();
             let key_exp = result.key_expiration();
-            if key_exp != None {
-                let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-                if key_exp.unwrap() > now {
-                    let value = result.value();
-                    drop(lock);
-                    self.modify_last_key_access(&key, now).unwrap();
-                    return Some((key_exp, value));
+
+            if key_exp != Ok(None) {
+                match result.value() {
+                    Ok(value) => {
+                        drop(lock);
+                        self.modify_last_key_access(&key, now().ok()?).unwrap();
+                        return Some((key_exp.unwrap(), value));   
+                    }
+                    Err(_s) => {
+                        // Key has expired, we should delete it
+                        drop(lock);
+                        self.delete_key(key).unwrap();
+                        return None;
+                    }
                 }
-                // Key has expired, we should delete it
-                drop(lock);
-                self.delete_key(key).unwrap();
-                return None;
             }
-            return Some((None, result.value()));
+            return Some((None, result.value().unwrap()));
         }
+
         None
     }
 
@@ -243,35 +260,50 @@ impl DataStorage {
 
         match lock.get(key) {
             Some(entry) => match entry.value() {
-                Value::String(old_value) => {
-                    // lock.delete_key(key)?;
-                    self.do_set(&mut lock, key, new_value)?;
-                    drop(lock);
-                    Ok(old_value)
+                Ok(value) => {
+                    match value {
+                        Value::String(old_value) => {
+                            self.do_set(&mut lock, key, new_value)?;
+                            drop(lock);
+                            Ok(old_value)
+                        }
+                        Value::Vec(_) => {
+                            Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                        }
+                        Value::HashSet(_) => {
+                            Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                        }
+                    }
                 }
-                Value::Vec(_) => {
-                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
-                }
-                Value::HashSet(_) => {
-                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                Err(_s) => {
+                    self.delete_key(key)?;
+                    Ok("nil".to_string())  
                 }
             },
             None => Ok("nil".to_string()),
         }
     }
 
-    /// Renames a key and fails if it does not exist
+    /// Renames a key and fails if it does not exist.
     pub fn rename(&self, src: &str, dst: &str) -> Result<(), &'static str> {
         let lock = self.data.read().ok().ok_or("Failed to lock database")?;
         if lock.contains_key(src) {
             let result = lock.get(src).unwrap();
-            let moved_duration = result.key_expiration();
-            let moved_val = result.value();
-            drop(lock);
-            self.set(dst, moved_val)?;
-            self.set_expiration_to_key(moved_duration, dst)?;
-            self.delete_key(src)?;
-            Ok(())
+            match result.value() {
+                Ok(_) => {
+                    let moved_duration = result.key_expiration().unwrap();
+                    let moved_val = result.value().unwrap();
+                    drop(lock);
+                    self.set(dst, moved_val)?;
+                    self.set_expiration_to_key(moved_duration, dst)?;
+                    self.delete_key(src)?;
+                    Ok(())
+                }
+                Err(_s) => {
+                    self.delete_key(src)?;
+                    Err("No such key")
+                }
+            }
         } else {
             Err("No such key")
         }
@@ -329,12 +361,17 @@ impl DataStorage {
         let copy_key = key.to_string();
 
         if lock.contains_key(&copy_key) {
-            lock.get_mut(&copy_key)
-                .unwrap()
-                .set_last_access(last_access_since_unix_epoch);
-            return Ok(());
+            let result = lock.get_mut(&copy_key)
+                    .unwrap()
+                    .set_last_access(last_access_since_unix_epoch);
+            match result {
+                Ok(_s) => return Ok(()),
+                Err(_s) => {
+                    self.delete_key(&key)?;
+                    return Err("last access not modify not existing key");
+                }
+            }
         }
-
         Err("last access not modify")
     }
 
@@ -344,16 +381,26 @@ impl DataStorage {
         if lock.contains_key(&key) {
             let entry: &mut Entry = lock.get_mut(&key).unwrap();
             match entry.value() {
-                Value::String(s) => match s.parse::<i64>() {
-                    Ok(number) => {
-                        let new_value = number - numeric_value;
-                        entry.update_value(Value::String(new_value.to_string()));
-                        Ok(number - numeric_value)
+                Ok(value) => {
+                    match value {
+                        Value::String(s) => match s.parse::<i64>() {
+                            Ok(number) => {
+                                let new_value = number - numeric_value;
+                                entry.update_value(Value::String(new_value.to_string()))?;
+                                Ok(number - numeric_value)
+                            }
+                            Err(_j) => Err("Cant decrement a value to a not integer value"),
+                        },
+                        Value::Vec(_i) => Err("Cant decrement a value to a vector"),
+                        Value::HashSet(_j) => Err("Cant decrement a value to a set"),
                     }
-                    Err(_j) => Err("Cant decrement a value to a not integer value"),
-                },
-                Value::Vec(_i) => Err("Cant decrement a value to a vector"),
-                Value::HashSet(_j) => Err("Cant decrement a value to a set"),
+                }
+                Err(_s) => {
+                    self.delete_key(&key)?;
+                    let negative_value = 0 - numeric_value;
+                    self.do_set(&mut lock, &key, Value::String(negative_value.to_string()))?;
+                    Ok(0 - numeric_value)
+                }
             }
         } else {
             let negative_value = 0 - numeric_value;
@@ -369,9 +416,17 @@ impl DataStorage {
             let entry = lock.get(&key).unwrap();
 
             match entry.value() {
-                Value::String(string_value) => Ok(Some(string_value)),
-                Value::Vec(_i) => Err("value not a string"),
-                Value::HashSet(_j) => Err("value not a string"),
+                Ok(value) => {
+                    match value {
+                        Value::String(string_value) => Ok(Some(string_value)),
+                        Value::Vec(_i) => Err("value not a string"),
+                        Value::HashSet(_j) => Err("value not a string"),
+                    }
+                }
+                Err(_s) => {
+                    self.delete_key(&key)?;
+                    Ok(None)
+                }    
             }
         } else {
             Ok(None)
@@ -408,7 +463,7 @@ mod tests {
 
         let read = data_storage.read();
 
-        if let Value::String(a) = read.get(&key).unwrap().value() {
+        if let Value::String(a) = read.get(&key).unwrap().value().unwrap() {
             a
         } else {
             panic!("Value not found in storage")
@@ -435,7 +490,7 @@ mod tests {
         };
 
         let read = data_storage.read();
-        let key_expiration: &Option<Duration> = &read.get(&key).unwrap().key_expiration();
+        let key_expiration: &Option<Duration> = &read.get(&key).unwrap().key_expiration().unwrap();
 
         assert_eq!(expiration_time.as_secs(), key_expiration.unwrap().as_secs());
     }
@@ -457,7 +512,7 @@ mod tests {
 
         let read = data_storage.read();
 
-        let b = if let Value::String(a) = read.get(&key).unwrap().value() {
+        let b = if let Value::String(a) = read.get(&key).unwrap().value().unwrap() {
             a
         } else {
             panic!("Not string value")
@@ -483,7 +538,7 @@ mod tests {
 
         let read = data_storage.read();
 
-        let b = if let Value::Vec(a) = read.get(&key).unwrap().value() {
+        let b = if let Value::Vec(a) = read.get(&key).unwrap().value().unwrap() {
             a
         } else {
             panic!("Not vector value")
@@ -509,7 +564,7 @@ mod tests {
 
         let read = data_storage.read();
 
-        let b = if let Value::HashSet(a) = read.get(&key).unwrap().value() {
+        let b = if let Value::HashSet(a) = read.get(&key).unwrap().value().unwrap() {
             a
         } else {
             panic!("Not set value")
@@ -527,7 +582,7 @@ mod tests {
         data_storage.set(&key, Value::String(value)).unwrap();
         let read = data_storage.read();
 
-        let b = if let Value::String(a) = read.get(&key).unwrap().value() {
+        let b = if let Value::String(a) = read.get(&key).unwrap().value().unwrap() {
             a
         } else {
             panic!("Not string value")
@@ -545,7 +600,7 @@ mod tests {
         data_storage.set(&key, Value::Vec(value)).unwrap();
         let read = data_storage.read();
 
-        let b = if let Value::Vec(a) = read.get(&key).unwrap().value() {
+        let b = if let Value::Vec(a) = read.get(&key).unwrap().value().unwrap() {
             a
         } else {
             panic!("Not string value")
@@ -563,7 +618,7 @@ mod tests {
         data_storage.set(&key, Value::HashSet(value)).unwrap();
         let read = data_storage.read();
 
-        let b = if let Value::HashSet(a) = read.get(&key).unwrap().value() {
+        let b = if let Value::HashSet(a) = read.get(&key).unwrap().value().unwrap() {
             a
         } else {
             panic!("Not string value")

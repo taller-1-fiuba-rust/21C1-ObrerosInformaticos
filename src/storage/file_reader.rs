@@ -31,8 +31,8 @@ pub fn read_lines(filename: &str) -> Result<Vec<String>, &'static str> {
 /// already existing file, it is added to the end.
 pub fn data_to_file(file: &str, data: String) {
     let mut file = OpenOptions::new()
-        .append(true)
-        .create(true)
+        .write(true)
+        .create(true)   
         .open(file)
         .expect("Unable to open");
 
