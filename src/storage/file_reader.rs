@@ -32,7 +32,7 @@ pub fn read_lines(filename: &str) -> Result<Vec<String>, &'static str> {
 pub fn data_to_file(file: &str, data: String) {
     let mut file = OpenOptions::new()
         .write(true)
-        .create(true)   
+        .create(true)
         .open(file)
         .expect("Unable to open");
 

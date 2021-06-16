@@ -39,13 +39,11 @@ pub fn parse_data(file: &str, data: &mut HashMap<String, Entry>) -> Result<(), &
 pub fn store_data(file: &str, data: &HashMap<String, Entry>) {
     for (key, entry) in &*data {
         match entry.value() {
-            Ok(value) => {
-                match value {
-                    Value::String(s) => save_string_data(file, key, entry, s),
-                    Value::Vec(i) => save_vector_data(file, key, entry, &i),
-                    Value::HashSet(j) => save_set_data(file, key, entry, &j),
-                }
-            }
+            Ok(value) => match value {
+                Value::String(s) => save_string_data(file, key, entry, s),
+                Value::Vec(i) => save_vector_data(file, key, entry, &i),
+                Value::HashSet(j) => save_set_data(file, key, entry, &j),
+            },
             Err(_) => continue,
         };
     }

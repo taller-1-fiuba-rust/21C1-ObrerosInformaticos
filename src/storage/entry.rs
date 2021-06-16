@@ -22,7 +22,7 @@ impl Entry {
         }
     }
 
-    ///Returns the last access to the key if 
+    ///Returns the last access to the key if
     ///the key is not expired or an error otherwise.
     ///This is stored in duration since 1970
     pub fn last_access(&self) -> Result<Duration, &'static str> {
@@ -65,7 +65,7 @@ impl Entry {
     }
 
     ///Update the value if the key is not expired or an error otherwise.
-    pub fn update_value(&mut self, new_value: Value) -> Result<(), &'static str>{
+    pub fn update_value(&mut self, new_value: Value) -> Result<(), &'static str> {
         let key_is_expired = match self.key_expiration {
             Some(exp) => key_is_expired(exp),
             None => false,
@@ -79,7 +79,7 @@ impl Entry {
     }
 
     ///Modify the last access to the key if the key is not expired or an error otherwise.
-    pub fn set_last_access(&mut self, new_access: Duration) -> Result<(), &'static str>{
+    pub fn set_last_access(&mut self, new_access: Duration) -> Result<(), &'static str> {
         let key_is_expired = match self.key_expiration {
             Some(exp) => key_is_expired(exp),
             None => false,
@@ -93,13 +93,12 @@ impl Entry {
     }
 
     ///Modify the expiration of the key
-    pub fn set_key_expiration(&mut self, new_expiration: Option<Duration>){
+    pub fn set_key_expiration(&mut self, new_expiration: Option<Duration>) {
         self.key_expiration = new_expiration;
     }
-
 }
 
 fn key_is_expired(expiration: Duration) -> bool {
     let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-    expiration < now 
+    expiration < now
 }
