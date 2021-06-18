@@ -120,43 +120,6 @@ impl DataStorage {
         Ok(())
     }
 
-    ///Append the value at the end of the string if key already exists and is a string
-    ///If key does not exist it is created and set as an empty string.
-    pub fn append(&self, key: String, value: String) -> Result<usize, &'static str> {
-        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
-
-        if lock.contains_key(&key) {
-            let entry: &mut Entry = lock.get_mut(&key).unwrap();
-
-            match entry.value() {
-                Ok(val) => match val {
-                    Value::String(s) => {
-                        let new_string = s + &value;
-                        let length = new_string.len();
-                        entry.update_value(Value::String(new_string))?;
-                        Ok(length)
-                    }
-                    Value::Vec(_i) => Err("Value must be a string not a vector"),
-                    Value::HashSet(_j) => Err("Value must be a string not a set"),
-                },
-                Err(_s) => {
-                    self.delete_key(&key)?;
-                    let value_copy = value.clone();
-                    match self.do_set(&mut lock, &key, Value::String(value_copy)) {
-                        Ok(_s) => Ok(value.len()),
-                        Err(_i) => Err("String value not created"),
-                    }
-                }
-            }
-        } else {
-            let value_copy = value.clone();
-            match self.do_set(&mut lock, &key, Value::String(value_copy)) {
-                Ok(_s) => Ok(value.len()),
-                Err(_i) => Err("String value not created"),
-            }
-        }
-    }
-
     /// Remove the key with its corresponding value from the structure.
     /// PRE: The DataStorage structure must be created.
     /// POST: The key is removed and its corresponding value. In case
@@ -171,11 +134,10 @@ impl DataStorage {
 
     /// Returns OK if the key exists in the database and error otherwise.
     pub fn exists_key(&self, key: &str) -> Result<(), &'static str> {
-        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
-        if lock.contains_key(key) {
-            Ok(())
-        } else {
-            Err("Not key in HashMap")
+        let value = self.get(&key);
+        match value {
+            Some(_) => Ok(()),
+            None => Err("Not key in HashMap"),
         }
     }
 
@@ -191,35 +153,6 @@ impl DataStorage {
             Some(value)
         } else {
             None
-        }
-    }
-
-    /// Returns Ok(Some(entryF)) for a specified key
-    /// Returns Ok(None) if the key has expired
-    /// Returns Err() if theres no value for that key
-    pub fn get_entry(&self, key: &str) -> Result<Option<Entry>, &'static str> {
-        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
-
-        if lock.contains_key(key) {
-            let entry: &Entry = lock.get(key).unwrap();
-            let key_exp = entry.key_expiration();
-            let entry_cpy = entry.clone();
-
-            if key_exp != Ok(None) {
-                let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-                if key_exp.unwrap().unwrap() > now {
-                    drop(lock);
-                    self.modify_last_key_access(&key, now).unwrap();
-                    return Ok(Some(entry_cpy));
-                }
-                // Key has expired, we should delete it
-                drop(lock);
-                self.delete_key(key).unwrap();
-                return Ok(None);
-            }
-            Ok(Some(entry_cpy))
-        } else {
-            Err("No value for that key")
         }
     }
 
@@ -252,55 +185,142 @@ impl DataStorage {
         None
     }
 
-    pub fn getset(&self, key: &str, new_value: Value) -> Result<String, &'static str> {
-        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+    /// Returns Ok(Some(entryF)) for a specified key
+    /// Returns Ok(None) if the key has expired
+    /// Returns Err() if theres no value for that key
+    pub fn get_entry(&self, key: &str) -> Result<Option<Entry>, &'static str> {
+        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
 
-        match lock.get(key) {
-            Some(entry) => match entry.value() {
-                Ok(value) => match value {
-                    Value::String(old_value) => {
-                        self.do_set(&mut lock, key, new_value)?;
-                        drop(lock);
-                        Ok(old_value)
+        if lock.contains_key(key) {
+            let entry: &Entry = lock.get(key).unwrap();
+            let key_exp = entry.key_expiration();
+            let entry_cpy = entry.clone();
+
+            match key_exp {
+                Ok(expiration) => match expiration {
+                    Some(exp) => {
+                        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+                        if exp > now {
+                            drop(lock);
+                            self.modify_last_key_access(&key, now).unwrap();
+                            Ok(Some(entry_cpy))
+                        } else {
+                            self.delete_key(key)?;
+                            Ok(None)
+                        }
                     }
-                    Value::Vec(_) => {
-                        Err("WRONGTYPE Operation against a key holding the wrong kind of value")
-                    }
-                    Value::HashSet(_) => {
-                        Err("WRONGTYPE Operation against a key holding the wrong kind of value")
-                    }
+                    None => Ok(Some(entry_cpy)),
                 },
-                Err(_s) => {
-                    self.delete_key(key)?;
-                    Ok("nil".to_string())
+                Err(_) => Err("No value for that key"),
+            }
+        } else {
+            Err("No value for that key")
+        }
+    }
+
+    ///Append the value at the end of the string if key already exists and is a string
+    ///If key does not exist it is created and set as an empty string.
+    pub fn append(&self, key: String, value: String) -> Result<usize, &'static str> {
+        let res_entry = self.get_entry(&key);
+
+        match res_entry {
+            Ok(opt_entry) => match opt_entry {
+                Some(entry) => {
+                    let old_value = entry.value().unwrap();
+                    match old_value {
+                        Value::String(s) => {
+                            let mut lock =
+                                self.data.write().ok().ok_or("Failed to lock database")?;
+                            let write_entry: &mut Entry = lock.get_mut(&key).unwrap();
+                            let new_string = s + &value;
+                            let length = new_string.len();
+                            write_entry.update_value(Value::String(new_string))?;
+                            Ok(length)
+                        }
+                        Value::Vec(_i) => Err("Value must be a string not a vector"),
+                        Value::HashSet(_j) => Err("Value must be a string not a set"),
+                    }
+                }
+                None => {
+                    let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+                    let value_copy = value.clone();
+                    match self.do_set(&mut lock, &key, Value::String(value_copy)) {
+                        Ok(_s) => Ok(value.len()),
+                        Err(_i) => Err("String value not created"),
+                    }
                 }
             },
-            None => Ok("nil".to_string()),
+            Err(_) => {
+                let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+                let value_copy = value.clone();
+                match self.do_set(&mut lock, &key, Value::String(value_copy)) {
+                    Ok(_s) => Ok(value.len()),
+                    Err(_i) => Err("String value not created"),
+                }
+            }
+        }
+    }
+
+    pub fn get_string_value(&self, key: String) -> Result<Option<String>, &'static str> {
+        let value = self.get(&key);
+
+        match value {
+            Some(val) => match val {
+                Value::String(string_value) => Ok(Some(string_value)),
+                Value::Vec(_i) => Err("value not a string"),
+                Value::HashSet(_j) => Err("value not a string"),
+            },
+            None => Ok(None),
+        }
+    }
+
+    pub fn getset(&self, key: &str, new_value: Value) -> Result<String, &'static str> {
+        let res_entry = self.get_entry(key);
+        match res_entry {
+            Ok(opt_entry) => match opt_entry {
+                Some(entry) => match entry.value() {
+                    Ok(value) => match value {
+                        Value::String(old_value) => {
+                            let mut lock =
+                                self.data.write().ok().ok_or("Failed to lock database")?;
+                            self.do_set(&mut lock, key, new_value)?;
+                            drop(lock);
+                            Ok(old_value)
+                        }
+                        Value::Vec(_) => {
+                            Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                        }
+                        Value::HashSet(_) => {
+                            Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                        }
+                    },
+                    Err(_) => Ok("nil".to_string()),
+                },
+                None => Ok("nil".to_string()),
+            },
+            Err(_) => Ok("nil".to_string()),
         }
     }
 
     /// Renames a key and fails if it does not exist.
     pub fn rename(&self, src: &str, dst: &str) -> Result<(), &'static str> {
-        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
-        if lock.contains_key(src) {
-            let result = lock.get(src).unwrap();
-            match result.value() {
-                Ok(_) => {
-                    let moved_duration = result.key_expiration().unwrap();
-                    let moved_val = result.value().unwrap();
-                    drop(lock);
-                    self.set(dst, moved_val)?;
-                    self.set_expiration_to_key(moved_duration, dst)?;
-                    self.delete_key(src)?;
-                    Ok(())
-                }
-                Err(_s) => {
-                    self.delete_key(src)?;
-                    Err("No such key")
-                }
-            }
-        } else {
-            Err("No such key")
+        let res_entry = self.get_entry(src);
+        match res_entry {
+            Ok(opt_entry) => match opt_entry {
+                Some(entry) => match entry.value() {
+                    Ok(_) => {
+                        let moved_duration = entry.key_expiration().unwrap();
+                        let moved_val = entry.value().unwrap();
+                        self.set(dst, moved_val)?;
+                        self.set_expiration_to_key(moved_duration, dst)?;
+                        self.delete_key(src)?;
+                        Ok(())
+                    }
+                    Err(_) => Err("No such key"),
+                },
+                None => Err("No such key"),
+            },
+            Err(_) => Err("No such key"),
         }
     }
 
@@ -347,6 +367,7 @@ impl DataStorage {
         result
     }
 
+    ///Modify last key access if the key exist or is not expired.
     pub fn modify_last_key_access(
         &self,
         key: &str,
@@ -372,56 +393,28 @@ impl DataStorage {
     }
 
     pub fn decrement_value(&self, key: String, numeric_value: i64) -> Result<i64, &'static str> {
-        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
-
-        if lock.contains_key(&key) {
-            let entry: &mut Entry = lock.get_mut(&key).unwrap();
-            match entry.value() {
-                Ok(value) => match value {
-                    Value::String(s) => match s.parse::<i64>() {
-                        Ok(number) => {
-                            let new_value = number - numeric_value;
-                            entry.update_value(Value::String(new_value.to_string()))?;
-                            Ok(number - numeric_value)
-                        }
-                        Err(_j) => Err("Cant decrement a value to a not integer value"),
-                    },
-                    Value::Vec(_i) => Err("Cant decrement a value to a vector"),
-                    Value::HashSet(_j) => Err("Cant decrement a value to a set"),
+        let value = self.get(&key);
+        match value {
+            Some(val) => match val {
+                Value::String(s) => match s.parse::<i64>() {
+                    Ok(number) => {
+                        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+                        let entry: &mut Entry = lock.get_mut(&key).unwrap();
+                        let new_value = number - numeric_value;
+                        entry.update_value(Value::String(new_value.to_string()))?;
+                        Ok(number - numeric_value)
+                    }
+                    Err(_j) => Err("Cant decrement a value to a not integer value"),
                 },
-                Err(_s) => {
-                    self.delete_key(&key)?;
-                    let negative_value = 0 - numeric_value;
-                    self.do_set(&mut lock, &key, Value::String(negative_value.to_string()))?;
-                    Ok(0 - numeric_value)
-                }
+                Value::Vec(_i) => Err("Cant decrement a value to a vector"),
+                Value::HashSet(_j) => Err("Cant decrement a value to a set"),
+            },
+            None => {
+                let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+                let negative_value = 0 - numeric_value;
+                self.do_set(&mut lock, &key, Value::String(negative_value.to_string()))?;
+                Ok(0 - numeric_value)
             }
-        } else {
-            let negative_value = 0 - numeric_value;
-            self.do_set(&mut lock, &key, Value::String(negative_value.to_string()))?;
-            Ok(0 - numeric_value)
-        }
-    }
-
-    pub fn get_string_value(&self, key: String) -> Result<Option<String>, &'static str> {
-        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
-
-        if lock.contains_key(&key) {
-            let entry = lock.get(&key).unwrap();
-
-            match entry.value() {
-                Ok(value) => match value {
-                    Value::String(string_value) => Ok(Some(string_value)),
-                    Value::Vec(_i) => Err("value not a string"),
-                    Value::HashSet(_j) => Err("value not a string"),
-                },
-                Err(_s) => {
-                    self.delete_key(&key)?;
-                    Ok(None)
-                }
-            }
-        } else {
-            Ok(None)
         }
     }
 }

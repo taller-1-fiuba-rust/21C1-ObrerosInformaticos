@@ -28,6 +28,7 @@ pub fn setup_server() -> (Server, u16) {
     (sv, port)
 }
 
+#[allow(dead_code)]
 pub fn setup() -> (Server, Client) {
     let (sv, port) = setup_server();
     let client = setup_client(port);
