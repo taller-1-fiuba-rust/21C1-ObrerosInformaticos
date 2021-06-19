@@ -48,11 +48,11 @@ mod tests {
         )
         .unwrap();
 
+        assert_eq!(builder.serialize(), ":18\r\n");
         assert_eq!(
             data.get("key").unwrap().string().unwrap(),
             "value_append_value"
         );
-        assert_eq!(builder.serialize(), ":18\r\n");
     }
 
     #[test]
