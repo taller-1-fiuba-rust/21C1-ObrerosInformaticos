@@ -166,7 +166,7 @@ impl DataStorage {
         Ok(())
     }
 
-    ///Return TRUE if the storage is empty or FALSE if not. 
+    ///Return TRUE if the storage is empty or FALSE if not.
     pub fn is_empty(&self) -> bool {
         let lock = self.data.read().unwrap();
         lock.is_empty()
