@@ -159,6 +159,17 @@ impl DataStorage {
         }
     }
 
+    pub fn delete_all(&self) -> Result<(), &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        lock.clear();
+        Ok(())
+    }
+
+    pub fn is_empty(&self) -> bool {
+        let lock = self.data.read().unwrap();
+        lock.is_empty()
+    }
+
     /// Returns OK if the key exists in the database and error otherwise.
     pub fn exists_key(&self, key: &str) -> Result<(), &'static str> {
         let lock = self.data.read().ok().ok_or("Failed to lock database")?;
