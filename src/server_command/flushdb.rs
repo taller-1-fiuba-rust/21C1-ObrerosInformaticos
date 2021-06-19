@@ -3,6 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
+///Delete all the keys of the currently selected DB.
 pub fn run(builder: &mut ResponseBuilder, data: Arc<DataStorage>) -> Result<(), &'static str> {
     let response = data.delete_all();
 
