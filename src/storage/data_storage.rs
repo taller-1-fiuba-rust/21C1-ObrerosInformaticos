@@ -141,6 +141,19 @@ impl DataStorage {
         }
     }
 
+    /// Returns the number of elements in the database.
+    pub fn len(&self) -> Result<usize, &'static str> {
+        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
+        let mut count = 0;
+        for entry in lock.values() {
+            match entry.value() {
+                Ok(_) => count += 1,
+                Err(_) => continue,
+            };
+        }
+        Ok(count)
+    }
+
     /// Returns a read reference for the DataStorage structure.
     pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, Entry>> {
         self.data.read().unwrap()
