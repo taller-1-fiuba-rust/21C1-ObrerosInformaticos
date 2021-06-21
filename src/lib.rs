@@ -3,6 +3,7 @@ pub mod config;
 mod execution;
 mod key_command;
 mod listener_thread;
+mod lists_command;
 pub mod logging;
 mod protocol;
 mod pubsub;

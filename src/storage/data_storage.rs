@@ -430,6 +430,28 @@ impl DataStorage {
             }
         }
     }
+
+    pub fn lpushx(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
+        let value = self.get(&key);
+        match value {
+            Some(val) => match val {
+                Value::String(_) => Ok(0),
+                Value::Vec(i) => {
+                    let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+                    let entry: &mut Entry = lock.get_mut(&key).unwrap();
+                    let mut new_vector = i;
+                    for element in vec_values {
+                        new_vector.insert(0, element);
+                    }
+                    let len = new_vector.len();
+                    entry.update_value(Value::Vec(new_vector))?;
+                    Ok(len)
+                }
+                Value::HashSet(_) => Ok(0),
+            },
+            None => Ok(0),
+        }
+    }
 }
 
 fn now() -> Result<Duration, &'static str> {
