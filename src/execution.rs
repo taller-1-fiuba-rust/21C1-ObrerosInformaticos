@@ -6,10 +6,12 @@ use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
-use crate::server_command::{config, info, ping, pubsub};
+use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
+use crate::server_command::{config, dbsize, info, ping};
 use crate::storage::data_storage::DataStorage;
-use crate::string_command::{append, decrby, get, getdel, getset, mget, mset, set, strlen};
-use std::net::TcpStream;
+use crate::string_command::{append, decrby, get, getdel, mget, getset, mset, set, strlen};
+
+use crate::client::Client;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
@@ -20,6 +22,7 @@ pub struct Execution {
     sys_time: Arc<SystemTime>,
     client_connected: u64,
     logger: Arc<Logger>,
+    pubsub: Arc<Mutex<PublisherSubscriber>>,
 }
 
 impl Execution {
@@ -28,6 +31,7 @@ impl Execution {
         config: Arc<Mutex<Configuration>>,
         sys_time: Arc<SystemTime>,
         logger: Arc<Logger>,
+        pubsub: Arc<Mutex<PublisherSubscriber>>,
     ) -> Self {
         Execution {
             data,
@@ -35,11 +39,26 @@ impl Execution {
             sys_time,
             client_connected: 0,
             logger,
+            pubsub,
         }
     }
 
     /// Matches a command with it's executing function and runs it.
-    pub fn run(&self, cmd: &Command, builder: &mut ResponseBuilder) -> Result<(), &'static str> {
+    pub fn run(
+        &self,
+        cmd: &Command,
+        builder: &mut ResponseBuilder,
+        client: Arc<Client>,
+    ) -> Result<(), &'static str> {
+        if client.in_pubsub_mode()
+            && !matches!(
+                &cmd.name().to_uppercase()[..],
+                "SUBSCRIBE" | "PSUBSCRIBE" | "UNSUBSCRIBE" | "PUNSUBSCRIBE" | "PING" | "QUIT"
+            )
+        {
+            return Err("A client in pub/sub mode can only use SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE, PUNSUBSCRIBE, PING and QUIT");
+        }
+
         match &cmd.name().to_ascii_lowercase()[..] {
             "ping" => ping::run(builder),
             "info" => info::run(builder, &self.config, &self.sys_time),
@@ -65,30 +84,15 @@ impl Execution {
             "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
             "get" => get::run(cmd.arguments(), builder, self.data.clone()),
             "mget" => mget::run(cmd.arguments(), builder, self.data.clone()),
+            "unsubscribe" => {
+                unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments())
+            }
+            "subscribe" => subscribe::run(self.pubsub.clone(), client, builder, cmd.arguments()),
+            "publish" => publish::run(self.pubsub.clone(), builder, cmd.arguments()),
+            "punsubscribe" => punsubscribe::run(self.pubsub.clone(), client, builder),
+            "pubsub" => pubsub::run(self.pubsub.clone(), builder, cmd.arguments()),
+            "dbsize" => dbsize::run(builder, self.data.clone()),
             _ => Err("Unknown command."),
         }
-    }
-
-    /// Executes pub/sub commands. This distinction is required because of mode changes related to pub/sub commands.
-    pub fn run_pubsub(
-        &self,
-        cmd: &Command,
-        response: &mut ResponseBuilder,
-        socket: Arc<Mutex<TcpStream>>,
-        pubsub: Arc<Mutex<PublisherSubscriber>>,
-    ) -> Result<(), String> {
-        match &cmd.name().to_ascii_lowercase()[..] {
-            "subscribe" => pubsub::subscribe::run(pubsub, socket, response, cmd.arguments()),
-            "publish" => pubsub::publish::run(pubsub, response, cmd.arguments()),
-            _ => Err("Unknown command.".to_string()),
-        }
-    }
-
-    /// Returns a bool representing if the command is a pub/sub topic command or not.
-    pub fn is_pubsub_command(&self, cmd: &Command) -> bool {
-        matches!(
-            &cmd.name().to_ascii_lowercase()[..],
-            "subscribe" | "publish"
-        )
     }
 }

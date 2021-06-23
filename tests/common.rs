@@ -9,7 +9,7 @@ use std::time::SystemTime;
 static PORT: AtomicU16 = AtomicU16::new(10001);
 const TIMEOUT: u64 = 5;
 
-pub fn setup() -> (Server, Client) {
+pub fn setup_server() -> (Server, u16) {
     let port = PORT.fetch_add(1, Ordering::SeqCst);
 
     let mut config = Configuration::new();
@@ -25,8 +25,18 @@ pub fn setup() -> (Server, Client) {
             panic!("Failed to start REDIS server");
         }
     }
-    let client = redis::Client::open(format!("redis://127.0.0.1:{}/", port)).unwrap();
-    return (sv, client);
+    (sv, port)
+}
+
+#[allow(dead_code)]
+pub fn setup() -> (Server, Client) {
+    let (sv, port) = setup_server();
+    let client = setup_client(port);
+    (sv, client)
+}
+
+pub fn setup_client(port: u16) -> Client {
+    redis::Client::open(format!("redis://127.0.0.1:{}/", port)).unwrap()
 }
 
 pub fn query_string<T: FromRedisValue>(client: &Client, cmd: &str) -> T {

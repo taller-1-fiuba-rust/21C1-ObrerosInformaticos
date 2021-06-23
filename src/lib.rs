@@ -1,3 +1,4 @@
+mod client;
 pub mod config;
 mod execution;
 mod key_command;
@@ -5,6 +6,7 @@ mod listener_thread;
 pub mod logging;
 mod protocol;
 mod pubsub;
+mod pubsub_command;
 pub mod server;
 mod server_command;
 mod storage;
