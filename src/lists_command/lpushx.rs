@@ -8,16 +8,15 @@ pub fn run(
     arguments: Vec<ProtocolType>,
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
-    let mut string_arguments = vec![];
-
-    for argument in arguments {
-        match argument.clone().string() {
-            Ok(s) => string_arguments.push(s),
-            Err(_) => {
-                return Err("While parsing argument in exists command");
-            }
-        };
+    if arguments.is_empty() {
+        return Err("lpushx must have arguments");
     }
+
+    let mut string_arguments: Vec<String> = arguments
+        .into_iter()
+        .map(|x| x.string())
+        .into_iter()
+        .collect::<Result<_, _>>()?;
 
     let key = string_arguments[0].clone();
     string_arguments.remove(0);
