@@ -15,7 +15,6 @@ pub fn run(
     let mut string_arguments: Vec<String> = arguments
         .into_iter()
         .map(|x| x.string())
-        .into_iter()
         .collect::<Result<_, _>>()?;
 
     let key = string_arguments[0].clone();
@@ -28,10 +27,7 @@ pub fn run(
             builder.add(ProtocolType::Integer(len as i64));
             Ok(())
         }
-        Err(s) => {
-            builder.add(ProtocolType::Error("lpushx not executed".to_string()));
-            Err(s)
-        }
+        Err(s) => Err(s)
     }
 }
 

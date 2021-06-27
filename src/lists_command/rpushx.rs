@@ -12,25 +12,18 @@ pub fn run(
         return Err("rpushx must have arguments");
     }
 
-    let mut string_arguments: Vec<String> = arguments
+    let string_arguments: Vec<String> = arguments
         .into_iter()
         .map(|x| x.string())
         .collect::<Result<_, _>>()?;
 
     let key = string_arguments[0].clone();
-    string_arguments.remove(0);
-
-    let list_len = data.rpushx(key, string_arguments);
-
-    match list_len {
+    match data.rpushx(key, string_arguments[1..].to_owned()) {
         Ok(len) => {
             builder.add(ProtocolType::Integer(len as i64));
             Ok(())
         }
-        Err(s) => {
-            builder.add(ProtocolType::Error("rpushx not executed".to_string()));
-            Err(s)
-        }
+        Err(s) => Err(s)
     }
 }
 
