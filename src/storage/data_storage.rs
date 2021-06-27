@@ -442,7 +442,12 @@ impl DataStorage {
     }
 
     /// Push a vector of values into the specified list adding them with the provided function.
-    fn pushx(&self, key: String, vec_values: Vec<String>, apply: fn(&mut Vec<String>, String) -> () ) -> Result<usize, &'static str> {
+    fn pushx(
+        &self,
+        key: String,
+        vec_values: Vec<String>,
+        apply: fn(&mut Vec<String>, String) -> (),
+    ) -> Result<usize, &'static str> {
         let value = self.get(&key);
         match value {
             Some(val) => match val {

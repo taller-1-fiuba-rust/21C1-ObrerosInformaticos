@@ -27,7 +27,7 @@ pub fn run(
             builder.add(ProtocolType::Integer(len as i64));
             Ok(())
         }
-        Err(s) => Err(s)
+        Err(s) => Err(s),
     }
 }
 

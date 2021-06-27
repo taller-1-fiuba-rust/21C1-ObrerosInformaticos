@@ -23,7 +23,7 @@ pub fn run(
             builder.add(ProtocolType::Integer(len as i64));
             Ok(())
         }
-        Err(s) => Err(s)
+        Err(s) => Err(s),
     }
 }
 
@@ -51,9 +51,12 @@ mod tests {
             ],
             data.clone(),
         )
-            .unwrap();
+        .unwrap();
 
-        assert_eq!(vec!["value", "value2"], data.get("Test").unwrap().array().unwrap());
+        assert_eq!(
+            vec!["value", "value2"],
+            data.get("Test").unwrap().array().unwrap()
+        );
         assert_eq!(":2\r\n", builder.serialize());
     }
 
@@ -74,9 +77,12 @@ mod tests {
             ],
             data.clone(),
         )
-            .unwrap();
+        .unwrap();
 
-        assert_eq!(vec!["1", "2", "3", "4"], data.get("Test").unwrap().array().unwrap());
+        assert_eq!(
+            vec!["1", "2", "3", "4"],
+            data.get("Test").unwrap().array().unwrap()
+        );
         assert_eq!(":4\r\n", builder.serialize());
     }
 
@@ -93,7 +99,7 @@ mod tests {
             ],
             data.clone(),
         )
-            .unwrap();
+        .unwrap();
 
         assert!(data.get("Test").is_none());
         assert_eq!(":0\r\n", builder.serialize());
