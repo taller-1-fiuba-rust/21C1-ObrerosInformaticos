@@ -3,7 +3,7 @@ use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
-use crate::lists_command::lpushx;
+use crate::lists_command::{lpushx, rpushx};
 use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
@@ -92,6 +92,7 @@ impl Execution {
             "pubsub" => pubsub::run(self.pubsub.clone(), builder, cmd.arguments()),
             "dbsize" => dbsize::run(builder, self.data.clone()),
             "lpushx" => lpushx::run(builder, cmd.arguments(), self.data.clone()),
+            "rpushx" => rpushx::run(builder, cmd.arguments(), self.data.clone()),
             _ => Err("Unknown command."),
         }
     }
