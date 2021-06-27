@@ -453,42 +453,40 @@ impl DataStorage {
         }
     }
 
-    pub fn lset(&self, key: String, index: i64, value: String) -> Result<(), &'static str>{
+    pub fn lset(&self, key: String, index: i64, value: String) -> Result<(), &'static str> {
         let res_entry = self.get_entry(&key);
 
         match res_entry {
-            Ok(opt_entry) => 
-                match opt_entry {
-                    Some(ent) => 
-                        match ent.value().unwrap() {
-                            Value::String(_) => Err("Not list value for that key"),
-                            Value::Vec(mut i) => {
-                                let index = if index < 0 {
-                                    (i.len() as i64) + index
-                                }else{
-                                    index
-                                };
-                                let res = if (index as usize) < i.len() {
-                                    Ok(index as usize)
-                                } else{
-                                    Err("Index not correct in lset")
-                                };
-                                match res {
-                                    Ok(number) => {
-                                        i.insert(number, value);
-                                        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
-                                        let entry: &mut Entry = lock.get_mut(&key).unwrap();
-                                        entry.update_value(Value::Vec(i))?;
-                                        Ok(())   
-                                    },
-                                    Err(s) => Err(s),
-                                } 
-                            },
-                            Value::HashSet(_) => Err("Not list value for that key"),
-        
-                        },
-                    None => Err("No such key"),
+            Ok(opt_entry) => match opt_entry {
+                Some(ent) => match ent.value().unwrap() {
+                    Value::String(_) => Err("Not list value for that key"),
+                    Value::Vec(mut i) => {
+                        let index = if index < 0 {
+                            (i.len() as i64) + index
+                        } else {
+                            index
+                        };
+                        let res = if (index as usize) < i.len() {
+                            Ok(index as usize)
+                        } else {
+                            Err("Index not correct in lset")
+                        };
+                        match res {
+                            Ok(number) => {
+                                i.insert(number, value);
+                                let mut lock =
+                                    self.data.write().ok().ok_or("Failed to lock database")?;
+                                let entry: &mut Entry = lock.get_mut(&key).unwrap();
+                                entry.update_value(Value::Vec(i))?;
+                                Ok(())
+                            }
+                            Err(s) => Err(s),
+                        }
+                    }
+                    Value::HashSet(_) => Err("Not list value for that key"),
                 },
+                None => Err("No such key"),
+            },
             Err(_) => Err("No such key"),
         }
     }

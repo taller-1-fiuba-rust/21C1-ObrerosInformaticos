@@ -43,8 +43,11 @@ mod tests {
     fn lset_value_correct() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("Test", Value::Vec(["1".to_string(), "2".to_string()].to_vec()))
-            .unwrap();
+        data.set(
+            "Test",
+            Value::Vec(["1".to_string(), "2".to_string()].to_vec()),
+        )
+        .unwrap();
 
         run(
             &mut builder,
@@ -60,9 +63,7 @@ mod tests {
         let value = data.get("Test").unwrap();
 
         let vector = match value {
-            Value::Vec(i) => {
-                Ok(i)
-            },
+            Value::Vec(i) => Ok(i),
             _ => Err("not vector value"),
         };
 
@@ -74,8 +75,11 @@ mod tests {
     fn lset_negative_value_correct() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("Test", Value::Vec(["1".to_string(), "2".to_string()].to_vec()))
-            .unwrap();
+        data.set(
+            "Test",
+            Value::Vec(["1".to_string(), "2".to_string()].to_vec()),
+        )
+        .unwrap();
 
         run(
             &mut builder,
@@ -91,9 +95,7 @@ mod tests {
         let value = data.get("Test").unwrap();
 
         let vector = match value {
-            Value::Vec(i) => {
-                Ok(i)
-            },
+            Value::Vec(i) => Ok(i),
             _ => Err("not vector value"),
         };
 
@@ -106,8 +108,11 @@ mod tests {
     fn lset_value_not_correct() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("Test", Value::Vec(["1".to_string(), "2".to_string()].to_vec()))
-            .unwrap();
+        data.set(
+            "Test",
+            Value::Vec(["1".to_string(), "2".to_string()].to_vec()),
+        )
+        .unwrap();
 
         run(
             &mut builder,
@@ -126,8 +131,11 @@ mod tests {
     fn lset_negative_value_not_correct() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("Test", Value::Vec(["1".to_string(), "2".to_string()].to_vec()))
-            .unwrap();
+        data.set(
+            "Test",
+            Value::Vec(["1".to_string(), "2".to_string()].to_vec()),
+        )
+        .unwrap();
 
         run(
             &mut builder,
