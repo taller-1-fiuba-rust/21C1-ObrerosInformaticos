@@ -430,6 +430,44 @@ impl DataStorage {
             }
         }
     }
+
+    /// Push a vector of values to the specified list by appending them to the left of the list.
+    pub fn lpushx(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
+        self.pushx(key, vec_values, |list, element| list.insert(0, element))
+    }
+
+    /// Push a vector of values to the specified list by appending them to the right of the list.
+    pub fn rpushx(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
+        self.pushx(key, vec_values, |list, element| list.push(element))
+    }
+
+    /// Push a vector of values into the specified list adding them with the provided function.
+    fn pushx(
+        &self,
+        key: String,
+        vec_values: Vec<String>,
+        apply: fn(&mut Vec<String>, String) -> (),
+    ) -> Result<usize, &'static str> {
+        let value = self.get(&key);
+        match value {
+            Some(val) => match val {
+                Value::String(_) => Ok(0),
+                Value::Vec(v) => {
+                    let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+                    let entry: &mut Entry = lock.get_mut(&key).unwrap();
+                    let mut new_vector = v;
+                    for val in vec_values {
+                        apply(&mut new_vector, val);
+                    }
+                    let len = new_vector.len();
+                    entry.update_value(Value::Vec(new_vector))?;
+                    Ok(len)
+                }
+                Value::HashSet(_) => Ok(0),
+            },
+            None => Ok(0),
+        }
+    }
 }
 
 fn now() -> Result<Duration, &'static str> {
