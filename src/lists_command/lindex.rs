@@ -3,6 +3,7 @@ use crate::storage::data_storage::DataStorage;
 use crate::storage::data_storage::Value;
 use crate::protocol::response::ResponseBuilder;
 use std::sync::Arc;
+use std::usize;
 
 
 pub fn run(
@@ -11,24 +12,46 @@ pub fn run(
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
 
-    if arguments.len() > 2 {
+
+    data.set("asd", Value::Vec(vec!["asd".to_string(), "ola".to_string()]))?;
+    if arguments.len() != 2 {
         return Err("ERR wrong number of arguments");
     }
     let string_key = arguments[0].clone().string()?;
-    let int_index = arguments[1].clone().integer()?;
+    let string_index = arguments[1].clone().string()?;
+    let i8_index: i8 = match string_index.parse() {
+        Ok(numb) => numb,
+        Err(_) => {
+            builder.add(ProtocolType::String("nil".to_string()));
+            return Ok(())
+        }
+    };
     let result = data.get(&string_key);
 
     match result {
         Some(value) => match value {
-            Value::String(_) => response.push(ProtocolType::String(string)),
-            Value::Vec(list) => response.push(ProtocolType::String("nil".to_string())),
-            Value::HashSet(_) => response.push(ProtocolType::String("nil".to_string())),
+            Value::String(_) => return Err("WRONGTYPE Operation against a key holding the wrong kind of value"),
+            Value::Vec(list) => {
+                if i8_index >= 0 {
+                    let element = list.get(i8_index as usize);
+                    match element{
+                        Some(res) =>  builder.add(ProtocolType::String(res.to_string())),
+                        None => builder.add(ProtocolType::String("nil".to_string())),
+                    }
+                }
+                for i in 0..list.len() - 1{
+                    if i as i8 == list.len() as i8 + i8_index {
+                        builder.add(ProtocolType::String(list[i].clone()));
+                        return Ok(())
+                    }
+                }
+                
+            },
+            Value::HashSet(_) => return Err("WRONGTYPE Operation against a key holding the wrong kind of value"),
         },
-        None => response.push(ProtocolType::String("nil".to_string())),
+        None => builder.add(ProtocolType::String("nil".to_string())),
     }
-    }
-
-    builder.add(ProtocolType::Array(response));
+    
     Ok(())
 }
 
