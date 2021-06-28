@@ -12,7 +12,9 @@ pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,
 ) -> Result<(), &'static str> {
-    assert!(!arguments.is_empty());
+    if !arguments.is_empty() {
+        return Err("Wrong number of arguments");
+    }
 
     let channels = arguments
         .iter()

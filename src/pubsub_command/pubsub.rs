@@ -6,11 +6,10 @@ use regex::Regex;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 pub fn run(
-    pubsub: Arc<Mutex<PublisherSubscriber>>,
+    pubsub: Arc<PublisherSubscriber>,
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,
 ) -> Result<(), &'static str> {
-    let mut locked_pubsub = pubsub.lock().ok().ok_or("Failed to lock")?;
     let subcommand = arguments[0].clone().string()?;
 
     match &subcommand.to_lowercase()[..] {

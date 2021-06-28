@@ -9,7 +9,9 @@ pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,
 ) -> Result<(), &'static str> {
-    assert_eq!(arguments.len(), 2);
+    if arguments.len() != 2 {
+        return Err("Wrong number of arguments");
+    }
 
     let channel = arguments[0].clone().string()?;
     let msg = arguments[1].clone().string()?;
