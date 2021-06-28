@@ -23,9 +23,7 @@ pub fn run(
             builder.add(ProtocolType::SimpleString("OK".to_string()));
             Ok(())
         }
-        Err(s) => {
-            Err(s)
-        }
+        Err(s) => Err(s),
     }
 }
 

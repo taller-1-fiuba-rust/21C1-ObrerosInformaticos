@@ -198,12 +198,14 @@ impl DataStorage {
         None
     }
 
-
     /// Returns Ok(Some(entryF)) for a specified key
     /// Returns Ok(None) if the key has expired
     /// Returns Err() if theres no value for that key
-    pub fn get_entry<'i>(&self, key: &str, lock: & 'i mut RwLockWriteGuard<HashMap<String, Entry>>) -> Result<Option<& 'i mut Entry>, &'static str>{
-
+    pub fn get_entry<'i>(
+        &self,
+        key: &str,
+        lock: &'i mut RwLockWriteGuard<HashMap<String, Entry>>,
+    ) -> Result<Option<&'i mut Entry>, &'static str> {
         if lock.contains_key(key) {
             let entry: &mut Entry = lock.get_mut(key).unwrap();
             let key_exp = entry.key_expiration();
