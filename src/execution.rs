@@ -11,7 +11,7 @@ use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
 use crate::server_command::{config, dbsize, info, ping};
 use crate::storage::data_storage::DataStorage;
-use crate::string_command::{append, decrby, get, getdel, getset, mset, set, strlen};
+use crate::string_command::{append, decrby, get, getdel, getset, mget, mset, set, strlen};
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
@@ -84,6 +84,7 @@ impl Execution {
             "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
             "get" => get::run(cmd.arguments(), builder, self.data.clone()),
             "lindex" => lindex::run(cmd.arguments(), builder, self.data.clone()),
+            "mget" => mget::run(cmd.arguments(), builder, self.data.clone()),
             "unsubscribe" => {
                 unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments())
             }
