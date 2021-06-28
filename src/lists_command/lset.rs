@@ -20,11 +20,10 @@ pub fn run(
 
     match result {
         Ok(_) => {
-            builder.add(ProtocolType::String("OK".to_string()));
+            builder.add(ProtocolType::SimpleString("OK".to_string()));
             Ok(())
         }
         Err(s) => {
-            builder.add(ProtocolType::Error(s.to_string()));
             Err(s)
         }
     }
@@ -67,7 +66,7 @@ mod tests {
             _ => Err("not vector value"),
         };
 
-        assert_eq!("$2\r\nOK\r\n", builder.serialize());
+        assert_eq!("+OK\r\n", builder.serialize());
         assert_eq!("new_value", vector.unwrap()[0]);
     }
 
@@ -99,7 +98,7 @@ mod tests {
             _ => Err("not vector value"),
         };
 
-        assert_eq!("$2\r\nOK\r\n", builder.serialize());
+        assert_eq!("+OK\r\n", builder.serialize());
         assert_eq!("new_value", vector.unwrap()[1]);
     }
 
