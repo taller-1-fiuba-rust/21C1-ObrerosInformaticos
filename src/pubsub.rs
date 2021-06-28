@@ -3,7 +3,7 @@ use crate::protocol::types::ProtocolType;
 use std::collections::{HashMap, HashSet};
 
 use crate::client::Client;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 /// A pub/sub subscribers. Stores a list of channels and a socket to relay messages to.
 struct Subscriber {
@@ -27,55 +27,62 @@ impl Subscriber {
 /// Struct which holds all the Publisher/Subscriber information. This includes
 /// subscriptions, and clients.
 pub struct PublisherSubscriber {
-    subscriber_ids: HashMap<Arc<Client>, Subscriber>,
-    subscriptions: HashMap<String, HashSet<Arc<Client>>>,
+    users: RwLock<HashMap<Arc<Client>, Subscriber>>,
+    subscriptions: RwLock<HashMap<String, HashSet<Arc<Client>>>>,
 }
 
 impl PublisherSubscriber {
     pub fn new() -> Self {
         PublisherSubscriber {
-            subscriber_ids: HashMap::new(),
-            subscriptions: HashMap::new(),
+            users: RwLock::new(HashMap::new()),
+            subscriptions: RwLock::new(HashMap::new()),
         }
     }
 
-    fn drop_user(&mut self, user: Arc<Client>) {
-        self.subscriber_ids.remove(&user);
+    fn drop_user(&self, user: Arc<Client>) -> Result<(), &'static str> {
+        let mut users = self.users.write().ok().ok_or("Failed to lock")?;
+        users.remove(&user);
         user.set_pubsub_mode(false);
+        Ok(())
     }
 
-    fn add_user(&mut self, user: Arc<Client>) {
-        self.subscriber_ids
+    fn add_user(&self, user: Arc<Client>) -> Result<(), &'static str> {
+        let mut users = self.users.write().ok().ok_or("Failed to lock")?;
+        users
             .entry(user.clone())
             .or_insert_with(|| Subscriber::new(user.clone()));
         user.set_pubsub_mode(true);
+        Ok(())
     }
 
     /// Subscribes a socket to a specific channel, returns the number of channels the socket is subscribed to.
-    pub fn subscribe(&mut self, client: Arc<Client>, channel: &str) -> u32 {
-        self.add_user(client.clone());
-        self.subscriptions
+    pub fn subscribe(&self, client: Arc<Client>, channel: &str) -> Result<u32, &'static str> {
+        self.add_user(client.clone())?;
+        let mut subscriptions = self.subscriptions.write().ok().ok_or("Failed to lock")?;
+        subscriptions
             .entry(channel.to_string())
             .or_insert_with(HashSet::new)
             .insert(client.clone());
 
-        let sub = self.subscriber_ids.get_mut(&client).unwrap();
+        let mut users = self.users.write().ok().ok_or("Failed to lock")?;
+        let sub = users.get_mut(&client).unwrap();
         sub.channels.insert(channel.to_string());
-        sub.channels.len() as u32
+        Ok(sub.channels.len() as u32)
     }
 
     /// Publishes a message to a specific channel. Returns the number of subscribers which received the message.
-    pub fn publish(&mut self, channel: String, message: String) -> u32 {
+    pub fn publish(&self, channel: String, message: String) -> Result<u32, &'static str> {
         let response_str = Self::build_response(&channel, &message);
         let mut count = 0;
 
-        if let Some(clients) = self.subscriptions.get(&channel) {
-            let subs = &mut self.subscriber_ids;
+        let mut subscriptions = self.subscriptions.write().ok().ok_or("Failed to lock")?;
+        if let Some(clients) = subscriptions.get(&channel) {
+            let mut users = self.users.write().ok().ok_or("Failed to lock")?;
             let count_ref = &mut count;
 
             let mut dead_users = Vec::new();
             for client in clients {
-                let subscriber = subs.get(client).unwrap();
+                let subscriber = users.get(client).unwrap();
                 let result = match subscriber.send(&response_str) {
                     Ok(_) => {
                         *count_ref += 1;
@@ -93,7 +100,7 @@ impl PublisherSubscriber {
                 self.unsubscribe(user);
             }
         }
-        count
+        Ok(count)
     }
 
     /// Build RESP response
@@ -109,7 +116,8 @@ impl PublisherSubscriber {
 
     /// Returns the subscriptions list for a specific client
     pub fn get_subscriptions(&self, user: Arc<Client>) -> Vec<String> {
-        return if let Some(sub) = self.subscriber_ids.get(&user) {
+        let users = self.users.read().ok().ok_or("Failed to lock")?;
+        return if let Some(sub) = users.get(&user) {
             sub.channels.iter().cloned().collect::<Vec<String>>()
         } else {
             Vec::new()
@@ -117,9 +125,11 @@ impl PublisherSubscriber {
     }
 
     /// Unsubscribes a user from all the channels it's subscribed.
-    pub fn unsubscribe_from_channel(&mut self, user: Arc<Client>, channel: &str) -> usize {
-        if let Some(sub) = self.subscriber_ids.get_mut(&user) {
-            if let Some(set) = self.subscriptions.get_mut(channel) {
+    pub fn unsubscribe_from_channel(&self, user: Arc<Client>, channel: &str) -> usize {
+        let mut users = self.users.write().ok().ok_or("Failed to lock")?;
+        let mut subscriptions = self.users.write().ok().ok_or("Failed to lock")?;
+        if let Some(sub) = users.get_mut(&user) {
+            if let Some(set) = subscriptions.get_mut(channel) {
                 set.remove(&user);
             }
             sub.channels.remove(channel);
@@ -134,7 +144,7 @@ impl PublisherSubscriber {
     }
 
     /// Unsubscribes a user from all the channels it's subscribed.
-    fn unsubscribe(&mut self, user: Arc<Client>) {
+    fn unsubscribe(&self, user: Arc<Client>) {
         for channel in self.get_subscriptions(user.clone()) {
             self.unsubscribe_from_channel(user.clone(), &channel);
         }
@@ -142,7 +152,8 @@ impl PublisherSubscriber {
 
     /// Return a list of all the active channels
     pub fn get_channels(&self) -> Vec<String> {
-        self.subscriptions
+        let subs = self.subscriptions.read().ok().ok_or("Failed to lock")?;
+        subs
             .keys()
             .cloned()
             .filter(|x| self.subscriber_count(x) > 0)
@@ -151,7 +162,7 @@ impl PublisherSubscriber {
 
     /// Return the subscriber count for a channel
     pub fn subscriber_count(&self, channel: &str) -> usize {
-        return if let Some(s) = self.subscriptions.get(channel) {
+        return if let Some(s) = users.get(channel) {
             s.len()
         } else {
             0
