@@ -1,34 +1,35 @@
-use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
+use crate::storage::data_storage::Value;
+use crate::protocol::response::ResponseBuilder;
 use std::sync::Arc;
 
+
 pub fn run(
-    builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,
+    builder: &mut ResponseBuilder,
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
-    if arguments.is_empty() {
-        return Err("lpushx must have arguments");
+
+    if arguments.len() > 2 {
+        return Err("ERR wrong number of arguments");
+    }
+    let string_key = arguments[0].clone().string()?;
+    let int_index = arguments[1].clone().integer()?;
+    let result = data.get(&string_key);
+
+    match result {
+        Some(value) => match value {
+            Value::String(_) => response.push(ProtocolType::String(string)),
+            Value::Vec(list) => response.push(ProtocolType::String("nil".to_string())),
+            Value::HashSet(_) => response.push(ProtocolType::String("nil".to_string())),
+        },
+        None => response.push(ProtocolType::String("nil".to_string())),
+    }
     }
 
-    let mut string_arguments: Vec<String> = arguments
-        .into_iter()
-        .map(|x| x.string())
-        .collect::<Result<_, _>>()?;
-
-    let key = string_arguments[0].clone();
-    string_arguments.remove(0);
-
-    let list_len = data.lpushx(key, string_arguments);
-
-    match list_len {
-        Ok(len) => {
-            builder.add(ProtocolType::Integer(len as i64));
-            Ok(())
-        }
-        Err(s) => Err(s),
-    }
+    builder.add(ProtocolType::Array(response));
+    Ok(())
 }
 
 #[cfg(test)]
