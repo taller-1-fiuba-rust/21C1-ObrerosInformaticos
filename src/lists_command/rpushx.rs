@@ -9,20 +9,16 @@ pub fn run(
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
     if arguments.is_empty() {
-        return Err("lpushx must have arguments");
+        return Err("rpushx must have arguments");
     }
 
-    let mut string_arguments: Vec<String> = arguments
+    let string_arguments: Vec<String> = arguments
         .into_iter()
         .map(|x| x.string())
         .collect::<Result<_, _>>()?;
 
     let key = string_arguments[0].clone();
-    string_arguments.remove(0);
-
-    let list_len = data.lpushx(key, string_arguments);
-
-    match list_len {
+    match data.rpushx(key, string_arguments[1..].to_owned()) {
         Ok(len) => {
             builder.add(ProtocolType::Integer(len as i64));
             Ok(())
@@ -57,6 +53,10 @@ mod tests {
         )
         .unwrap();
 
+        assert_eq!(
+            vec!["value", "value2"],
+            data.get("Test").unwrap().array().unwrap()
+        );
         assert_eq!(":2\r\n", builder.serialize());
     }
 
@@ -79,6 +79,10 @@ mod tests {
         )
         .unwrap();
 
+        assert_eq!(
+            vec!["1", "2", "3", "4"],
+            data.get("Test").unwrap().array().unwrap()
+        );
         assert_eq!(":4\r\n", builder.serialize());
     }
 
@@ -97,6 +101,7 @@ mod tests {
         )
         .unwrap();
 
+        assert!(data.get("Test").is_none());
         assert_eq!(":0\r\n", builder.serialize());
     }
 }
