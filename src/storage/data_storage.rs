@@ -431,6 +431,27 @@ impl DataStorage {
         }
     }
 
+    pub fn lset(&self, key: String, first_index: i64, second_index: i64) -> Result<Option<Vec<String>>,  &'static str> {
+        let value = self.get(&key);
+
+        match value {
+            Some(val) => match val {
+                Value::String(_) => Err("Not vector value for that key"),
+                Value::Vec(i) => {
+                    if first_index < 0 || second_index < 0 {
+                        let values = get_values_with_negative_index(i, first_index, second_index);
+                        Ok(values)
+                    } else{
+                        let values = get_values_with_positive_index(i, first_index, second_index);
+                        Ok(values)
+                    }
+                }
+                Value::HashSet(_) => Err("Not vector value for that key"),
+            },
+            None => Err("Not such key"),
+        } 
+    }
+
     pub fn lpushx(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
         let value = self.get(&key);
         match value {
@@ -453,6 +474,38 @@ impl DataStorage {
         }
     }
 }
+
+fn get_values_with_negative_index(vector: Vec<String>, first_index: i64, second_index: i64) -> Option<Vec<String>>{
+    
+    if first_index < 0 {
+        let (start, stop) = get_range(first_index, second_index, vector.len());
+    } else {
+        let (start, stop) = get_range(second_index, first_index, vector.len());
+    }
+}
+
+fn get_range(negative_index: i64, positive_index: i64, len_vector: usize) -> (usize, usize) {
+    let diference = len_vector + negative_index;
+
+    if diference < 0 {
+        diference = 0;
+    }else {
+        diference = diference;
+    }
+
+    if positive_index >= len_vector {
+        positive_index = len_vector;
+    }else {
+        positive_index = positive_index;
+    }
+
+    if diference < positive_index {
+        (diference as usize, positive_index as usize)
+    }else {
+        (positive_index as usize, diference as usize)
+    }
+}
+
 
 fn now() -> Result<Duration, &'static str> {
     let _now = SystemTime::now().duration_since(UNIX_EPOCH);
