@@ -491,17 +491,17 @@ impl DataStorage {
     }
 
     /// Applies a function to a list and returns its resulting length
-    fn do_apply_vec<F: Fn(&mut Vec<String>) -> ()>(
+    fn do_apply_vec<F: Fn(&mut Vec<String>)>(
         &self,
         key: String,
         lock: &mut RwLockWriteGuard<HashMap<String, Entry>>,
         apply: F,
     ) -> Result<usize, &'static str> {
-        let entry = self.get_entry(&key, lock);
-        if let Err(_) = entry {
+        let res_entry = self.get_entry(&key, lock);
+        if res_entry.is_err() {
             return Ok(0);
         }
-        match entry.unwrap() {
+        match res_entry.unwrap() {
             Some(entry) => match entry.value() {
                 Ok(val) => match val {
                     Value::String(_) => Ok(0),
