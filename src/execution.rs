@@ -22,7 +22,7 @@ pub struct Execution {
     sys_time: Arc<SystemTime>,
     client_connected: u64,
     logger: Arc<Logger>,
-    pubsub: Arc<Mutex<PublisherSubscriber>>,
+    pubsub: Arc<PublisherSubscriber>,
 }
 
 impl Execution {
@@ -31,7 +31,7 @@ impl Execution {
         config: Arc<Mutex<Configuration>>,
         sys_time: Arc<SystemTime>,
         logger: Arc<Logger>,
-        pubsub: Arc<Mutex<PublisherSubscriber>>,
+        pubsub: Arc<PublisherSubscriber>,
     ) -> Self {
         Execution {
             data,

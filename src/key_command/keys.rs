@@ -9,7 +9,9 @@ pub fn run(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,
 ) -> Result<(), &'static str> {
-    assert_eq!(arguments.len(), 1);
+    if arguments.len() != 1 {
+        return Err("Wrong number of arguments");
+    }
 
     // We need to append ^$ to the regex in order to force the engine to match the start and end of the word.
     // Otherwise a pattern such as a?e will match any word with contains an 'a' followed by any char and then by an 'e'.
