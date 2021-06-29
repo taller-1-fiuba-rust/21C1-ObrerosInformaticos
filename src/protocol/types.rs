@@ -8,6 +8,7 @@ pub enum ProtocolType {
     Integer(i64),
     Array(Vec<ProtocolType>),
     Error(String),
+    Nil(),
 }
 
 #[allow(dead_code)]
@@ -79,6 +80,7 @@ impl ProtocolType {
             ProtocolType::String(str) => format!("${}\r\n{}\r\n", str.len(), str),
             ProtocolType::Integer(int) => format!(":{}\r\n", int.to_string()),
             ProtocolType::Error(err) => format!("-{}\r\n", err),
+            ProtocolType::Nil() => "$-1\r\n".to_string(),
         }
     }
 }
@@ -100,6 +102,7 @@ impl ToString for ProtocolType {
             ProtocolType::SimpleString(str) => str.clone(),
             ProtocolType::Integer(int) => int.to_string(),
             ProtocolType::Error(err) => err.clone(),
+            ProtocolType::Nil() => "nil".to_string()
         }
     }
 }

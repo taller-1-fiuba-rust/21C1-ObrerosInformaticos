@@ -443,6 +443,21 @@ impl DataStorage {
         self.push(key, vec_values, |list, element| list.push(element))
     }
 
+    /// Pop count values from the given list
+    pub fn rpop(&self, key: String, count: usize) -> Result<Vec<String>, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let mut result = Vec::new();
+        let _ = self.do_apply_vec(key, &mut lock, |list| {
+            for _ in 0..count {
+                match list.pop() {
+                    Some(v) => result.push(v),
+                    None => break
+                }
+            }
+        })?;
+        Ok(result)
+    }
+
     /// Push a vector of values to the specified list or create a new if it does not exist
     fn push(
         &self,
@@ -491,11 +506,11 @@ impl DataStorage {
     }
 
     /// Applies a function to a list and returns its resulting length
-    fn do_apply_vec<F: Fn(&mut Vec<String>)>(
+    fn do_apply_vec<F: FnMut(&mut Vec<String>)>(
         &self,
         key: String,
         lock: &mut RwLockWriteGuard<HashMap<String, Entry>>,
-        apply: F,
+        mut apply: F,
     ) -> Result<usize, &'static str> {
         let res_entry = self.get_entry(&key, lock);
         if res_entry.is_err() {
