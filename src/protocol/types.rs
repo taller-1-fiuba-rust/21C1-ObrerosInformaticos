@@ -102,7 +102,7 @@ impl ToString for ProtocolType {
             ProtocolType::SimpleString(str) => str.clone(),
             ProtocolType::Integer(int) => int.to_string(),
             ProtocolType::Error(err) => err.clone(),
-            ProtocolType::Nil() => "nil".to_string()
+            ProtocolType::Nil() => "nil".to_string(),
         }
     }
 }

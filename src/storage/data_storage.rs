@@ -451,7 +451,7 @@ impl DataStorage {
             for _ in 0..count {
                 match list.pop() {
                     Some(v) => result.push(v),
-                    None => break
+                    None => break,
                 }
             }
         })?;
