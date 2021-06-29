@@ -201,28 +201,28 @@ impl DataStorage {
     /// Returns Ok(Some(entryF)) for a specified key
     /// Returns Ok(None) if the key has expired
     /// Returns Err() if theres no value for that key
-    pub fn get_entry(&self, key: &str) -> Result<Option<Entry>, &'static str> {
-        let lock = self.data.read().ok().ok_or("Failed to lock database")?;
-
+    pub fn get_entry<'i>(
+        &self,
+        key: &str,
+        lock: &'i mut RwLockWriteGuard<HashMap<String, Entry>>,
+    ) -> Result<Option<&'i mut Entry>, &'static str> {
         if lock.contains_key(key) {
-            let entry: &Entry = lock.get(key).unwrap();
+            let entry: &mut Entry = lock.get_mut(key).unwrap();
             let key_exp = entry.key_expiration();
-            let entry_cpy = entry.clone();
 
             match key_exp {
                 Ok(expiration) => match expiration {
                     Some(exp) => {
                         let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
                         if exp > now {
-                            drop(lock);
                             self.modify_last_key_access(&key, now).unwrap();
-                            Ok(Some(entry_cpy))
+                            Ok(Some(entry))
                         } else {
                             self.delete_key(key)?;
                             Ok(None)
                         }
                     }
-                    None => Ok(Some(entry_cpy)),
+                    None => Ok(Some(entry)),
                 },
                 Err(_) => Err("No value for that key"),
             }
@@ -234,7 +234,8 @@ impl DataStorage {
     ///Append the value at the end of the string if key already exists and is a string
     ///If key does not exist it is created and set as an empty string.
     pub fn append(&self, key: String, value: String) -> Result<usize, &'static str> {
-        let res_entry = self.get_entry(&key);
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let res_entry = self.get_entry(&key, &mut lock);
 
         match res_entry {
             Ok(opt_entry) => match opt_entry {
@@ -242,12 +243,9 @@ impl DataStorage {
                     let old_value = entry.value().unwrap();
                     match old_value {
                         Value::String(s) => {
-                            let mut lock =
-                                self.data.write().ok().ok_or("Failed to lock database")?;
-                            let write_entry: &mut Entry = lock.get_mut(&key).unwrap();
                             let new_string = s + &value;
                             let length = new_string.len();
-                            write_entry.update_value(Value::String(new_string))?;
+                            entry.update_value(Value::String(new_string))?;
                             Ok(length)
                         }
                         Value::Vec(_i) => Err("Value must be a string not a vector"),
@@ -255,7 +253,6 @@ impl DataStorage {
                     }
                 }
                 None => {
-                    let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
                     let value_copy = value.clone();
                     match self.do_set(&mut lock, &key, Value::String(value_copy)) {
                         Ok(_s) => Ok(value.len()),
@@ -264,7 +261,6 @@ impl DataStorage {
                 }
             },
             Err(_) => {
-                let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
                 let value_copy = value.clone();
                 match self.do_set(&mut lock, &key, Value::String(value_copy)) {
                     Ok(_s) => Ok(value.len()),
@@ -288,14 +284,13 @@ impl DataStorage {
     }
 
     pub fn getset(&self, key: &str, new_value: Value) -> Result<String, &'static str> {
-        let res_entry = self.get_entry(key);
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let res_entry = self.get_entry(key, &mut lock);
         match res_entry {
             Ok(opt_entry) => match opt_entry {
                 Some(entry) => match entry.value() {
                     Ok(value) => match value {
                         Value::String(old_value) => {
-                            let mut lock =
-                                self.data.write().ok().ok_or("Failed to lock database")?;
                             self.do_set(&mut lock, key, new_value)?;
                             drop(lock);
                             Ok(old_value)
@@ -317,13 +312,15 @@ impl DataStorage {
 
     /// Renames a key and fails if it does not exist.
     pub fn rename(&self, src: &str, dst: &str) -> Result<(), &'static str> {
-        let res_entry = self.get_entry(src);
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let res_entry = self.get_entry(src, &mut lock);
         match res_entry {
             Ok(opt_entry) => match opt_entry {
                 Some(entry) => match entry.value() {
                     Ok(_) => {
                         let moved_duration = entry.key_expiration().unwrap();
                         let moved_val = entry.value().unwrap();
+                        drop(lock);
                         self.set(dst, moved_val)?;
                         self.set_expiration_to_key(moved_duration, dst)?;
                         self.delete_key(src)?;
@@ -431,17 +428,33 @@ impl DataStorage {
         }
     }
 
+    /// Push a vector of values to the specified list by appending them to the left of the list.
     pub fn lpushx(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
+        self.pushx(key, vec_values, |list, element| list.insert(0, element))
+    }
+
+    /// Push a vector of values to the specified list by appending them to the right of the list.
+    pub fn rpushx(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
+        self.pushx(key, vec_values, |list, element| list.push(element))
+    }
+
+    /// Push a vector of values into the specified list adding them with the provided function.
+    fn pushx(
+        &self,
+        key: String,
+        vec_values: Vec<String>,
+        apply: fn(&mut Vec<String>, String) -> (),
+    ) -> Result<usize, &'static str> {
         let value = self.get(&key);
         match value {
             Some(val) => match val {
                 Value::String(_) => Ok(0),
-                Value::Vec(i) => {
+                Value::Vec(v) => {
                     let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
                     let entry: &mut Entry = lock.get_mut(&key).unwrap();
-                    let mut new_vector = i;
-                    for element in vec_values {
-                        new_vector.insert(0, element);
+                    let mut new_vector = v;
+                    for val in vec_values {
+                        apply(&mut new_vector, val);
                     }
                     let len = new_vector.len();
                     entry.update_value(Value::Vec(new_vector))?;
@@ -450,6 +463,42 @@ impl DataStorage {
                 Value::HashSet(_) => Ok(0),
             },
             None => Ok(0),
+        }
+    }
+
+    pub fn lset(&self, key: String, index: i64, value: String) -> Result<(), &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let res_entry = self.get_entry(&key, &mut lock);
+
+        match res_entry {
+            Ok(opt_entry) => match opt_entry {
+                Some(entry) => match entry.value().unwrap() {
+                    Value::String(_) => Err("Not list value for that key"),
+                    Value::Vec(mut i) => {
+                        let index = if index < 0 {
+                            (i.len() as i64) + index
+                        } else {
+                            index
+                        };
+                        let res = if (index as usize) < i.len() {
+                            Ok(index as usize)
+                        } else {
+                            Err("Index not correct in lset")
+                        };
+                        match res {
+                            Ok(number) => {
+                                i[number] = value;
+                                entry.update_value(Value::Vec(i))?;
+                                Ok(())
+                            }
+                            Err(s) => Err(s),
+                        }
+                    }
+                    Value::HashSet(_) => Err("Not list value for that key"),
+                },
+                None => Err("No such key"),
+            },
+            Err(_) => Err("No such key"),
         }
     }
 }

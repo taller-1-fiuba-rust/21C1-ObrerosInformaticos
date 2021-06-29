@@ -9,7 +9,7 @@ pub fn run(
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
     if arguments.len() != 1 {
-        return Err("Wrong number of arguments.");
+        return Err("ERR wrong number of arguments");
     }
 
     let key = arguments[0].clone().string()?;

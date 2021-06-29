@@ -3,7 +3,7 @@ use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
-use crate::lists_command::lpushx;
+use crate::lists_command::{lindex, lpushx, lset, rpushx};
 use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
@@ -11,7 +11,7 @@ use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
 use crate::server_command::{config, dbsize, info, ping};
 use crate::storage::data_storage::DataStorage;
-use crate::string_command::{append, decrby, get, getdel, getset, mset, set, strlen};
+use crate::string_command::{append, decrby, get, getdel, getset, mget, mset, set, strlen};
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
@@ -83,6 +83,7 @@ impl Execution {
             "append" => append::run(cmd.arguments(), builder, self.data.clone()),
             "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
             "get" => get::run(cmd.arguments(), builder, self.data.clone()),
+            "mget" => mget::run(cmd.arguments(), builder, self.data.clone()),
             "unsubscribe" => {
                 unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments())
             }
@@ -92,6 +93,9 @@ impl Execution {
             "pubsub" => pubsub::run(self.pubsub.clone(), builder, cmd.arguments()),
             "dbsize" => dbsize::run(builder, self.data.clone()),
             "lpushx" => lpushx::run(builder, cmd.arguments(), self.data.clone()),
+            "lset" => lset::run(builder, cmd.arguments(), self.data.clone()),
+            "rpushx" => rpushx::run(builder, cmd.arguments(), self.data.clone()),
+            "lindex" => lindex::run(cmd.arguments(), builder, self.data.clone()),
             _ => Err("Unknown command."),
         }
     }
