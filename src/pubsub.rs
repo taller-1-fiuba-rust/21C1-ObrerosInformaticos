@@ -75,9 +75,9 @@ impl PublisherSubscriber {
         let response_str = Self::build_response(&channel, &message);
         let mut count = 0;
 
-        let mut subscriptions = self.subscriptions.write().ok().ok_or("Failed to lock")?;
+        let subscriptions = self.subscriptions.read().ok().ok_or("Failed to lock")?;
         if let Some(clients) = subscriptions.get(&channel) {
-            let mut users = self.users.write().ok().ok_or("Failed to lock")?;
+            let users = self.users.read().ok().ok_or("Failed to lock")?;
             let count_ref = &mut count;
 
             let mut dead_users = Vec::new();
@@ -96,8 +96,10 @@ impl PublisherSubscriber {
                 }
             }
 
+            drop(subscriptions);
+            drop(users);
             for user in dead_users {
-                self.unsubscribe(user);
+                self.unsubscribe(user)?;
             }
         }
         Ok(count)
@@ -115,57 +117,65 @@ impl PublisherSubscriber {
     }
 
     /// Returns the subscriptions list for a specific client
-    pub fn get_subscriptions(&self, user: Arc<Client>) -> Vec<String> {
+    pub fn get_subscriptions(&self, user: Arc<Client>) -> Result<Vec<String>, &'static str> {
         let users = self.users.read().ok().ok_or("Failed to lock")?;
-        return if let Some(sub) = users.get(&user) {
+        return Ok(if let Some(sub) = users.get(&user) {
             sub.channels.iter().cloned().collect::<Vec<String>>()
         } else {
             Vec::new()
-        };
+        });
     }
 
     /// Unsubscribes a user from all the channels it's subscribed.
-    pub fn unsubscribe_from_channel(&self, user: Arc<Client>, channel: &str) -> usize {
+    pub fn unsubscribe_from_channel(&self, user: Arc<Client>, channel: &str) -> Result<usize, &'static str> {
         let mut users = self.users.write().ok().ok_or("Failed to lock")?;
-        let mut subscriptions = self.users.write().ok().ok_or("Failed to lock")?;
+        let mut subscriptions = self.subscriptions.write().ok().ok_or("Failed to lock")?;
         if let Some(sub) = users.get_mut(&user) {
             if let Some(set) = subscriptions.get_mut(channel) {
                 set.remove(&user);
             }
             sub.channels.remove(channel);
             let len = sub.channels.len();
-            if sub.channels.is_empty() {
-                self.drop_user(user);
+            let is_empty = sub.channels.is_empty();
+            drop(subscriptions);
+            drop(users);
+            if is_empty {
+                self.drop_user(user)?;
             }
-            len
+            Ok(len)
         } else {
-            0
+            Ok(0)
         }
     }
 
     /// Unsubscribes a user from all the channels it's subscribed.
-    fn unsubscribe(&self, user: Arc<Client>) {
-        for channel in self.get_subscriptions(user.clone()) {
-            self.unsubscribe_from_channel(user.clone(), &channel);
+    fn unsubscribe(&self, user: Arc<Client>) -> Result<(), &'static str> {
+        for channel in self.get_subscriptions(user.clone())? {
+            self.unsubscribe_from_channel(user.clone(), &channel)?;
         }
+        Ok(())
     }
 
     /// Return a list of all the active channels
-    pub fn get_channels(&self) -> Vec<String> {
+    pub fn get_channels(&self) -> Result<Vec<String>, &'static str> {
         let subs = self.subscriptions.read().ok().ok_or("Failed to lock")?;
-        subs
+        Ok(subs
             .keys()
             .cloned()
-            .filter(|x| self.subscriber_count(x) > 0)
-            .collect::<Vec<String>>()
+            .filter(|x| {
+                let count = self.subscriber_count(x);
+                count.is_ok() && count.unwrap() > 0
+            })
+            .collect::<Vec<String>>())
     }
 
     /// Return the subscriber count for a channel
-    pub fn subscriber_count(&self, channel: &str) -> usize {
-        return if let Some(s) = users.get(channel) {
-            s.len()
+    pub fn subscriber_count(&self, channel: &str) -> Result<usize, &'static str> {
+        let subscriptions = self.subscriptions.read().ok().ok_or("Failed to lock")?;
+        return if let Some(s) = subscriptions.get(channel) {
+            Ok(s.len())
         } else {
-            0
+            Ok(0)
         };
     }
 }

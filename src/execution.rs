@@ -22,7 +22,7 @@ pub struct Execution {
     sys_time: Arc<SystemTime>,
     client_connected: u64,
     logger: Arc<Logger>,
-    pubsub: Arc<Mutex<PublisherSubscriber>>,
+    pubsub: Arc<PublisherSubscriber>,
 }
 
 impl Execution {
@@ -31,7 +31,7 @@ impl Execution {
         config: Arc<Mutex<Configuration>>,
         sys_time: Arc<SystemTime>,
         logger: Arc<Logger>,
-        pubsub: Arc<Mutex<PublisherSubscriber>>,
+        pubsub: Arc<PublisherSubscriber>,
     ) -> Self {
         Execution {
             data,
@@ -83,9 +83,7 @@ impl Execution {
             "append" => append::run(cmd.arguments(), builder, self.data.clone()),
             "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
             "get" => get::run(cmd.arguments(), builder, self.data.clone()),
-            "unsubscribe" => {
-                unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments())
-            }
+            "unsubscribe" => unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments()),
             "subscribe" => subscribe::run(self.pubsub.clone(), client, builder, cmd.arguments()),
             "publish" => publish::run(self.pubsub.clone(), builder, cmd.arguments()),
             "punsubscribe" => punsubscribe::run(self.pubsub.clone(), client, builder),

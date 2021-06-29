@@ -49,13 +49,12 @@ impl Server {
             println!("Error loading data from dbfile");
         };
         let addr_and_port = self.get_addr_and_port();
-        let pubsub = Arc::new(Mutex::new(PublisherSubscriber::new()));
         let execution = Arc::new(Execution::new(
             self.data.clone(),
             self.config.clone(),
             self.sys_time.clone(),
             self.logger.clone(),
-            pubsub,
+            Arc::new(PublisherSubscriber::new()),
         ));
         // let verbosity = config.get_verbose();
         let ttl = self.config.lock().unwrap().get_timeout();
