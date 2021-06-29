@@ -3,7 +3,7 @@ use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
-use crate::lists_command::{lpushx, rpushx, lindex};
+use crate::lists_command::{lindex, lpushx, rpushx};
 use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
@@ -83,7 +83,6 @@ impl Execution {
             "append" => append::run(cmd.arguments(), builder, self.data.clone()),
             "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
             "get" => get::run(cmd.arguments(), builder, self.data.clone()),
-            "lindex" => lindex::run(cmd.arguments(), builder, self.data.clone()),
             "mget" => mget::run(cmd.arguments(), builder, self.data.clone()),
             "unsubscribe" => {
                 unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments())
@@ -95,6 +94,7 @@ impl Execution {
             "dbsize" => dbsize::run(builder, self.data.clone()),
             "lpushx" => lpushx::run(builder, cmd.arguments(), self.data.clone()),
             "rpushx" => rpushx::run(builder, cmd.arguments(), self.data.clone()),
+            "lindex" => lindex::run(cmd.arguments(), builder, self.data.clone()),
             _ => Err("Unknown command."),
         }
     }
