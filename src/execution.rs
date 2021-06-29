@@ -83,7 +83,9 @@ impl Execution {
             "append" => append::run(cmd.arguments(), builder, self.data.clone()),
             "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
             "get" => get::run(cmd.arguments(), builder, self.data.clone()),
-            "unsubscribe" => unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments()),
+            "unsubscribe" => {
+                unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments())
+            }
             "subscribe" => subscribe::run(self.pubsub.clone(), client, builder, cmd.arguments()),
             "publish" => publish::run(self.pubsub.clone(), builder, cmd.arguments()),
             "punsubscribe" => punsubscribe::run(self.pubsub.clone(), client, builder),

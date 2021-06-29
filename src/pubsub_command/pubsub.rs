@@ -2,7 +2,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 use regex::Regex;
-use std::sync::{Arc};
+use std::sync::Arc;
 
 pub fn run(
     pubsub: Arc<PublisherSubscriber>,
@@ -46,7 +46,7 @@ fn numsub(
     for channel in channels {
         arr.push(ProtocolType::String(channel.clone()));
         arr.push(ProtocolType::Integer(
-            (pubsub.subscriber_count(&channel)?) as i64
+            (pubsub.subscriber_count(&channel)?) as i64,
         ));
     }
     builder.add(ProtocolType::Array(arr));

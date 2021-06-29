@@ -127,7 +127,11 @@ impl PublisherSubscriber {
     }
 
     /// Unsubscribes a user from all the channels it's subscribed.
-    pub fn unsubscribe_from_channel(&self, user: Arc<Client>, channel: &str) -> Result<usize, &'static str> {
+    pub fn unsubscribe_from_channel(
+        &self,
+        user: Arc<Client>,
+        channel: &str,
+    ) -> Result<usize, &'static str> {
         let mut users = self.users.write().ok().ok_or("Failed to lock")?;
         let mut subscriptions = self.subscriptions.write().ok().ok_or("Failed to lock")?;
         if let Some(sub) = users.get_mut(&user) {

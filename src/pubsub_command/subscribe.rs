@@ -3,7 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 
 use crate::client::Client;
-use std::sync::{Arc};
+use std::sync::Arc;
 
 /// Execute the pub/sub subscribe command.
 pub fn run(

@@ -1,7 +1,7 @@
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
-use std::sync::{Arc};
+use std::sync::Arc;
 
 /// Execute the pub/sub publish command.
 pub fn run(
@@ -16,8 +16,6 @@ pub fn run(
     let channel = arguments[0].clone().string()?;
     let msg = arguments[1].clone().string()?;
 
-    builder.add(ProtocolType::Integer(
-        pubsub.publish(channel, msg)? as i64
-    ));
+    builder.add(ProtocolType::Integer(pubsub.publish(channel, msg)? as i64));
     Ok(())
 }
