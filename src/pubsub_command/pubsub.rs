@@ -13,7 +13,7 @@ pub fn run(
 
     match &subcommand.to_lowercase()[..] {
         "numsub" => numsub(
-            pubsub.clone(),
+            pubsub,
             arguments[1..]
                 .iter()
                 .map(|x| x.clone().string().unwrap())
@@ -21,7 +21,7 @@ pub fn run(
             builder,
         )?,
         "channels" => channels(
-            pubsub.clone(),
+            pubsub,
             if arguments.len() == 2 {
                 arguments[1].clone().string()?
             } else {
