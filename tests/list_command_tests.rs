@@ -34,4 +34,3 @@ fn test_rpushx() {
     assert_eq!(c2, 5);
     assert_eq!(val, 3);
 }
-

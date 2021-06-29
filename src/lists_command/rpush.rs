@@ -50,7 +50,7 @@ mod tests {
             ],
             data.clone(),
         )
-            .unwrap();
+        .unwrap();
 
         assert_eq!(
             vec!["value", "value2"],
@@ -76,7 +76,7 @@ mod tests {
             ],
             data.clone(),
         )
-            .unwrap();
+        .unwrap();
 
         assert_eq!(
             vec!["1", "2", "3", "4"],
@@ -99,12 +99,9 @@ mod tests {
             ],
             data.clone(),
         )
-            .unwrap();
+        .unwrap();
 
-        assert_eq!(
-            vec!["1", "2"],
-            data.get("Test").unwrap().array().unwrap()
-        );
+        assert_eq!(vec!["1", "2"], data.get("Test").unwrap().array().unwrap());
         assert_eq!(":2\r\n", builder.serialize());
     }
 }

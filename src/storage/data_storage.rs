@@ -444,7 +444,12 @@ impl DataStorage {
     }
 
     /// Push a vector of values to the specified list or create a new if it does not exist
-    fn push(&self, key: String, vec_values: Vec<String>, apply: fn(&mut Vec<String>, String) -> ()) -> Result<usize, &'static str> {
+    fn push(
+        &self,
+        key: String,
+        vec_values: Vec<String>,
+        apply: fn(&mut Vec<String>, String) -> (),
+    ) -> Result<usize, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         match self.do_pushx(key.clone(), vec_values.clone(), &mut lock, apply) {
             Ok(l) => {
@@ -455,12 +460,17 @@ impl DataStorage {
                     Ok(l)
                 }
             }
-            Err(e) => Err(e)
+            Err(e) => Err(e),
         }
     }
 
     /// Push to the list and do nothing if it doesnt exist
-    fn pushx(&self, key: String, vec_values: Vec<String>, apply: fn(&mut Vec<String>, String) -> ()) -> Result<usize, &'static str> {
+    fn pushx(
+        &self,
+        key: String,
+        vec_values: Vec<String>,
+        apply: fn(&mut Vec<String>, String) -> (),
+    ) -> Result<usize, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         self.do_pushx(key, vec_values, &mut lock, apply)
     }
@@ -502,8 +512,8 @@ impl DataStorage {
                         Ok(len)
                     }
                     Value::HashSet(_) => Ok(0),
-                }
-                Err(_) => Ok(0)
+                },
+                Err(_) => Ok(0),
             },
             None => Ok(0),
         }
