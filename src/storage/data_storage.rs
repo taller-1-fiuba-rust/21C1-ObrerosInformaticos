@@ -549,35 +549,6 @@ impl DataStorage {
         })
     }
 
-    /// Applies a function to a list and returns its resulting length
-    fn do_apply_vec<F: FnMut(&mut Vec<String>)>(
-        &self,
-        key: String,
-        lock: &mut RwLockWriteGuard<HashMap<String, Entry>>,
-        mut apply: F,
-    ) -> Result<usize, &'static str> {
-        let res_entry = self.get_entry(&key, lock);
-        if res_entry.is_err() {
-            return Ok(0);
-        }
-        match res_entry.unwrap() {
-            Some(entry) => match entry.value() {
-                Ok(val) => match val {
-                    Value::String(_) => Ok(0),
-                    Value::Vec(mut v) => {
-                        apply(&mut v);
-                        let len = v.len();
-                        entry.update_value(Value::Vec(v))?;
-                        Ok(len)
-                    }
-                    Value::HashSet(_) => Ok(0),
-                },
-                Err(_) => Ok(0),
-            },
-            None => Ok(0),
-        }
-    }
-
     pub fn lset(&self, key: String, index: i64, value: String) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let res_entry = self.get_entry(&key, &mut lock);
