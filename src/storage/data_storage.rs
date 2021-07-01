@@ -438,29 +438,82 @@ impl DataStorage {
         self.pushx(key, vec_values, |list, element| list.push(element))
     }
 
-    /// Push a vector of values into the specified list adding them with the provided function.
+    /// Push a vector of values to the specified list by appending them to the right of the list.
+    pub fn rpush(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
+        self.push(key, vec_values, |list, element| list.push(element))
+    }
+
+    /// Push a vector of values to the specified list or create a new if it does not exist
+    fn push(
+        &self,
+        key: String,
+        vec_values: Vec<String>,
+        apply: fn(&mut Vec<String>, String) -> (),
+    ) -> Result<usize, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        match self.do_pushx(key.clone(), vec_values.clone(), &mut lock, apply) {
+            Ok(l) => {
+                return if l == 0 {
+                    self.do_set(&mut lock, &key, Value::Vec(Vec::new()))?;
+                    self.do_pushx(key, vec_values, &mut lock, apply)
+                } else {
+                    Ok(l)
+                }
+            }
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Push to the list and do nothing if it doesnt exist
     fn pushx(
         &self,
         key: String,
         vec_values: Vec<String>,
         apply: fn(&mut Vec<String>, String) -> (),
     ) -> Result<usize, &'static str> {
-        let value = self.get(&key);
-        match value {
-            Some(val) => match val {
-                Value::String(_) => Ok(0),
-                Value::Vec(v) => {
-                    let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
-                    let entry: &mut Entry = lock.get_mut(&key).unwrap();
-                    let mut new_vector = v;
-                    for val in vec_values {
-                        apply(&mut new_vector, val);
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        self.do_pushx(key, vec_values, &mut lock, apply)
+    }
+
+    /// Push a vector of values into the specified list adding them with the provided function.
+    fn do_pushx(
+        &self,
+        key: String,
+        vec_values: Vec<String>,
+        lock: &mut RwLockWriteGuard<HashMap<String, Entry>>,
+        apply: fn(&mut Vec<String>, String) -> (),
+    ) -> Result<usize, &'static str> {
+        self.do_apply_vec(key, lock, |vec| {
+            for val in &vec_values {
+                apply(vec, val.clone());
+            }
+        })
+    }
+
+    /// Applies a function to a list and returns its resulting length
+    fn do_apply_vec<F: Fn(&mut Vec<String>)>(
+        &self,
+        key: String,
+        lock: &mut RwLockWriteGuard<HashMap<String, Entry>>,
+        apply: F,
+    ) -> Result<usize, &'static str> {
+        let res_entry = self.get_entry(&key, lock);
+        if res_entry.is_err() {
+            return Ok(0);
+        }
+        match res_entry.unwrap() {
+            Some(entry) => match entry.value() {
+                Ok(val) => match val {
+                    Value::String(_) => Ok(0),
+                    Value::Vec(mut v) => {
+                        apply(&mut v);
+                        let len = v.len();
+                        entry.update_value(Value::Vec(v))?;
+                        Ok(len)
                     }
-                    let len = new_vector.len();
-                    entry.update_value(Value::Vec(new_vector))?;
-                    Ok(len)
-                }
-                Value::HashSet(_) => Ok(0),
+                    Value::HashSet(_) => Ok(0),
+                },
+                Err(_) => Ok(0),
             },
             None => Ok(0),
         }

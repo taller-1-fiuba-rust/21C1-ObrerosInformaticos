@@ -8,7 +8,7 @@ pub fn run(
     arguments: Vec<ProtocolType>,
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
-    if arguments.is_empty() {
+    if arguments.len() < 2 {
         return Err("lpushx must have arguments");
     }
 
