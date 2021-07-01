@@ -12,14 +12,8 @@ pub fn run(
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
 
-    data.set(
-        "test",
-        Value::Vec(["value1".to_string(), "value2".to_string()].to_vec()),
-    )
-    .unwrap();
-
     if arguments.len() > 2 || arguments.is_empty() {
-        return Err("ERR wrong number of arguments");
+        return Err("ERR wrong number of arguments for 'lpop' command");
     }
 
     let key = arguments[0].clone().string()?;
