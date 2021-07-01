@@ -34,3 +34,21 @@ fn test_rpushx() {
     assert_eq!(c2, 5);
     assert_eq!(val, 3);
 }
+
+#[test]
+fn test_rpop_nil() {
+    let (_server, client) = common::setup();
+    let result: Option<String> = common::query_string(&client, "RPOP no_such_key");
+    assert!(result.is_none());
+}
+
+#[test]
+fn test_rpop_many() {
+    let (_server, client) = common::setup();
+    let c1: i32 = common::query_string(&client, "RPUSH my_key 1 2 3 4 5");
+    let val1: i32 = common::query_string(&client, "RPOP my_key");
+    let val2: Vec<i32> = common::query_string(&client, "RPOP my_key 3");
+    assert_eq!(c1, 5);
+    assert_eq!(val1, 5);
+    assert_eq!(val2, vec![4, 3, 2]);
+}
