@@ -1,4 +1,5 @@
 pub mod lindex;
+pub mod llen;
 pub mod lpop;
 pub mod lpush;
 pub mod lpushx;
