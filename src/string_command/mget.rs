@@ -54,10 +54,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(
-            builder.serialize(),
-            "*3\r\n$5\r\nvalue\r\n$-1\r\n$-1\r\n"
-        );
+        assert_eq!(builder.serialize(), "*3\r\n$5\r\nvalue\r\n$-1\r\n$-1\r\n");
     }
 
     #[test]

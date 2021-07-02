@@ -4,14 +4,11 @@ use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 use std::usize;
 
-use crate::storage::data_storage::Value;
-
 pub fn run(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
-
     if arguments.len() > 2 || arguments.is_empty() {
         return Err("ERR wrong number of arguments for 'lpop' command");
     }
@@ -38,35 +35,98 @@ pub fn run(
     Ok(())
 }
 
-
 #[cfg(test)]
 
 mod tests {
     use super::*;
     use crate::storage::data_storage::Value;
-    use std::collections::HashSet;
 
     #[test]
-    fn test_lindex_of_vec_returns_ok() {
+    fn pop_one() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+        data.set("Test", Value::Vec(["1".to_string()].to_vec()))
+            .unwrap();
+
+        run(
+            vec![ProtocolType::String("Test".to_string())],
+            &mut builder,
+            data.clone(),
+        )
+        .unwrap();
+
+        assert!(data.get("Test").unwrap().array().unwrap().is_empty());
+        assert_eq!("$1\r\n1\r\n", builder.serialize());
+    }
+
+    #[test]
+    fn pop_multiple() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
         data.set(
-            "test",
-            Value::Vec(["value1".to_string(), "value2".to_string()].to_vec()),
+            "Test",
+            Value::Vec(
+                [
+                    "1".to_string(),
+                    "2".to_string(),
+                    "3".to_string(),
+                    "4".to_string(),
+                    "5".to_string(),
+                ]
+                .to_vec(),
+            ),
         )
         .unwrap();
 
         run(
             vec![
-                ProtocolType::String("test".to_string()),
-                ProtocolType::String("1".to_string()),
+                ProtocolType::String("Test".to_string()),
+                ProtocolType::String("3".to_string()),
             ],
             &mut builder,
             data.clone(),
         )
         .unwrap();
 
-        assert_eq!("$6\r\nvalue2\r\n", builder.serialize());
+        assert_eq!(vec!["4", "5"], data.get("Test").unwrap().array().unwrap());
+        assert_eq!(
+            ProtocolType::Array(vec![
+                ProtocolType::String("1".to_string()),
+                ProtocolType::String("2".to_string()),
+                ProtocolType::String("3".to_string()),
+            ])
+            .serialize(),
+            builder.serialize()
+        );
     }
 
+    #[test]
+    fn pop_no_list() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+
+        run(
+            vec![ProtocolType::String("Test".to_string())],
+            &mut builder,
+            data.clone(),
+        )
+        .unwrap();
+
+        assert_eq!(ProtocolType::Nil().serialize(), builder.serialize());
+    }
+
+    #[test]
+    fn pop_empty_list() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+        data.set("Test", Value::Vec([].to_vec())).unwrap();
+        run(
+            vec![ProtocolType::String("Test".to_string())],
+            &mut builder,
+            data.clone(),
+        )
+        .unwrap();
+
+        assert_eq!(ProtocolType::Nil().serialize(), builder.serialize());
+    }
 }

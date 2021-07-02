@@ -232,22 +232,21 @@ impl DataStorage {
         }
     }
 
-    pub fn lpop(&self, key: String, count: usize) -> Result<Vec<String>, &'static str>{
+    pub fn lpop(&self, key: String, count: usize) -> Result<Vec<String>, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let mut result = Vec::new();
         let _ = self.do_apply_vec(key, &mut lock, |list| {
             for _ in 0..count {
-                if list.is_empty(){
+                if list.is_empty() {
                     break;
                 }
                 result.push(list.remove(0));
             }
         })?;
         Ok(result)
-
     }
 
-   /// Applies a function to a list and returns its resulting length
+    /// Applies a function to a list and returns its resulting length
     fn do_apply_vec<F: FnMut(&mut Vec<String>)>(
         &self,
         key: String,
