@@ -52,3 +52,23 @@ fn test_rpop_many() {
     assert_eq!(val1, 5);
     assert_eq!(val2, vec![4, 3, 2]);
 }
+
+#[test]
+fn test_llen_nil() {
+    let (_server, client) = common::setup();
+    let result: Option<String> = common::query_string(&client, "RPOP no_such_key");
+    assert!(result.is_none());
+}
+
+#[test]
+fn test_llen_many() {
+    let (_server, client) = common::setup();
+    let c1: i32 = common::query_string(&client, "RPUSH my_key 1 2 3 4 5");
+    let val1: i32 = common::query_string(&client, "LLEN my_key");
+    let val2: Vec<i32> = common::query_string(&client, "RPOP my_key 3");
+    let val3: i32 = common::query_string(&client, "LLEN my_key");
+    assert_eq!(c1, 5);
+    assert_eq!(val1, 5);
+    assert_eq!(val2, vec![5, 4, 3]);
+    assert_eq!(val3, 2);
+}
