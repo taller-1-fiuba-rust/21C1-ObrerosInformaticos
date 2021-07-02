@@ -56,7 +56,8 @@ fn test_rpop_many() {
 #[test]
 fn test_llen_nil() {
     let (_server, client) = common::setup();
-    let result: Option<String> = common::query_string(&client, "LLEN no_such_key");
+    let result: i64 = common::query_string(&client, "LLEN no_key");
+    assert_eq!(result, 0);
 }
 
 #[test]
@@ -79,6 +80,7 @@ fn test_llen_many() {
     assert_eq!(val3, 2);
 }
 
+#[test]
 fn test_lpop_many() {
     let (_server, client) = common::setup();
     let c1: i32 = common::query_string(&client, "RPUSH my_key 1 2 3 4 5");
