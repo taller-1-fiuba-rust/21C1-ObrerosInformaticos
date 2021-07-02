@@ -11,14 +11,14 @@ pub fn run(
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
     if arguments.len() != 2 {
-        return Err("ERR wrong number of arguments");
+        return Err("ERR wrong number of arguments for 'lindex' command");
     }
     let string_key = arguments[0].clone().string()?;
     let string_index = arguments[1].clone().string()?;
     let i8_index: i8 = match string_index.parse() {
         Ok(numb) => numb,
         Err(_) => {
-            builder.add(ProtocolType::String("nil".to_string()));
+            builder.add(ProtocolType::Nil());
             return Ok(());
         }
     };
@@ -43,7 +43,7 @@ pub fn run(
                 let element = list.get(usize_index as usize);
                 match element {
                     Some(res) => builder.add(ProtocolType::String(res.to_string())),
-                    None => builder.add(ProtocolType::String("nil".to_string())),
+                    None => builder.add(ProtocolType::Nil()),
                 }
             }
             Value::HashSet(_) => {
@@ -51,7 +51,7 @@ pub fn run(
             }
         },
 
-        None => builder.add(ProtocolType::String("nil".to_string())),
+        None => builder.add(ProtocolType::Nil()),
     }
     Ok(())
 }
@@ -149,7 +149,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!("$3\r\nnil\r\n", builder.serialize());
+        assert_eq!("$-1\r\n", builder.serialize());
     }
 
     #[test]
@@ -172,7 +172,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!("$3\r\nnil\r\n", builder.serialize());
+        assert_eq!("$-1\r\n", builder.serialize());
     }
 
     #[test]
