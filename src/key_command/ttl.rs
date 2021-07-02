@@ -10,7 +10,7 @@ pub fn run(
     data: &Arc<DataStorage>,
 ) -> Result<(), &'static str> {
     if arguments.len() != 1 {
-        return Err("ERR wrong number of arguments Command TTL has only one.");
+        return Err("ERR wrong number of arguments for 'ttl' command");
     }
 
     let key = arguments[0].clone().string()?;

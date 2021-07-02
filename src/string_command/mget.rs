@@ -17,10 +17,10 @@ pub fn run(
         match result {
             Some(value) => match value {
                 Value::String(string) => response.push(ProtocolType::String(string)),
-                Value::Vec(_) => response.push(ProtocolType::String("nil".to_string())),
-                Value::HashSet(_) => response.push(ProtocolType::String("nil".to_string())),
+                Value::Vec(_) => response.push(ProtocolType::Nil()),
+                Value::HashSet(_) => response.push(ProtocolType::Nil()),
             },
-            None => response.push(ProtocolType::String("nil".to_string())),
+            None => response.push(ProtocolType::Nil()),
         }
     }
 
@@ -54,10 +54,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(
-            builder.serialize(),
-            "*3\r\n$5\r\nvalue\r\n$3\r\nnil\r\n$3\r\nnil\r\n"
-        );
+        assert_eq!(builder.serialize(), "*3\r\n$5\r\nvalue\r\n$-1\r\n$-1\r\n");
     }
 
     #[test]
@@ -74,7 +71,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "*1\r\n$3\r\nnil\r\n");
+        assert_eq!(builder.serialize(), "*1\r\n$-1\r\n");
     }
 
     #[test]

@@ -7,21 +7,21 @@ fn test_rpush() {
     let val1: String = common::query_string(&client, "LINDEX my_key 0");
     let val2: String = common::query_string(&client, "LINDEX my_key 1");
     let val3: String = common::query_string(&client, "LINDEX my_key 2");
-    let val4: String = common::query_string(&client, "LINDEX my_key 3");
+    let val4: Option<String> = common::query_string(&client, "LINDEX my_key 3");
     assert_eq!(c, 3);
     assert_eq!(val1, "1");
     assert_eq!(val2, "2");
     assert_eq!(val3, "3");
-    assert_eq!(val4, "nil");
+    assert!(val4.is_none());
 }
 
 #[test]
 fn test_rpushx_no_list() {
     let (_server, client) = common::setup();
     let c: i32 = common::query_string(&client, "RPUSHX my_key 1 2 3 4 5");
-    let val: String = common::query_string(&client, "LINDEX my_key 0");
+    let val: Option<String> = common::query_string(&client, "LINDEX my_key 0");
     assert_eq!(c, 0);
-    assert_eq!(val, "nil");
+    assert!(val.is_none());
 }
 
 #[test]
@@ -57,6 +57,12 @@ fn test_rpop_many() {
 fn test_llen_nil() {
     let (_server, client) = common::setup();
     let result: Option<String> = common::query_string(&client, "LLEN no_such_key");
+}
+
+#[test]
+fn test_lpop_nil() {
+    let (_server, client) = common::setup();
+    let result: Option<String> = common::query_string(&client, "LPOP no_such_key");
     assert!(result.is_none());
 }
 
@@ -71,4 +77,14 @@ fn test_llen_many() {
     assert_eq!(val1, 5);
     assert_eq!(val2, vec![5, 4, 3]);
     assert_eq!(val3, 2);
+}
+
+fn test_lpop_many() {
+    let (_server, client) = common::setup();
+    let c1: i32 = common::query_string(&client, "RPUSH my_key 1 2 3 4 5");
+    let val1: i32 = common::query_string(&client, "LPOP my_key");
+    let val2: Vec<i32> = common::query_string(&client, "LPOP my_key 3");
+    assert_eq!(c1, 5);
+    assert_eq!(val1, 1);
+    assert_eq!(val2, vec![2, 3, 4]);
 }
