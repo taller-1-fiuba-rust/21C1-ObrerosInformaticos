@@ -3,7 +3,7 @@ use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
-use crate::lists_command::{lindex, llen, lpushx, lset, rpushx};
+use crate::lists_command::{lindex, lpushx, lset, rpop, rpush, rpushx, llen};
 use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
@@ -95,6 +95,8 @@ impl Execution {
             "lpushx" => lpushx::run(builder, cmd.arguments(), self.data.clone()),
             "lset" => lset::run(builder, cmd.arguments(), self.data.clone()),
             "rpushx" => rpushx::run(builder, cmd.arguments(), self.data.clone()),
+            "rpush" => rpush::run(builder, cmd.arguments(), self.data.clone()),
+            "rpop" => rpop::run(builder, cmd.arguments(), self.data.clone()),
             "lindex" => lindex::run(cmd.arguments(), builder, self.data.clone()),
             "llen" => llen::run(cmd.arguments(), builder, self.data.clone()),
             _ => Err("Unknown command."),
