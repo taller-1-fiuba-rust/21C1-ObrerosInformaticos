@@ -56,7 +56,7 @@ fn test_rpop_many() {
 #[test]
 fn test_llen_nil() {
     let (_server, client) = common::setup();
-    let result: Option<String> = common::query_string(&client, "RPOP no_such_key");
+    let result: Option<String> = common::query_string(&client, "LLEN no_such_key");
     assert!(result.is_none());
 }
 
