@@ -8,6 +8,7 @@ use std::sync::RwLockReadGuard;
 use std::sync::{Arc, RwLockWriteGuard};
 use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::usize;
 
 /// Enumeration value. Contains all supported data types
 /// for the DataStorage.
@@ -231,6 +232,48 @@ impl DataStorage {
         }
     }
 
+    pub fn lpop(&self, key: String, count: usize) -> Result<Vec<String>, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let mut result = Vec::new();
+        let _ = self.do_apply_vec(key, &mut lock, |list| {
+            for _ in 0..count {
+                if list.is_empty() {
+                    break;
+                }
+                result.push(list.remove(0));
+            }
+        })?;
+        Ok(result)
+    }
+
+    /// Applies a function to a list and returns its resulting length
+    fn do_apply_vec<F: FnMut(&mut Vec<String>)>(
+        &self,
+        key: String,
+        lock: &mut RwLockWriteGuard<HashMap<String, Entry>>,
+        mut apply: F,
+    ) -> Result<usize, &'static str> {
+        let res_entry = self.get_entry(&key, lock);
+        if res_entry.is_err() {
+            return Ok(0);
+        }
+        match res_entry.unwrap() {
+            Some(entry) => match entry.value() {
+                Ok(val) => match val {
+                    Value::String(_) => Ok(0),
+                    Value::Vec(mut v) => {
+                        apply(&mut v);
+                        let len = v.len();
+                        entry.update_value(Value::Vec(v))?;
+                        Ok(len)
+                    }
+                    Value::HashSet(_) => Ok(0),
+                },
+                Err(_) => Ok(0),
+            },
+            None => Ok(0),
+        }
+    }
     ///Append the value at the end of the string if key already exists and is a string
     ///If key does not exist it is created and set as an empty string.
     pub fn append(&self, key: String, value: String) -> Result<usize, &'static str> {
@@ -503,35 +546,6 @@ impl DataStorage {
                 apply(vec, val.clone());
             }
         })
-    }
-
-    /// Applies a function to a list and returns its resulting length
-    fn do_apply_vec<F: FnMut(&mut Vec<String>)>(
-        &self,
-        key: String,
-        lock: &mut RwLockWriteGuard<HashMap<String, Entry>>,
-        mut apply: F,
-    ) -> Result<usize, &'static str> {
-        let res_entry = self.get_entry(&key, lock);
-        if res_entry.is_err() {
-            return Ok(0);
-        }
-        match res_entry.unwrap() {
-            Some(entry) => match entry.value() {
-                Ok(val) => match val {
-                    Value::String(_) => Ok(0),
-                    Value::Vec(mut v) => {
-                        apply(&mut v);
-                        let len = v.len();
-                        entry.update_value(Value::Vec(v))?;
-                        Ok(len)
-                    }
-                    Value::HashSet(_) => Ok(0),
-                },
-                Err(_) => Ok(0),
-            },
-            None => Ok(0),
-        }
     }
 
     pub fn lset(&self, key: String, index: i64, value: String) -> Result<(), &'static str> {
