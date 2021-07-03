@@ -593,36 +593,41 @@ impl DataStorage {
                 Some(entry) => match entry.value().unwrap() {
                     Value::String(_) => Err("Not list value for that key"),
                     Value::Vec(mut vector) => {
-                        let result;
-                        if index < 0 {
-                            let (final_index, new_vector) =
-                                delete_last_values(&mut vector, index.abs().clone(), value);
-                            if final_index == 0 {
-                                result = index.abs();
-                            } else {
-                                result = final_index;
+                        let result: i64;
+                        match index {
+                            index if index < 0 => {
+                                let (final_index, new_vector) =
+                                    delete_last_values(&mut vector, index.abs(), value);
+                                if final_index == 0 {
+                                    result = index.abs();
+                                } else {
+                                    result = final_index;
+                                }
+                                entry.update_value(Value::Vec(new_vector))?;
+                                Ok(result)
                             }
-                            entry.update_value(Value::Vec(new_vector))?;
-                            Ok(result)
-                        } else if index == 0 {
-                            let (final_index, new_vector) = delete_all_values(&mut vector, value);
-                            if final_index == 0 {
-                                result = index;
-                            } else {
-                                result = final_index;
+                            index if index == 0 => {
+                                let (final_index, new_vector) =
+                                    delete_all_values(&mut vector, value);
+                                if final_index == 0 {
+                                    result = index;
+                                } else {
+                                    result = final_index;
+                                }
+                                entry.update_value(Value::Vec(new_vector))?;
+                                Ok(result)
                             }
-                            entry.update_value(Value::Vec(new_vector))?;
-                            Ok(result)
-                        } else {
-                            let (final_index, new_vector) =
-                                delete_first_values(&mut vector, index.clone(), value);
-                            if final_index == 0 {
-                                result = index;
-                            } else {
-                                result = final_index;
+                            _ => {
+                                let (final_index, new_vector) =
+                                    delete_first_values(&mut vector, index, value);
+                                if final_index == 0 {
+                                    result = index;
+                                } else {
+                                    result = final_index;
+                                }
+                                entry.update_value(Value::Vec(new_vector))?;
+                                Ok(result)
                             }
-                            entry.update_value(Value::Vec(new_vector))?;
-                            Ok(result)
                         }
                     }
                     Value::HashSet(_) => Err("Not list value for that key"),
