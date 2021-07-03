@@ -64,9 +64,11 @@ mod tests {
             _ => Err("not vector value"),
         };
 
-
         assert_eq!("+2\r\n", builder.serialize());
-        assert_eq!(true, vec_compare(&vector.unwrap(), &["1".to_string()].to_vec()));
+        assert_eq!(
+            true,
+            vec_compare(&vector.unwrap(), &["1".to_string()].to_vec())
+        );
     }
 
     #[test]
@@ -97,9 +99,14 @@ mod tests {
             _ => Err("not vector value"),
         };
 
-
         assert_eq!("+1\r\n", builder.serialize());
-        assert_eq!(true, vec_compare(&vector.unwrap(), &["1".to_string(), "2".to_string()].to_vec()));
+        assert_eq!(
+            true,
+            vec_compare(
+                &vector.unwrap(),
+                &["1".to_string(), "2".to_string()].to_vec()
+            )
+        );
     }
 
     #[test]
@@ -130,15 +137,14 @@ mod tests {
             _ => Err("not vector value"),
         };
 
-
         assert_eq!("+2\r\n", builder.serialize());
-        assert_eq!(true, vec_compare(&vector.unwrap(), &["2".to_string()].to_vec()));
+        assert_eq!(
+            true,
+            vec_compare(&vector.unwrap(), &["2".to_string()].to_vec())
+        );
     }
 
     fn vec_compare(va: &Vec<String>, vb: &Vec<String>) -> bool {
-    (va.len() == vb.len()) &&
-     va.iter()
-       .zip(vb)
-       .all(|(a,b)| (a == b))
+        (va.len() == vb.len()) && va.iter().zip(vb).all(|(a, b)| (a == b))
     }
 }

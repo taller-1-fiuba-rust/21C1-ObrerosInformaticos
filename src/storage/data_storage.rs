@@ -595,10 +595,11 @@ impl DataStorage {
                     Value::Vec(mut vector) => {
                         let result;
                         if index < 0 {
-                            let (final_index, new_vector) = delete_last_values(&mut vector, index.abs().clone(), value);
+                            let (final_index, new_vector) =
+                                delete_last_values(&mut vector, index.abs().clone(), value);
                             if final_index == 0 {
                                 result = index.abs();
-                            } else{
+                            } else {
                                 result = final_index;
                             }
                             entry.update_value(Value::Vec(new_vector))?;
@@ -607,16 +608,17 @@ impl DataStorage {
                             let (final_index, new_vector) = delete_all_values(&mut vector, value);
                             if final_index == 0 {
                                 result = index;
-                            } else{
+                            } else {
                                 result = final_index;
                             }
                             entry.update_value(Value::Vec(new_vector))?;
                             Ok(result)
                         } else {
-                            let (final_index, new_vector) = delete_first_values(&mut vector, index.clone(), value);
+                            let (final_index, new_vector) =
+                                delete_first_values(&mut vector, index.clone(), value);
                             if final_index == 0 {
                                 result = index;
-                            } else{
+                            } else {
                                 result = final_index;
                             }
                             entry.update_value(Value::Vec(new_vector))?;
@@ -632,25 +634,32 @@ impl DataStorage {
     }
 }
 
-fn delete_last_values(vector: &mut Vec<String>, mut index: i64, value: String) -> (i64, Vec<String>) {
+fn delete_last_values(
+    vector: &mut Vec<String>,
+    mut index: i64,
+    value: String,
+) -> (i64, Vec<String>) {
     let mut new_vector: Vec<String> = vec![];
     for val in vector.iter().rev() {
         if (*val == value) && (index != 0) {
-            index-=1;
-        }else{
-
+            index -= 1;
+        } else {
             new_vector.push(val.to_string());
         }
     }
     (index, new_vector.into_iter().rev().collect())
 }
 
-fn delete_first_values(vector: &mut Vec<String>, mut index: i64, value: String) -> (i64, Vec<String>) {
+fn delete_first_values(
+    vector: &mut Vec<String>,
+    mut index: i64,
+    value: String,
+) -> (i64, Vec<String>) {
     let mut new_vector: Vec<String> = vec![];
     for val in vector.iter() {
-        if *val == value && (index != 0){
-            index-=1;
-        }else{
+        if *val == value && (index != 0) {
+            index -= 1;
+        } else {
             new_vector.push(val.to_string());
         }
     }
@@ -662,8 +671,8 @@ fn delete_all_values(vector: &mut Vec<String>, value: String) -> (i64, Vec<Strin
     let mut new_vector: Vec<String> = vec![];
     for val in vector.iter() {
         if *val == value {
-            index+=1;
-        }else{
+            index += 1;
+        } else {
             new_vector.push(val.to_string());
         }
     }
