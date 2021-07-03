@@ -583,6 +583,91 @@ impl DataStorage {
             Err(_) => Err("No such key"),
         }
     }
+
+    pub fn lrem(&self, key: String, index: i64, value: String) -> Result<i64, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let res_entry = self.get_entry(&key, &mut lock);
+
+        match res_entry {
+            Ok(opt_entry) => match opt_entry {
+                Some(entry) => match entry.value().unwrap() {
+                    Value::String(_) => Err("Not list value for that key"),
+                    Value::Vec(mut vector) => {
+                        let result;
+                        if index < 0 {
+                            let (final_index, new_vector) = delete_last_values(&mut vector, index.abs().clone(), value);
+                            if final_index == 0 {
+                                result = index.abs();
+                            } else{
+                                result = final_index;
+                            }
+                            entry.update_value(Value::Vec(new_vector))?;
+                            Ok(result)
+                        } else if index == 0 {
+                            let (final_index, new_vector) = delete_all_values(&mut vector, value);
+                            if final_index == 0 {
+                                result = index;
+                            } else{
+                                result = final_index;
+                            }
+                            entry.update_value(Value::Vec(new_vector))?;
+                            Ok(result)
+                        } else {
+                            let (final_index, new_vector) = delete_first_values(&mut vector, index.clone(), value);
+                            if final_index == 0 {
+                                result = index;
+                            } else{
+                                result = final_index;
+                            }
+                            entry.update_value(Value::Vec(new_vector))?;
+                            Ok(result)
+                        }
+                    }
+                    Value::HashSet(_) => Err("Not list value for that key"),
+                },
+                None => Err("0"),
+            },
+            Err(_) => Err("0"),
+        }
+    }
+}
+
+fn delete_last_values(vector: &mut Vec<String>, mut index: i64, value: String) -> (i64, Vec<String>) {
+    let mut new_vector: Vec<String> = vec![];
+    for val in vector.iter().rev() {
+        if (*val == value) && (index != 0) {
+            index-=1;
+        }else{
+
+            new_vector.push(val.to_string());
+        }
+    }
+    (index, new_vector.into_iter().rev().collect())
+}
+
+fn delete_first_values(vector: &mut Vec<String>, mut index: i64, value: String) -> (i64, Vec<String>) {
+    let mut new_vector: Vec<String> = vec![];
+    for val in vector.iter() {
+        if *val == value && (index != 0){
+            index-=1;
+        }else{
+            new_vector.push(val.to_string());
+        }
+    }
+    (index, new_vector)
+}
+
+fn delete_all_values(vector: &mut Vec<String>, value: String) -> (i64, Vec<String>) {
+    let mut index = 0;
+    let mut new_vector: Vec<String> = vec![];
+    for val in vector.iter() {
+        if *val == value {
+            index+=1;
+        }else{
+            new_vector.push(val.to_string());
+        }
+    }
+    (index, new_vector)
 }
 
 fn now() -> Result<Duration, &'static str> {
