@@ -19,7 +19,7 @@ pub fn run(
 
     match result {
         Ok(s) => {
-            builder.add(ProtocolType::SimpleString(s.to_string()));
+            builder.add(ProtocolType::Integer(s));
             Ok(())
         }
         Err(s) => Err(s),
@@ -53,7 +53,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!("+1\r\n", builder.serialize());
+        assert_eq!(":1\r\n", builder.serialize());
     }
 
     #[test]
@@ -74,6 +74,6 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!("+0\r\n", builder.serialize());
+        assert_eq!(":0\r\n", builder.serialize());
     }
 }
