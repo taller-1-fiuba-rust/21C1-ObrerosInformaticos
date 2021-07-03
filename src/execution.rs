@@ -10,6 +10,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
 use crate::server_command::{config, dbsize, info, ping};
+use crate::set_command::sismember;
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{append, decrby, get, getdel, getset, mget, mset, set, strlen};
 use std::sync::{Arc, Mutex};
@@ -100,6 +101,7 @@ impl Execution {
             "lindex" => lindex::run(cmd.arguments(), builder, self.data.clone()),
             "llen" => llen::run(cmd.arguments(), builder, self.data.clone()),
             "lpop" => lpop::run(cmd.arguments(), builder, self.data.clone()),
+            "sismember" => sismember::run(builder, cmd.arguments(), self.data.clone()),
             _ => Err("Unknown command."),
         }
     }
