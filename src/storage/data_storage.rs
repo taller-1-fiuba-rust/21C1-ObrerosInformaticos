@@ -601,6 +601,21 @@ impl DataStorage {
             None => Ok(0),
         }
     }
+
+    pub fn smember(&self, key: String) -> Result<Vec<String>, &'static str> {
+        let value = self.get(&key);
+        match value {
+            Some(val) => match val {
+                Value::String(_) => Err("Not set value to that key"),
+                Value::Vec(_) => Err("Not set value to that key"),
+                Value::HashSet(set) => {
+                    let vec = set.into_iter().collect();
+                    Ok(vec)
+                }
+            },
+            None => Ok([].to_vec()),
+        }
+    }
 }
 
 fn now() -> Result<Duration, &'static str> {
