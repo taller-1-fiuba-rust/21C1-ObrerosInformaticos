@@ -14,6 +14,7 @@ mod pubsub;
 mod pubsub_command;
 mod server;
 mod server_command;
+mod set_command;
 mod storage;
 mod string_command;
 mod threadpool;

@@ -637,6 +637,24 @@ impl DataStorage {
             Err(_) => Ok(0),
         }
     }
+  
+    pub fn sismember(&self, key: String, input_val: String) -> Result<i64, &'static str> {
+        let value = self.get(&key);
+        match value {
+            Some(val) => match val {
+                Value::String(_) => Err("Not set value to that key"),
+                Value::Vec(_) => Err("Not set value to that key"),
+                Value::HashSet(set) => {
+                    if set.contains(&input_val) {
+                        Ok(1)
+                    } else {
+                        Ok(0)
+                    }
+                }
+            },
+            None => Ok(0),
+        }
+    }
 }
 
 fn delete_last_values(
