@@ -10,7 +10,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
 use crate::server_command::{config, dbsize, flushdb, info, ping};
-use crate::set_command::{sismember, smembers};
+use crate::set_command::{sismember, smembers, srem};
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{append, decrby, get, getdel, getset, mget, mset, set, strlen};
 use std::sync::{Arc, Mutex};
@@ -104,6 +104,7 @@ impl Execution {
             "lpop" => lpop::run(cmd.arguments(), builder, self.data.clone()),
             "sismember" => sismember::run(builder, cmd.arguments(), self.data.clone()),
             "smembers" => smembers::run(builder, cmd.arguments(), self.data.clone()),
+            "srem" => srem::run(builder, cmd.arguments(), self.data.clone()),
             _ => Err("Unknown command."),
         }
     }

@@ -615,6 +615,31 @@ impl DataStorage {
         }
     }
 
+    pub fn srem(&self, key: String, values: Vec<String>) -> Result<i64, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let res_entry = self.get_entry(&key, &mut lock);
+
+        match res_entry {
+            Ok(opt_entry) => match opt_entry {
+                Some(entry) => match entry.value().unwrap() {
+                    Value::String(_) => Err("Not list value for that key"),
+                    Value::Vec(_) => Err("Not list value for that key"),
+                    Value::HashSet(mut set) => {
+                        let mut count = 0;
+                        for value in values {
+                            set.remove(&value);
+                            count += 1
+                        }
+                        entry.update_value(Value::HashSet(set))?;
+                        Ok(count)
+                    }
+                },
+                None => Ok(0),
+            },
+            Err(_) => Ok(0),
+        }
+    }
+
     pub fn smember(&self, key: String) -> Result<Vec<String>, &'static str> {
         let value = self.get(&key);
         match value {
