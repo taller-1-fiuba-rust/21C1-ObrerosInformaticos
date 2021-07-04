@@ -424,6 +424,11 @@ impl DataStorage {
         }
     }
 
+    pub fn contains_key(&self, key: String) -> bool {
+        let lock = self.read();
+        return lock.contains_key(&key);
+    }
+
     pub fn get_keys(&self) -> Vec<String> {
         let lock = self.read();
         let mut result = Vec::new();
@@ -660,16 +665,29 @@ impl DataStorage {
                                 count += 1;
                             }
                         }
+                        
                         entry.update_value(Value::HashSet(set))?;
                         Ok(count)
                     }
                 },
-                None => Ok(0),
+                None => {
+                    Ok(0)
+                },
             },
-            Err(_) => Ok(0),
+            Err(_) => {
+                let mut new_set = HashSet::new();
+                let mut count = 0;
+                for value in values {
+                    if new_set.insert(value) {
+                        count += 1;
+                    }
+                }
+                self.do_set(&mut lock, &key, Value::HashSet(new_set.clone()))?;
+                Ok(count)
+            },
         }
     }
-
+ 
     pub fn smember(&self, key: String) -> Result<Vec<String>, &'static str> {
         let value = self.get(&key);
         match value {
