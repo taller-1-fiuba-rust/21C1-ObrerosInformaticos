@@ -8,6 +8,9 @@ pub fn run(
     arguments: Vec<ProtocolType>,
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
+    if arguments.len() < 2 {
+        Err("Wrong quantity of arguments")
+    }
     let key = arguments[0].clone().string()?;
 
     let string_arguments: Vec<String> = arguments
