@@ -1,17 +1,18 @@
+use crate::client::Client;
 use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
+use crate::lists_command::{lindex, llen, lpop, lpushx, lset, rpop, rpush, rpushx};
 use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
-use crate::server_command::{config, flushdb, info, ping};
+use crate::server_command::{config, flushdb, info, ping, dbsize};
+use crate::set_command::sismember;
 use crate::storage::data_storage::DataStorage;
-use crate::string_command::{append, decrby, get, getdel, getset, mset, set, strlen};
-
-use crate::client::Client;
+use crate::string_command::{append, decrby, get, getdel, getset, mget, mset, set, strlen};
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
@@ -22,7 +23,7 @@ pub struct Execution {
     sys_time: Arc<SystemTime>,
     client_connected: u64,
     logger: Arc<Logger>,
-    pubsub: Arc<Mutex<PublisherSubscriber>>,
+    pubsub: Arc<PublisherSubscriber>,
 }
 
 impl Execution {
@@ -31,7 +32,7 @@ impl Execution {
         config: Arc<Mutex<Configuration>>,
         sys_time: Arc<SystemTime>,
         logger: Arc<Logger>,
-        pubsub: Arc<Mutex<PublisherSubscriber>>,
+        pubsub: Arc<PublisherSubscriber>,
     ) -> Self {
         Execution {
             data,
@@ -83,6 +84,7 @@ impl Execution {
             "append" => append::run(cmd.arguments(), builder, self.data.clone()),
             "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
             "get" => get::run(cmd.arguments(), builder, self.data.clone()),
+            "mget" => mget::run(cmd.arguments(), builder, self.data.clone()),
             "unsubscribe" => {
                 unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments())
             }
@@ -91,6 +93,16 @@ impl Execution {
             "punsubscribe" => punsubscribe::run(self.pubsub.clone(), client, builder),
             "pubsub" => pubsub::run(self.pubsub.clone(), builder, cmd.arguments()),
             "flushdb" => flushdb::run(builder, self.data.clone()),
+            "dbsize" => dbsize::run(builder, self.data.clone()),
+            "lpushx" => lpushx::run(builder, cmd.arguments(), self.data.clone()),
+            "lset" => lset::run(builder, cmd.arguments(), self.data.clone()),
+            "rpushx" => rpushx::run(builder, cmd.arguments(), self.data.clone()),
+            "rpush" => rpush::run(builder, cmd.arguments(), self.data.clone()),
+            "rpop" => rpop::run(builder, cmd.arguments(), self.data.clone()),
+            "lindex" => lindex::run(cmd.arguments(), builder, self.data.clone()),
+            "llen" => llen::run(cmd.arguments(), builder, self.data.clone()),
+            "lpop" => lpop::run(cmd.arguments(), builder, self.data.clone()),
+            "sismember" => sismember::run(builder, cmd.arguments(), self.data.clone()),
             _ => Err("Unknown command."),
         }
     }

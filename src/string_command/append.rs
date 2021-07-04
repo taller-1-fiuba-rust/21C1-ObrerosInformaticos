@@ -9,7 +9,7 @@ pub fn run(
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
     if arguments.len() != 2 {
-        return Err("Wrong quantity of arguments.");
+        return Err("ERR wrong number of arguments for 'append' command");
     }
 
     let key = arguments[0].clone().string()?;
@@ -48,11 +48,11 @@ mod tests {
         )
         .unwrap();
 
+        assert_eq!(builder.serialize(), ":18\r\n");
         assert_eq!(
             data.get("key").unwrap().string().unwrap(),
             "value_append_value"
         );
-        assert_eq!(builder.serialize(), ":18\r\n");
     }
 
     #[test]

@@ -8,7 +8,9 @@ pub fn run(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,
 ) -> Result<(), &'static str> {
-    assert_eq!(arguments.len(), 2);
+    if arguments.len() != 2 {
+        return Err("Wrong number of arguments");
+    }
 
     let key = arguments[0].clone().string()?;
     let number = arguments[1].clone().integer()?;
