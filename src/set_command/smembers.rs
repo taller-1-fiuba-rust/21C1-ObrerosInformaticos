@@ -41,7 +41,6 @@ mod tests {
         let mut builder = ResponseBuilder::new();
         let mut set: HashSet<String> = HashSet::new();
         set.insert("correct".to_string());
-        set.insert("values".to_string());
         data.set("Test", Value::HashSet(set)).unwrap();
 
         run(
@@ -51,10 +50,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(
-            "*2\r\n$7\r\ncorrect\r\n$6\r\nvalues\r\n",
-            builder.serialize()
-        );
+        assert_eq!("*1\r\n$7\r\ncorrect\r\n", builder.serialize());
     }
 
     #[test]
