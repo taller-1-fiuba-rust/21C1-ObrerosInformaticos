@@ -9,7 +9,7 @@ pub fn run(
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
     if arguments.len() < 2 {
-        return Err("Wrong quantity of arguments");
+        return Err("ERR wrong number of arguments for 'sadd' command");
     }
     let key = arguments[0].clone().string()?;
 
@@ -18,7 +18,7 @@ pub fn run(
         .map(|x| x.string())
         .collect::<Result<_, _>>()?;
 
-    let result = data.srem(key, string_arguments[1..].to_owned());
+    let result = data.sadd(key, string_arguments[1..].to_owned());
 
     match result {
         Ok(s) => {
@@ -57,23 +57,5 @@ mod tests {
         .unwrap();
 
         assert_eq!(":1\r\n", builder.serialize());
-    }
-
-    #[test]
-    fn srem_value_not_correct() {
-        let data = Arc::new(DataStorage::new());
-        let mut builder = ResponseBuilder::new();
-
-        run(
-            &mut builder,
-            vec![
-                ProtocolType::String("Test".to_string()),
-                ProtocolType::String("2".to_string()),
-            ],
-            data.clone(),
-        )
-        .unwrap();
-
-        assert_eq!(":0\r\n", builder.serialize());
     }
 }
