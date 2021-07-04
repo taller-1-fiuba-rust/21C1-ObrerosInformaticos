@@ -491,12 +491,7 @@ impl DataStorage {
 
     /// Push a vector of values to the specified list by appending them to the left of the list or creating it.
     pub fn lpush(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
-        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
-        if !lock.contains_key(&key) {
-            self.do_set(&mut lock, &key, Value::Vec(Vec::new()))?;
-        }
-        drop(lock);
-        self.lpushx(key, vec_values)
+        self.push(key, vec_values, |list, element| list.insert(0, element))
     }
 
     /// Push a vector of values to the specified list by appending them to the right of the list.
