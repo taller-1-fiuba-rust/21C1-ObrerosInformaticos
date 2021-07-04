@@ -7,3 +7,4 @@ pub mod mget;
 pub mod mset;
 pub mod set;
 pub mod strlen;
+pub mod incrby;

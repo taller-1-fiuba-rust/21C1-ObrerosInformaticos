@@ -458,6 +458,32 @@ impl DataStorage {
         Err("last access not modify")
     }
 
+    pub fn increment_value(&self, key: String, numeric_value: i64) -> Result<i64, &'static str> {
+        let value = self.get(&key);
+        match value {
+            Some(val) => match val {
+                Value::String(s) => match s.parse::<i64>() {
+                    Ok(number) => {
+                        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+                        let entry: &mut Entry = lock.get_mut(&key).unwrap();
+                        let new_value = number + numeric_value;
+                        entry.update_value(Value::String(new_value.to_string()))?;
+                        Ok(number + numeric_value)
+                    }
+                    Err(_) => Err("ERR value is not an integer or out of range"),
+                },
+                Value::Vec(_) => Err("WRONGTYPE Operation against a key holding the wrong kind of value"),
+                Value::HashSet(_) => Err("WRONGTYPE Operation against a key holding the wrong kind of value"),
+            },
+            None => {
+                let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+                let negative_value = 0 + numeric_value;
+                self.do_set(&mut lock, &key, Value::String(negative_value.to_string()))?;
+                Ok(0 + numeric_value)
+            }
+        }
+    }
+
     pub fn decrement_value(&self, key: String, numeric_value: i64) -> Result<i64, &'static str> {
         let value = self.get(&key);
         match value {
