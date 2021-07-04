@@ -424,6 +424,11 @@ impl DataStorage {
         }
     }
 
+    pub fn contains_key(&self, key: String) -> bool {
+        let lock = self.read();
+        lock.contains_key(&key)
+    }
+
     pub fn get_keys(&self) -> Vec<String> {
         let lock = self.read();
         let mut result = Vec::new();
@@ -691,6 +696,47 @@ impl DataStorage {
                 None => Ok(0),
             },
             Err(_) => Ok(0),
+        }
+    }
+
+    pub fn sadd(&self, key: String, values: Vec<String>) -> Result<i64, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let res_entry = self.get_entry(&key, &mut lock);
+
+        match res_entry {
+            Ok(opt_entry) => match opt_entry {
+                Some(entry) => match entry.value().unwrap() {
+                    Value::String(_) => {
+                        Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                    }
+                    Value::Vec(_) => {
+                        Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                    }
+                    Value::HashSet(mut set) => {
+                        let mut count = 0;
+                        for value in values {
+                            if set.insert(value) {
+                                count += 1;
+                            }
+                        }
+
+                        entry.update_value(Value::HashSet(set))?;
+                        Ok(count)
+                    }
+                },
+                None => Ok(0),
+            },
+            Err(_) => {
+                let mut new_set = HashSet::new();
+                let mut count = 0;
+                for value in values {
+                    if new_set.insert(value) {
+                        count += 1;
+                    }
+                }
+                self.do_set(&mut lock, &key, Value::HashSet(new_set))?;
+                Ok(count)
+            }
         }
     }
 
