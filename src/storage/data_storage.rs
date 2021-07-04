@@ -424,6 +424,11 @@ impl DataStorage {
         }
     }
 
+    pub fn contains_key(&self, key: String) -> bool {
+        let lock = self.read();
+        lock.contains_key(&key)
+    }
+
     pub fn get_keys(&self) -> Vec<String> {
         let lock = self.read();
         let mut result = Vec::new();
@@ -625,6 +630,60 @@ impl DataStorage {
         }
     }
 
+    pub fn lrem(&self, key: String, index: i64, value: String) -> Result<i64, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let res_entry = self.get_entry(&key, &mut lock);
+
+        match res_entry {
+            Ok(opt_entry) => match opt_entry {
+                Some(entry) => match entry.value().unwrap() {
+                    Value::String(_) => Err("Not list value for that key"),
+                    Value::Vec(mut vector) => {
+                        let result: i64;
+                        match index {
+                            index if index < 0 => {
+                                let (final_index, new_vector) =
+                                    delete_last_values(&mut vector, index.abs(), value);
+                                if final_index == 0 {
+                                    result = index.abs();
+                                } else {
+                                    result = final_index;
+                                }
+                                entry.update_value(Value::Vec(new_vector))?;
+                                Ok(result)
+                            }
+                            index if index == 0 => {
+                                let (final_index, new_vector) =
+                                    delete_all_values(&mut vector, value);
+                                if final_index == 0 {
+                                    result = index;
+                                } else {
+                                    result = final_index;
+                                }
+                                entry.update_value(Value::Vec(new_vector))?;
+                                Ok(result)
+                            }
+                            _ => {
+                                let (final_index, new_vector) =
+                                    delete_first_values(&mut vector, index, value);
+                                if final_index == 0 {
+                                    result = index;
+                                } else {
+                                    result = final_index;
+                                }
+                                entry.update_value(Value::Vec(new_vector))?;
+                                Ok(result)
+                            }
+                        }
+                    }
+                    Value::HashSet(_) => Err("Not list value for that key"),
+                },
+                None => Ok(0),
+            },
+            Err(_) => Ok(0),
+        }
+    }
+
     pub fn sismember(&self, key: String, input_val: String) -> Result<i64, &'static str> {
         let value = self.get(&key);
         match value {
@@ -668,6 +727,47 @@ impl DataStorage {
         }
     }
 
+    pub fn sadd(&self, key: String, values: Vec<String>) -> Result<i64, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let res_entry = self.get_entry(&key, &mut lock);
+
+        match res_entry {
+            Ok(opt_entry) => match opt_entry {
+                Some(entry) => match entry.value().unwrap() {
+                    Value::String(_) => {
+                        Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                    }
+                    Value::Vec(_) => {
+                        Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                    }
+                    Value::HashSet(mut set) => {
+                        let mut count = 0;
+                        for value in values {
+                            if set.insert(value) {
+                                count += 1;
+                            }
+                        }
+
+                        entry.update_value(Value::HashSet(set))?;
+                        Ok(count)
+                    }
+                },
+                None => Ok(0),
+            },
+            Err(_) => {
+                let mut new_set = HashSet::new();
+                let mut count = 0;
+                for value in values {
+                    if new_set.insert(value) {
+                        count += 1;
+                    }
+                }
+                self.do_set(&mut lock, &key, Value::HashSet(new_set))?;
+                Ok(count)
+            }
+        }
+    }
+
     pub fn smember(&self, key: String) -> Result<Vec<String>, &'static str> {
         let value = self.get(&key);
         match value {
@@ -682,6 +782,51 @@ impl DataStorage {
             None => Ok([].to_vec()),
         }
     }
+}
+
+fn delete_last_values(
+    vector: &mut Vec<String>,
+    mut index: i64,
+    value: String,
+) -> (i64, Vec<String>) {
+    let mut new_vector: Vec<String> = vec![];
+    for val in vector.iter().rev() {
+        if (*val == value) && (index != 0) {
+            index -= 1;
+        } else {
+            new_vector.push(val.to_string());
+        }
+    }
+    (index, new_vector.into_iter().rev().collect())
+}
+
+fn delete_first_values(
+    vector: &mut Vec<String>,
+    mut index: i64,
+    value: String,
+) -> (i64, Vec<String>) {
+    let mut new_vector: Vec<String> = vec![];
+    for val in vector.iter() {
+        if *val == value && (index != 0) {
+            index -= 1;
+        } else {
+            new_vector.push(val.to_string());
+        }
+    }
+    (index, new_vector)
+}
+
+fn delete_all_values(vector: &mut Vec<String>, value: String) -> (i64, Vec<String>) {
+    let mut index = 0;
+    let mut new_vector: Vec<String> = vec![];
+    for val in vector.iter() {
+        if *val == value {
+            index += 1;
+        } else {
+            new_vector.push(val.to_string());
+        }
+    }
+    (index, new_vector)
 }
 
 fn now() -> Result<Duration, &'static str> {
