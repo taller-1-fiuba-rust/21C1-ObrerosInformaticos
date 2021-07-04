@@ -9,8 +9,8 @@ use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
-use crate::server_command::{config, dbsize, info, ping};
 use crate::set_command::{sismember, smembers};
+use crate::server_command::{config, dbsize, flushdb, info, ping};
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{append, decrby, get, getdel, getset, mget, mset, set, strlen};
 use std::sync::{Arc, Mutex};
@@ -92,6 +92,7 @@ impl Execution {
             "publish" => publish::run(self.pubsub.clone(), builder, cmd.arguments()),
             "punsubscribe" => punsubscribe::run(self.pubsub.clone(), client, builder),
             "pubsub" => pubsub::run(self.pubsub.clone(), builder, cmd.arguments()),
+            "flushdb" => flushdb::run(builder, self.data.clone()),
             "dbsize" => dbsize::run(builder, self.data.clone()),
             "lpushx" => lpushx::run(builder, cmd.arguments(), self.data.clone()),
             "lset" => lset::run(builder, cmd.arguments(), self.data.clone()),
