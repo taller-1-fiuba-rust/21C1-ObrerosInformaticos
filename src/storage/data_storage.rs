@@ -426,7 +426,7 @@ impl DataStorage {
 
     pub fn contains_key(&self, key: String) -> bool {
         let lock = self.read();
-        return lock.contains_key(&key);
+        lock.contains_key(&key)
     }
 
     pub fn get_keys(&self) -> Vec<String> {
@@ -680,7 +680,7 @@ impl DataStorage {
                         count += 1;
                     }
                 }
-                self.do_set(&mut lock, &key, Value::HashSet(new_set.clone()))?;
+                self.do_set(&mut lock, &key, Value::HashSet(new_set))?;
                 Ok(count)
             }
         }
