@@ -6,3 +6,7 @@ fn test_ping() {
     let result: String = common::query_string(&client, "PING");
     assert_eq!(result, "PONG");
 }
+
+#[test]
+fn test_config() {
+}

@@ -90,3 +90,7 @@ fn test_lpop_many() {
     assert_eq!(val1, 1);
     assert_eq!(val2, vec![2, 3, 4]);
 }
+
+#[test]
+fn test_lindex() {
+}
