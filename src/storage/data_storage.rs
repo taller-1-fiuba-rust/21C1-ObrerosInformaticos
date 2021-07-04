@@ -632,9 +632,9 @@ impl DataStorage {
                     }
                     Value::HashSet(_) => Err("Not list value for that key"),
                 },
-                None => Err("0"),
+                None => Ok(0),
             },
-            Err(_) => Err("0"),
+            Err(_) => Ok(0),
         }
     }
 }
