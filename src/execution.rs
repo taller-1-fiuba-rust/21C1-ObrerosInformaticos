@@ -3,7 +3,7 @@ use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
-use crate::lists_command::{lindex, llen, lpop, lpushx, lset, rpop, rpush, rpushx};
+use crate::lists_command::{lindex, llen, lpop, lpushx, lrem, lset, rpop, rpush, rpushx};
 use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
@@ -102,6 +102,7 @@ impl Execution {
             "lindex" => lindex::run(cmd.arguments(), builder, self.data.clone()),
             "llen" => llen::run(cmd.arguments(), builder, self.data.clone()),
             "lpop" => lpop::run(cmd.arguments(), builder, self.data.clone()),
+            "lrem" => lrem::run(builder, cmd.arguments(), self.data.clone()),
             "sismember" => sismember::run(builder, cmd.arguments(), self.data.clone()),
             "smembers" => smembers::run(builder, cmd.arguments(), self.data.clone()),
             "srem" => srem::run(builder, cmd.arguments(), self.data.clone()),
