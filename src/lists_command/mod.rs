@@ -3,6 +3,7 @@ pub mod llen;
 pub mod lpop;
 pub mod lpush;
 pub mod lpushx;
+pub mod lrem;
 pub mod lset;
 pub mod rpop;
 pub mod rpush;
