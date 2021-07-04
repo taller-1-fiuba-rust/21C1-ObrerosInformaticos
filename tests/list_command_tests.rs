@@ -92,5 +92,4 @@ fn test_lpop_many() {
 }
 
 #[test]
-fn test_lindex() {
-}
+fn test_lindex() {}

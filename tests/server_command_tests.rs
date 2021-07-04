@@ -8,5 +8,4 @@ fn test_ping() {
 }
 
 #[test]
-fn test_config() {
-}
+fn test_config() {}
