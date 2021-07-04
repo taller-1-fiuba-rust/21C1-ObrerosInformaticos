@@ -47,11 +47,7 @@ mod tests {
         let mut set = HashSet::new();
         set.insert("value1".to_string());
         set.insert("value2".to_string());
-        data.set(
-            "test",
-            Value::HashSet(set),
-        )
-        .unwrap();
+        data.set("test", Value::HashSet(set)).unwrap();
 
         run(
             &mut builder,

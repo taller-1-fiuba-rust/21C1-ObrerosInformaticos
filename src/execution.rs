@@ -10,7 +10,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
 use crate::server_command::{config, dbsize, flushdb, info, ping};
-use crate::set_command::{sismember, smembers, srem, scard};
+use crate::set_command::{scard, sismember, smembers, srem};
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{append, decrby, get, getdel, getset, mget, mset, set, strlen};
 use std::sync::{Arc, Mutex};
