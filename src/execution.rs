@@ -103,8 +103,8 @@ impl Execution {
             "llen" => llen::run(cmd.arguments(), builder, self.data.clone()),
             "lpop" => lpop::run(cmd.arguments(), builder, self.data.clone()),
             "sismember" => sismember::run(builder, cmd.arguments(), self.data.clone()),
-            "srem" => srem::run(builder, cmd.arguments(), self.data.clone()),
             "smembers" => smembers::run(builder, cmd.arguments(), self.data.clone()),
+            "srem" => srem::run(builder, cmd.arguments(), self.data.clone()),
             _ => Err("Unknown command."),
         }
     }
