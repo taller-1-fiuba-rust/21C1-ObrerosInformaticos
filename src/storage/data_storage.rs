@@ -637,7 +637,7 @@ impl DataStorage {
             Err(_) => Ok(0),
         }
     }
-  
+
     pub fn sismember(&self, key: String, input_val: String) -> Result<i64, &'static str> {
         let value = self.get(&key);
         match value {
