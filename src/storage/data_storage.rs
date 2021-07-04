@@ -133,6 +133,19 @@ impl DataStorage {
         }
     }
 
+    ///Delete all the keys of the currently selected DB.
+    pub fn delete_all(&self) -> Result<(), &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        lock.clear();
+        Ok(())
+    }
+
+    ///Return TRUE if the storage is empty or FALSE if not.
+    pub fn is_empty(&self) -> bool {
+        let lock = self.data.read().unwrap();
+        lock.is_empty()
+    }
+
     /// Returns OK if the key exists in the database and error otherwise.
     pub fn exists_key(&self, key: &str) -> Result<(), &'static str> {
         let value = self.get(&key);
@@ -624,6 +637,21 @@ impl DataStorage {
                 None => Ok(0),
             },
             Err(_) => Ok(0),
+        }
+    }
+
+    pub fn smember(&self, key: String) -> Result<Vec<String>, &'static str> {
+        let value = self.get(&key);
+        match value {
+            Some(val) => match val {
+                Value::String(_) => Err("Not set value to that key"),
+                Value::Vec(_) => Err("Not set value to that key"),
+                Value::HashSet(set) => {
+                    let vec = set.into_iter().collect();
+                    Ok(vec)
+                }
+            },
+            None => Ok([].to_vec()),
         }
     }
 }
