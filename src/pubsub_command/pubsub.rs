@@ -1,29 +1,27 @@
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
-
 use regex::Regex;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::Arc;
 
 pub fn run(
-    pubsub: Arc<Mutex<PublisherSubscriber>>,
+    pubsub: Arc<PublisherSubscriber>,
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,
 ) -> Result<(), &'static str> {
-    let mut locked_pubsub = pubsub.lock().ok().ok_or("Failed to lock")?;
     let subcommand = arguments[0].clone().string()?;
 
     match &subcommand.to_lowercase()[..] {
         "numsub" => numsub(
-            &mut locked_pubsub,
+            pubsub,
             arguments[1..]
                 .iter()
                 .map(|x| x.clone().string().unwrap())
                 .collect::<Vec<String>>(),
             builder,
-        ),
+        )?,
         "channels" => channels(
-            &mut locked_pubsub,
+            pubsub,
             if arguments.len() == 2 {
                 arguments[1].clone().string()?
             } else {
@@ -40,28 +38,29 @@ pub fn run(
 }
 
 fn numsub(
-    pubsub: &mut MutexGuard<PublisherSubscriber>,
+    pubsub: Arc<PublisherSubscriber>,
     channels: Vec<String>,
     builder: &mut ResponseBuilder,
-) {
+) -> Result<(), &'static str> {
     let mut arr = Vec::new();
     for channel in channels {
         arr.push(ProtocolType::String(channel.clone()));
         arr.push(ProtocolType::Integer(
-            pubsub.subscriber_count(&channel) as i64
+            (pubsub.subscriber_count(&channel)?) as i64,
         ));
     }
     builder.add(ProtocolType::Array(arr));
+    Ok(())
 }
 
 fn channels(
-    pubsub: &mut MutexGuard<PublisherSubscriber>,
+    pubsub: Arc<PublisherSubscriber>,
     pattern_str: String,
     builder: &mut ResponseBuilder,
 ) -> Result<(), &'static str> {
     let pattern = format!("^{}$", pattern_str.replace("?", "."));
     let re = Regex::new(&pattern).ok().ok_or("Error parsing the regex")?;
-    let channels = pubsub.get_channels();
+    let channels = pubsub.get_channels()?;
 
     builder.add(ProtocolType::Array(
         channels

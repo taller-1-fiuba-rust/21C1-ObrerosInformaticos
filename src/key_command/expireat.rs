@@ -11,7 +11,9 @@ pub fn run(
     arguments: Vec<ProtocolType>,
     data: &Arc<DataStorage>,
 ) -> Result<(), &'static str> {
-    assert_eq!(arguments.len(), 2);
+    if arguments.len() != 2 {
+        return Err("Wrong number of arguments");
+    }
 
     let key = match arguments[0].clone().string() {
         Ok(s) => s,
