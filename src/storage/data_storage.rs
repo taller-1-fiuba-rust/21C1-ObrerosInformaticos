@@ -472,14 +472,17 @@ impl DataStorage {
                     }
                     Err(_) => Err("ERR value is not an integer or out of range"),
                 },
-                Value::Vec(_) => Err("WRONGTYPE Operation against a key holding the wrong kind of value"),
-                Value::HashSet(_) => Err("WRONGTYPE Operation against a key holding the wrong kind of value"),
+                Value::Vec(_) => {
+                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                }
+                Value::HashSet(_) => {
+                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                }
             },
             None => {
                 let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
-                let negative_value = 0 + numeric_value;
-                self.do_set(&mut lock, &key, Value::String(negative_value.to_string()))?;
-                Ok(0 + numeric_value)
+                self.do_set(&mut lock, &key, Value::String(numeric_value.to_string()))?;
+                Ok(numeric_value)
             }
         }
     }

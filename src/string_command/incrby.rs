@@ -73,7 +73,8 @@ mod tests {
     fn increment_not_integer_key() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("asdasd", Value::String("value".to_string())).unwrap();
+        data.set("asdasd", Value::String("value".to_string()))
+            .unwrap();
 
         let result = run(
             data.clone(),
