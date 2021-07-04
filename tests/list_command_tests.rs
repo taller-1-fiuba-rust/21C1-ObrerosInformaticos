@@ -100,8 +100,8 @@ fn test_lpush() {
     let val3: String = common::query_string(&client, "LINDEX my_key 2");
     let val4: Option<String> = common::query_string(&client, "LINDEX my_key 3");
     assert_eq!(c, 3);
-    assert_eq!(val1, "1");
+    assert_eq!(val1, "3");
     assert_eq!(val2, "2");
-    assert_eq!(val3, "3");
+    assert_eq!(val3, "1");
     assert!(val4.is_none());
 }
