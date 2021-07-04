@@ -133,6 +133,19 @@ impl DataStorage {
         }
     }
 
+    ///Delete all the keys of the currently selected DB.
+    pub fn delete_all(&self) -> Result<(), &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        lock.clear();
+        Ok(())
+    }
+
+    ///Return TRUE if the storage is empty or FALSE if not.
+    pub fn is_empty(&self) -> bool {
+        let lock = self.data.read().unwrap();
+        lock.is_empty()
+    }
+
     /// Returns OK if the key exists in the database and error otherwise.
     pub fn exists_key(&self, key: &str) -> Result<(), &'static str> {
         let value = self.get(&key);
@@ -591,6 +604,64 @@ impl DataStorage {
                 None => Err("No such key"),
             },
             Err(_) => Err("No such key"),
+        }
+    }
+
+    pub fn sismember(&self, key: String, input_val: String) -> Result<i64, &'static str> {
+        let value = self.get(&key);
+        match value {
+            Some(val) => match val {
+                Value::String(_) => Err("Not set value to that key"),
+                Value::Vec(_) => Err("Not set value to that key"),
+                Value::HashSet(set) => {
+                    if set.contains(&input_val) {
+                        Ok(1)
+                    } else {
+                        Ok(0)
+                    }
+                }
+            },
+            None => Ok(0),
+        }
+    }
+
+    pub fn srem(&self, key: String, values: Vec<String>) -> Result<i64, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let res_entry = self.get_entry(&key, &mut lock);
+
+        match res_entry {
+            Ok(opt_entry) => match opt_entry {
+                Some(entry) => match entry.value().unwrap() {
+                    Value::String(_) => Err("Not list value for that key"),
+                    Value::Vec(_) => Err("Not list value for that key"),
+                    Value::HashSet(mut set) => {
+                        let mut count = 0;
+                        for value in values {
+                            set.remove(&value);
+                            count += 1
+                        }
+                        entry.update_value(Value::HashSet(set))?;
+                        Ok(count)
+                    }
+                },
+                None => Ok(0),
+            },
+            Err(_) => Ok(0),
+        }
+    }
+
+    pub fn smember(&self, key: String) -> Result<Vec<String>, &'static str> {
+        let value = self.get(&key);
+        match value {
+            Some(val) => match val {
+                Value::String(_) => Err("Not set value to that key"),
+                Value::Vec(_) => Err("Not set value to that key"),
+                Value::HashSet(set) => {
+                    let vec = set.into_iter().collect();
+                    Ok(vec)
+                }
+            },
+            None => Ok([].to_vec()),
         }
     }
 }
