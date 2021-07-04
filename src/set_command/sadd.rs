@@ -48,7 +48,7 @@ mod tests {
                 ProtocolType::String("Test".to_string()),
                 ProtocolType::String("1".to_string()),
                 ProtocolType::String("2".to_string()),
-                ProtocolType::String("3".to_string())
+                ProtocolType::String("3".to_string()),
             ],
             data.clone(),
         )
@@ -70,7 +70,7 @@ mod tests {
                 ProtocolType::String("Test".to_string()),
                 ProtocolType::String("1".to_string()),
                 ProtocolType::String("2".to_string()),
-                ProtocolType::String("3".to_string())
+                ProtocolType::String("3".to_string()),
             ],
             data.clone(),
         )
@@ -95,7 +95,7 @@ mod tests {
                 ProtocolType::String("1".to_string()),
                 ProtocolType::String("2".to_string()),
                 ProtocolType::String("3".to_string()),
-                ProtocolType::String("4".to_string())
+                ProtocolType::String("4".to_string()),
             ],
             data.clone(),
         )
@@ -116,7 +116,7 @@ mod tests {
                 ProtocolType::String("Test".to_string()),
                 ProtocolType::String("1".to_string()),
                 ProtocolType::String("2".to_string()),
-                ProtocolType::String("3".to_string())
+                ProtocolType::String("3".to_string()),
             ],
             data.clone(),
         );

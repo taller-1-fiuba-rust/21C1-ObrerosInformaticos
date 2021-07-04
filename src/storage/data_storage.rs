@@ -665,14 +665,12 @@ impl DataStorage {
                                 count += 1;
                             }
                         }
-                        
+
                         entry.update_value(Value::HashSet(set))?;
                         Ok(count)
                     }
                 },
-                None => {
-                    Ok(0)
-                },
+                None => Ok(0),
             },
             Err(_) => {
                 let mut new_set = HashSet::new();
@@ -684,10 +682,10 @@ impl DataStorage {
                 }
                 self.do_set(&mut lock, &key, Value::HashSet(new_set.clone()))?;
                 Ok(count)
-            },
+            }
         }
     }
- 
+
     pub fn smember(&self, key: String) -> Result<Vec<String>, &'static str> {
         let value = self.get(&key);
         match value {
