@@ -92,9 +92,7 @@ impl Execution {
             "publish" => publish::run(self.pubsub.clone(), builder, cmd.arguments()),
             "punsubscribe" => punsubscribe::run(self.pubsub.clone(), client, builder),
             "pubsub" => pubsub::run(self.pubsub.clone(), builder, cmd.arguments()),
-<<<<<<< HEAD
             "flushdb" => flushdb::run(builder, self.data.clone()),
-=======
             "dbsize" => dbsize::run(builder, self.data.clone()),
             "lpushx" => lpushx::run(builder, cmd.arguments(), self.data.clone()),
             "lset" => lset::run(builder, cmd.arguments(), self.data.clone()),
@@ -105,7 +103,6 @@ impl Execution {
             "llen" => llen::run(cmd.arguments(), builder, self.data.clone()),
             "lpop" => lpop::run(cmd.arguments(), builder, self.data.clone()),
             "sismember" => sismember::run(builder, cmd.arguments(), self.data.clone()),
->>>>>>> master
             _ => Err("Unknown command."),
         }
     }
