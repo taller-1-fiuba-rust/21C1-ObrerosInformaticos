@@ -44,3 +44,16 @@ fn test_mset() {
     assert_eq!(val1, "hola1");
     assert_eq!(val2, "hola2");
 }
+
+#[test]
+fn test_getset() {
+    let (_server, client) = common::setup();
+    let result: String = common::query_string(&client, "SET my_key1 hola1");
+    let val1: String = common::query_string(&client, "GETSET my_key1 hola2");
+    let val2: String = common::query_string(&client, "GETSET my_key2 adios");
+    let val3: String = common::query_string(&client, "GET my_key1");
+    assert_eq!(result, "OK");
+    assert_eq!(val1, "hola1");
+    assert_eq!(val2, "nil");
+    assert_eq!(val3, "hola2");
+}
