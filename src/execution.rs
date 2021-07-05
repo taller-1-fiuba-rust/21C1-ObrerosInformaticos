@@ -12,7 +12,7 @@ use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscrib
 use crate::server_command::{config, dbsize, flushdb, info, ping};
 use crate::set_command::{sadd, sismember, smembers, srem};
 use crate::storage::data_storage::DataStorage;
-use crate::string_command::{append, decrby, get, getdel, getset, mget, mset, set, strlen};
+use crate::string_command::{append, decrby, get, getdel, getset, incrby, mget, mset, set, strlen};
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
@@ -81,6 +81,7 @@ impl Execution {
             "strlen" => strlen::run(self.data.clone(), cmd.arguments(), builder),
             "getset" => getset::run(builder, cmd.arguments(), &self.data),
             "decrby" => decrby::run(self.data.clone(), cmd.arguments(), builder),
+            "incrby" => incrby::run(self.data.clone(), cmd.arguments(), builder),
             "append" => append::run(cmd.arguments(), builder, self.data.clone()),
             "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
             "get" => get::run(cmd.arguments(), builder, self.data.clone()),
