@@ -55,56 +55,69 @@ fn run_get(
 ) {
     let argument: &str = &arguments[1].to_string().to_ascii_lowercase()[..];
 
+    let mut response = Vec::<ProtocolType>::new();
     match argument {
-        "verbose" => builder.add(ProtocolType::String(
+        "verbose" => response.push(ProtocolType::String(
             config.lock().unwrap().get_verbose().to_string(),
         )),
-        "port" => builder.add(ProtocolType::String(
+        "port" => response.push(ProtocolType::String(
             config.lock().unwrap().get_port().to_string(),
         )),
-        "ip" => builder.add(ProtocolType::String(
+        "ip" => response.push(ProtocolType::String(
             config.lock().unwrap().get_ip().to_string(),
         )),
-        "dbfilename" => builder.add(ProtocolType::String(
+        "dbfilename" => response.push(ProtocolType::String(
             config.lock().unwrap().get_dbfilename().to_string(),
         )),
-        "logfile" => builder.add(ProtocolType::String(
+        "logfile" => response.push(ProtocolType::String(
             config.lock().unwrap().get_logfile().to_string(),
         )),
-        "timeout" => builder.add(ProtocolType::String(
+        "timeout" => response.push(ProtocolType::String(
             config.lock().unwrap().get_timeout().to_string(),
         )),
-        "*" => send_all_config_params(config, builder),
-        _ => builder.add(ProtocolType::String(format!(
+        "*" => {
+            send_all_config_params(config, builder);
+            return;
+            },
+        _ => {
+            builder.add(ProtocolType::Error(format!(
             "There's no configuration named: {}",
             arguments[1].to_string()
-        ))),
+            )));
+            return;
+        },
     }
+    builder.add(ProtocolType::Array(response));
 }
 #[allow(unused_variables)]
 fn send_all_config_params(config: Arc<Mutex<Configuration>>, builder: &mut ResponseBuilder) {
-    builder.add(ProtocolType::String(format!(
+
+    let mut response = Vec::<ProtocolType>::new();
+
+    response.push(ProtocolType::String(format!(
         "Verbose: {}",
         config.lock().unwrap().get_verbose()
     )));
-    builder.add(ProtocolType::String(format!(
+    response.push(ProtocolType::String(format!(
         "Port: {}",
         config.lock().unwrap().get_port()
     )));
-    builder.add(ProtocolType::String(format!(
+    response.push(ProtocolType::String(format!(
         "Ip: {}",
         config.lock().unwrap().get_ip()
     )));
-    builder.add(ProtocolType::String(format!(
+    response.push(ProtocolType::String(format!(
         "Dbfilename: {}",
         config.lock().unwrap().get_dbfilename()
     )));
-    builder.add(ProtocolType::String(format!(
+    response.push(ProtocolType::String(format!(
         "Logfile: {}",
         config.lock().unwrap().get_logfile()
     )));
-    builder.add(ProtocolType::String(format!(
+    response.push(ProtocolType::String(format!(
         "Timeout: {}",
         config.lock().unwrap().get_timeout()
     )));
+
+    builder.add(ProtocolType::Array(response));
 }
