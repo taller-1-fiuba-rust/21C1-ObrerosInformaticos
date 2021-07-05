@@ -58,10 +58,10 @@ fn run_get(
     let mut response = Vec::<ProtocolType>::new();
     match argument {
         "verbose" => response.push(ProtocolType::Integer(
-            config.lock().unwrap().get_verbose() as i64,
+            config.lock().unwrap().get_verbose() as i64
         )),
         "port" => response.push(ProtocolType::Integer(
-            config.lock().unwrap().get_port() as i64,
+            config.lock().unwrap().get_port() as i64
         )),
         "ip" => response.push(ProtocolType::String(
             config.lock().unwrap().get_ip().to_string(),
@@ -73,51 +73,35 @@ fn run_get(
             config.lock().unwrap().get_logfile().to_string(),
         )),
         "timeout" => response.push(ProtocolType::Integer(
-            config.lock().unwrap().get_timeout() as i64,
+            config.lock().unwrap().get_timeout() as i64
         )),
         "*" => {
             send_all_config_params(config, builder);
             return;
-            },
+        }
         _ => {
             builder.add(ProtocolType::Error(format!(
-            "There's no configuration named: {}",
-            arguments[1].to_string()
+                "There's no configuration named: {}",
+                arguments[1].to_string()
             )));
             return;
-        },
+        }
     }
     builder.add(ProtocolType::Array(response));
 }
 #[allow(unused_variables)]
 fn send_all_config_params(config: Arc<Mutex<Configuration>>, builder: &mut ResponseBuilder) {
-
-    let mut response = Vec::<ProtocolType>::new();
-
-    response.push(ProtocolType::String(format!(
-        "Verbose: {}",
-        config.lock().unwrap().get_verbose()
-    )));
-    response.push(ProtocolType::String(format!(
-        "Port: {}",
-        config.lock().unwrap().get_port()
-    )));
-    response.push(ProtocolType::String(format!(
-        "Ip: {}",
-        config.lock().unwrap().get_ip()
-    )));
-    response.push(ProtocolType::String(format!(
-        "Dbfilename: {}",
-        config.lock().unwrap().get_dbfilename()
-    )));
-    response.push(ProtocolType::String(format!(
-        "Logfile: {}",
-        config.lock().unwrap().get_logfile()
-    )));
-    response.push(ProtocolType::String(format!(
-        "Timeout: {}",
-        config.lock().unwrap().get_timeout()
-    )));
+    let response = vec![
+        ProtocolType::String(format!("Verbose: {}", config.lock().unwrap().get_verbose())),
+        ProtocolType::String(format!("Port: {}", config.lock().unwrap().get_port())),
+        ProtocolType::String(format!("Ip: {}", config.lock().unwrap().get_ip())),
+        ProtocolType::String(format!(
+            "Dbfilename: {}",
+            config.lock().unwrap().get_dbfilename()
+        )),
+        ProtocolType::String(format!("Logfile: {}", config.lock().unwrap().get_logfile())),
+        ProtocolType::String(format!("Timeout: {}", config.lock().unwrap().get_timeout())),
+    ];
 
     builder.add(ProtocolType::Array(response));
 }

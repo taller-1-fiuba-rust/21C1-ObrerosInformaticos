@@ -20,7 +20,6 @@ fn test_config() {
 
     let result6: Vec<i64> = common::query_string(&client, "CONFIG GET verbose");
 
-    
     assert_eq!(result[0], 0);
     assert_eq!(result1[0], "logfile.txt");
     assert_eq!(result2[0], 0);
