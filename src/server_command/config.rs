@@ -8,9 +8,9 @@ pub fn run(
     builder: &mut ResponseBuilder,
     config: Arc<Mutex<Configuration>>,
 ) -> Result<(), &'static str> {
-    if arguments[0].to_string() == *"set" {
+    if arguments[0].to_string().to_ascii_lowercase() == *"set" {
         return run_set(arguments, builder, config);
-    } else if arguments[0].to_string() == *"get" {
+    } else if arguments[0].to_string().to_ascii_lowercase() == *"get" {
         if arguments.len() < 2 {
             return Err("Wrong number of parameters");
         }
