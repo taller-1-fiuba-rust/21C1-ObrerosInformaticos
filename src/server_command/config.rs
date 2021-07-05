@@ -57,11 +57,11 @@ fn run_get(
 
     let mut response = Vec::<ProtocolType>::new();
     match argument {
-        "verbose" => response.push(ProtocolType::String(
-            config.lock().unwrap().get_verbose().to_string(),
+        "verbose" => response.push(ProtocolType::Integer(
+            config.lock().unwrap().get_verbose() as i64,
         )),
-        "port" => response.push(ProtocolType::String(
-            config.lock().unwrap().get_port().to_string(),
+        "port" => response.push(ProtocolType::Integer(
+            config.lock().unwrap().get_port() as i64,
         )),
         "ip" => response.push(ProtocolType::String(
             config.lock().unwrap().get_ip().to_string(),
@@ -72,8 +72,8 @@ fn run_get(
         "logfile" => response.push(ProtocolType::String(
             config.lock().unwrap().get_logfile().to_string(),
         )),
-        "timeout" => response.push(ProtocolType::String(
-            config.lock().unwrap().get_timeout().to_string(),
+        "timeout" => response.push(ProtocolType::Integer(
+            config.lock().unwrap().get_timeout() as i64,
         )),
         "*" => {
             send_all_config_params(config, builder);
