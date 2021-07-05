@@ -92,7 +92,6 @@ fn test_lpop_many() {
 }
 
 #[test]
-fn test_lindex() {}
 fn test_lpush() {
     let (_server, client) = common::setup();
     let c: i32 = common::query_string(&client, "LPUSH my_key 1 2 3");

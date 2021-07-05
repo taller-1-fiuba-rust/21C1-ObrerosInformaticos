@@ -63,7 +63,11 @@ fn test_sort() {
 }
 
 #[test]
-fn test_touch() {}
-
-#[test]
-fn test_ttl() {}
+fn test_ttl() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "SET my_key hola");
+    let result: i32 = common::query_string(&client, "EXPIRE my_key 10");
+    let val: i64 = common::query_string(&client, "TTL my_key");
+    assert_eq!(result, 1);
+    assert!(val > 6 && val <= 10);
+}

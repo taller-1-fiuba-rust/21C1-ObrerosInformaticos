@@ -44,3 +44,6 @@ fn test_mset() {
     assert_eq!(val1, "hola1");
     assert_eq!(val2, "hola2");
 }
+
+#[test]
+fn test_getdel() {}
