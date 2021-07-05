@@ -463,13 +463,42 @@ impl DataStorage {
         Err("last access not modify")
     }
 
-    pub fn decrement_value(&self, key: String, numeric_value: i64) -> Result<i64, &'static str> {
-        let value = self.get(&key);
+    pub fn increment_value(&self, key: String, numeric_value: i64) -> Result<i64, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let value = lock.get(&key);
+
         match value {
-            Some(val) => match val {
+            Some(val) => match val.value()? {
                 Value::String(s) => match s.parse::<i64>() {
                     Ok(number) => {
-                        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+                        let entry: &mut Entry = lock.get_mut(&key).unwrap();
+                        let new_value = number + numeric_value;
+                        entry.update_value(Value::String(new_value.to_string()))?;
+                        Ok(number + numeric_value)
+                    }
+                    Err(_) => Err("ERR value is not an integer or out of range"),
+                },
+                Value::Vec(_) => {
+                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                }
+                Value::HashSet(_) => {
+                    Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                }
+            },
+            None => {
+                self.do_set(&mut lock, &key, Value::String(numeric_value.to_string()))?;
+                Ok(numeric_value)
+            }
+        }
+    }
+
+    pub fn decrement_value(&self, key: String, numeric_value: i64) -> Result<i64, &'static str> {
+        let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        let value = lock.get(&key);
+        match value {
+            Some(val) => match val.value()? {
+                Value::String(s) => match s.parse::<i64>() {
+                    Ok(number) => {
                         let entry: &mut Entry = lock.get_mut(&key).unwrap();
                         let new_value = number - numeric_value;
                         entry.update_value(Value::String(new_value.to_string()))?;
@@ -481,7 +510,6 @@ impl DataStorage {
                 Value::HashSet(_j) => Err("Cant decrement a value to a set"),
             },
             None => {
-                let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
                 let negative_value = 0 - numeric_value;
                 self.do_set(&mut lock, &key, Value::String(negative_value.to_string()))?;
                 Ok(0 - numeric_value)
@@ -492,6 +520,11 @@ impl DataStorage {
     /// Push a vector of values to the specified list by appending them to the left of the list.
     pub fn lpushx(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
         self.pushx(key, vec_values, |list, element| list.insert(0, element))
+    }
+
+    /// Push a vector of values to the specified list by appending them to the left of the list or creating it.
+    pub fn lpush(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
+        self.push(key, vec_values, |list, element| list.insert(0, element))
     }
 
     /// Push a vector of values to the specified list by appending them to the right of the list.
