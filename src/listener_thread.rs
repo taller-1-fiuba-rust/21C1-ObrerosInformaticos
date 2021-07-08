@@ -70,6 +70,7 @@ impl ListenerThread {
         let commands_result = client.parse_commands();
         if let Err(e) = commands_result {
             logger.log(&e).unwrap();
+            
             return;
         }
         let commands = commands_result.unwrap();

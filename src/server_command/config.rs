@@ -1,15 +1,17 @@
 use crate::config::configuration::Configuration;
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
+use crate::logging::logger::Logger;
 use std::sync::{Arc, Mutex};
 
 pub fn run(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,
     config: Arc<Mutex<Configuration>>,
+    logger: Arc<Logger>,
 ) -> Result<(), &'static str> {
     if arguments[0].to_string() == *"set" {
-        return run_set(arguments, builder, config);
+        return run_set(arguments, builder, config, logger);
     } else if arguments[0].to_string() == *"get" {
         if arguments.len() < 2 {
             return Err("Wrong number of parameters");
@@ -24,6 +26,7 @@ fn run_set(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,
     config: Arc<Mutex<Configuration>>,
+    logger: Arc<Logger>,
 ) -> Result<(), &'static str> {
     let argument: &str = &arguments[1].to_string().to_ascii_lowercase()[..];
 
@@ -39,7 +42,28 @@ fn run_set(
                 return Err(er);
             }
             builder.add(ProtocolType::String("Ok".to_string()));
-        }
+        },
+        "timeout" => {
+            let new_timeout = arguments[2].to_string();
+            let new_timeout_u32= new_timeout.parse(); 
+            if new_timeout_u32.is_err() {
+                return Err("Could not set verbosity (must be 1 or 0)");
+            }
+            config.lock().unwrap().set_timeout(new_timeout_u32.unwrap());
+            builder.add(ProtocolType::String("Ok".to_string()));
+        },
+        "dbfilename" => {
+            let new_dbfilename = arguments[2].to_string();
+            config.lock().unwrap().set_dbfilename(new_dbfilename);
+            builder.add(ProtocolType::String("Ok".to_string()));
+        },
+        "logfile" => {
+            let new_logfile = arguments[2].to_string();
+            config.lock().unwrap().set_logfile(new_logfile.clone());
+            logger.change_logfile_name(new_logfile)?;
+            builder.add(ProtocolType::String("Ok".to_string()));
+
+        },
         _ => builder.add(ProtocolType::String(format!(
             "There's no configuration named: {}",
             arguments[1].to_string()

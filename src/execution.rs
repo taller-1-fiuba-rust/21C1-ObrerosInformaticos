@@ -69,7 +69,7 @@ impl Execution {
             "keys" => keys::run(self.data.clone(), cmd.arguments(), builder),
             "rename" => rename::run(self.data.clone(), cmd.arguments(), builder),
             "persist" => persist::run(self.data.clone(), cmd.arguments(), builder),
-            "config" => config::run(cmd.arguments(), builder, self.config.clone()),
+            "config" => config::run(cmd.arguments(), builder, self.config.clone(), self.logger.clone()),
             "type" => key_type::run(cmd.arguments(), builder, &self.data),
             "del" => del::run(builder, cmd.arguments(), &self.data),
             "sort" => sort::run(builder, cmd.arguments(), &self.data),

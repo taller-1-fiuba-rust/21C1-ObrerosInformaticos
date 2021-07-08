@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs;
 
 const DEFAULT_VERBOSE: u8 = 0;
-const DEFAULT_PORT: u16 = 6379;
+const DEFAULT_PORT: u16 = 6380;
 const DEFAULT_TIMEOUT: u32 = 0;
 const DEFAULT_DBFILENAME: &str = "dump.rdb";
 const DEFAULT_LOGFILE: &str = "logfile.txt";
@@ -194,6 +194,18 @@ impl Configuration {
 
     pub fn set_port(&mut self, new_port: u16) {
         self.port = new_port;
+    }
+
+    pub fn set_timeout(&mut self, new_timeout: u32) {
+        self.timeout = new_timeout;
+    }
+
+    pub fn set_dbfilename(&mut self, new_dbfilename: String){
+        self.dbfilename = new_dbfilename;
+    }
+
+    pub fn set_logfile(&mut self, new_logfile: String){
+        self.logfile = new_logfile;
     }
 }
 

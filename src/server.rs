@@ -56,7 +56,6 @@ impl Server {
             self.logger.clone(),
             Arc::new(PublisherSubscriber::new()),
         ));
-        // let verbosity = config.get_verbose();
         let ttl = self.config.lock().unwrap().get_timeout();
         let logger_cpy = self.logger.clone();
         let (server_sender, listener_receiver) = channel();

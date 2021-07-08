@@ -10,20 +10,25 @@ pub struct Logger {
 }
 
 enum Message {
-    String(String),
+    Message(String),
+    File(File),
     Terminate,
 }
 
 impl Logger {
     pub fn new(file_dir: &str) -> Result<Self, &'static str> {
-        let file = create_logfile(file_dir)?;
+        let mut file = create_logfile(file_dir)?;
         let (sender, receiver): (Sender<Message>, Receiver<Message>) = mpsc::channel();
         thread::spawn(move || loop {
             let message = receiver.recv();
             if let Ok(msg) = message {
                 match msg {
-                    Message::String(string) => write(&string, &file),
+                    Message::Message(string) => write(&string, &file),
+                    Message::File(new_file) => {
+                        file = new_file;
+                    },
                     Message::Terminate => break,
+                    _ => ()
                 }
             }
         });
@@ -36,11 +41,24 @@ impl Logger {
     pub fn log(&self, msg: &str) -> Result<(), &'static str> {
         match self.sender.lock() {
             Ok(sender) => {
-                if sender.send(Message::String(msg.to_string())).is_err() {
+                if sender.send(Message::Message(msg.to_string())).is_err() {
                     return Err("No se pudo loggear el mensaje.");
                 };
             }
             Err(_) => return Err("No se pudo loggear el mensaje."),
+        }
+        Ok(())
+    }
+
+    pub fn change_logfile_name(&self, new_name: String) -> Result<(), &'static str> {
+        let file = create_logfile(&new_name)?;
+        match self.sender.lock() {
+            Ok(sender) => {
+                if sender.send(Message::File(file)).is_err() {
+                    return Err("No se pudo loggear el mensaje");
+                }
+            },
+            Err(_) => return Err("No se pudo cambiar el nombre de archivo")
         }
         Ok(())
     }
