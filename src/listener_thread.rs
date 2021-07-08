@@ -70,13 +70,9 @@ impl ListenerThread {
         let commands_result = client.parse_commands();
         if let Err(e) = commands_result {
             logger.log(&e).unwrap();
-            
             return;
         }
         let commands = commands_result.unwrap();
-        logger
-            .log(&format!("Received {} command", commands.len()))
-            .unwrap();
         for command in commands {
             Self::log_command(&command, logger.clone());
             Self::execute_command(&command, client.clone(), execution.clone(), logger.clone());
@@ -120,9 +116,8 @@ impl ListenerThread {
 
     /// Write a response from a response builder to the desired socket.
     fn write_response(client: Arc<Client>, response: &ResponseBuilder, logger: Arc<Logger>) {
-        let response_str = response.serialize();
-        logger.log(&response_str).unwrap();
-        client.send(&response_str).unwrap();
+        logger.log(&response.to_string()).unwrap();
+        client.send(&response.serialize()).unwrap();
     }
 
     fn print_and_log(&self, msg: String) {
