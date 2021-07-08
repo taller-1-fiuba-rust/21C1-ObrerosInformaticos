@@ -60,7 +60,9 @@ fn get_values(data: &Arc<DataStorage>, key: String) -> Result<Vec<String>, &'sta
     let values = data.get(&key);
     match values {
         None => Err("None"),
-        Some(Value::String(_)) => Err("String value. No possible sort."),
+        Some(Value::String(_)) => {
+            Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+        }
         Some(Value::Vec(vec)) => Ok(vec),
         Some(Value::HashSet(set)) => {
             let mut sorted_vec = Vec::new();
@@ -105,7 +107,10 @@ mod tests {
                 assert_eq!(true, false)
             }
             Err(msj) => {
-                assert_eq!(msj, "String value. No possible sort.")
+                assert_eq!(
+                    msj,
+                    "WRONGTYPE Operation against a key holding the wrong kind of value"
+                )
             }
         }
     }

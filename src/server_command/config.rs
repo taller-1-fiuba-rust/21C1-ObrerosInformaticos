@@ -10,9 +10,9 @@ pub fn run(
     config: Arc<Mutex<Configuration>>,
     logger: Arc<Logger>,
 ) -> Result<(), &'static str> {
-    if arguments[0].to_string() == *"set" {
+    if arguments[0].to_string().to_ascii_lowercase() == *"set" {
         return run_set(arguments, builder, config, logger);
-    } else if arguments[0].to_string() == *"get" {
+    } else if arguments[0].to_string().to_ascii_lowercase() == *"get" {
         if arguments.len() < 2 {
             return Err("Wrong number of parameters");
         }
@@ -79,56 +79,53 @@ fn run_get(
 ) {
     let argument: &str = &arguments[1].to_string().to_ascii_lowercase()[..];
 
+    let mut response = Vec::<ProtocolType>::new();
     match argument {
-        "verbose" => builder.add(ProtocolType::String(
-            config.lock().unwrap().get_verbose().to_string(),
+        "verbose" => response.push(ProtocolType::Integer(
+            config.lock().unwrap().get_verbose() as i64
         )),
-        "port" => builder.add(ProtocolType::String(
-            config.lock().unwrap().get_port().to_string(),
+        "port" => response.push(ProtocolType::Integer(
+            config.lock().unwrap().get_port() as i64
         )),
-        "ip" => builder.add(ProtocolType::String(
+        "ip" => response.push(ProtocolType::String(
             config.lock().unwrap().get_ip().to_string(),
         )),
-        "dbfilename" => builder.add(ProtocolType::String(
+        "dbfilename" => response.push(ProtocolType::String(
             config.lock().unwrap().get_dbfilename().to_string(),
         )),
-        "logfile" => builder.add(ProtocolType::String(
+        "logfile" => response.push(ProtocolType::String(
             config.lock().unwrap().get_logfile().to_string(),
         )),
-        "timeout" => builder.add(ProtocolType::String(
-            config.lock().unwrap().get_timeout().to_string(),
+        "timeout" => response.push(ProtocolType::Integer(
+            config.lock().unwrap().get_timeout() as i64
         )),
-        "*" => send_all_config_params(config, builder),
-        _ => builder.add(ProtocolType::String(format!(
-            "There's no configuration named: {}",
-            arguments[1].to_string()
-        ))),
+        "*" => {
+            send_all_config_params(config, builder);
+            return;
+        }
+        _ => {
+            builder.add(ProtocolType::Error(format!(
+                "There's no configuration named: {}",
+                arguments[1].to_string()
+            )));
+            return;
+        }
     }
+    builder.add(ProtocolType::Array(response));
 }
 #[allow(unused_variables)]
 fn send_all_config_params(config: Arc<Mutex<Configuration>>, builder: &mut ResponseBuilder) {
-    builder.add(ProtocolType::String(format!(
-        "Verbose: {}",
-        config.lock().unwrap().get_verbose()
-    )));
-    builder.add(ProtocolType::String(format!(
-        "Port: {}",
-        config.lock().unwrap().get_port()
-    )));
-    builder.add(ProtocolType::String(format!(
-        "Ip: {}",
-        config.lock().unwrap().get_ip()
-    )));
-    builder.add(ProtocolType::String(format!(
-        "Dbfilename: {}",
-        config.lock().unwrap().get_dbfilename()
-    )));
-    builder.add(ProtocolType::String(format!(
-        "Logfile: {}",
-        config.lock().unwrap().get_logfile()
-    )));
-    builder.add(ProtocolType::String(format!(
-        "Timeout: {}",
-        config.lock().unwrap().get_timeout()
-    )));
+    let response = vec![
+        ProtocolType::String(format!("Verbose: {}", config.lock().unwrap().get_verbose())),
+        ProtocolType::String(format!("Port: {}", config.lock().unwrap().get_port())),
+        ProtocolType::String(format!("Ip: {}", config.lock().unwrap().get_ip())),
+        ProtocolType::String(format!(
+            "Dbfilename: {}",
+            config.lock().unwrap().get_dbfilename()
+        )),
+        ProtocolType::String(format!("Logfile: {}", config.lock().unwrap().get_logfile())),
+        ProtocolType::String(format!("Timeout: {}", config.lock().unwrap().get_timeout())),
+    ];
+
+    builder.add(ProtocolType::Array(response));
 }
