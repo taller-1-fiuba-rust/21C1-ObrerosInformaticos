@@ -788,7 +788,12 @@ impl DataStorage {
         }
     }
 
-    pub fn lrange(&self, key: String, first_index: i64, second_index: i64) -> Result<Option<Vec<String>>, &'static str> {
+    pub fn lrange(
+        &self,
+        key: String,
+        first_index: i64,
+        second_index: i64,
+    ) -> Result<Option<Vec<String>>, &'static str> {
         let value = self.get(&key);
 
         match value {
@@ -797,16 +802,22 @@ impl DataStorage {
                 Value::Vec(vector) => {
                     let mut result: Option<Vec<String>> = None;
                     if first_index >= 0 && second_index >= 0 {
-                        result = get_vector_positive_index(vector, first_index as usize, second_index as usize)
-                    } else if first_index < 0 && second_index > 0{
-                        result = get_vector_start_negative(vector, first_index, second_index as usize)
-                    } else if first_index > 0 && second_index < 0{
-                        result = get_vector_stop_negative(vector, first_index as usize, second_index)
+                        result = get_vector_positive_index(
+                            vector,
+                            first_index as usize,
+                            second_index as usize,
+                        )
+                    } else if first_index < 0 && second_index > 0 {
+                        result =
+                            get_vector_start_negative(vector, first_index, second_index as usize)
+                    } else if first_index > 0 && second_index < 0 {
+                        result =
+                            get_vector_stop_negative(vector, first_index as usize, second_index)
                     } else if first_index < 0 && second_index < 0 {
                         result = get_vector_negative_index(vector, first_index, second_index)
-                    }; 
+                    };
                     Ok(result)
-                }   
+                }
                 Value::HashSet(_) => Err("Not list value to that key"),
             },
             None => Err("Not value to that key"),
@@ -814,7 +825,11 @@ impl DataStorage {
     }
 }
 
-fn get_vector_negative_index(vector: Vec<String>, mut start: i64, mut stop: i64) -> Option<Vec<String>> {
+fn get_vector_negative_index(
+    vector: Vec<String>,
+    mut start: i64,
+    mut stop: i64,
+) -> Option<Vec<String>> {
     if start > vector.len() as i64 {
         start = -(vector.len() as i64);
     };
@@ -827,12 +842,15 @@ fn get_vector_negative_index(vector: Vec<String>, mut start: i64, mut stop: i64)
     if new_start > new_stop {
         get_vector_positive_index(vector, new_stop as usize, new_start as usize)
     } else {
-        get_vector_positive_index(vector, new_start as usize, new_stop as usize)   
+        get_vector_positive_index(vector, new_start as usize, new_stop as usize)
     }
 }
 
-
-fn get_vector_stop_negative(vector: Vec<String>, start: usize, mut stop: i64) -> Option<Vec<String>> {
+fn get_vector_stop_negative(
+    vector: Vec<String>,
+    start: usize,
+    mut stop: i64,
+) -> Option<Vec<String>> {
     if stop > vector.len() as i64 {
         stop = -(vector.len() as i64);
     };
@@ -841,27 +859,34 @@ fn get_vector_stop_negative(vector: Vec<String>, start: usize, mut stop: i64) ->
     if start as i64 > new_stop {
         get_vector_positive_index(vector, new_stop as usize, start)
     } else {
-        get_vector_positive_index(vector, start, new_stop as usize)   
+        get_vector_positive_index(vector, start, new_stop as usize)
     }
 }
 
-fn get_vector_start_negative(vector: Vec<String>, mut start: i64, stop: usize) -> Option<Vec<String>> {
+fn get_vector_start_negative(
+    vector: Vec<String>,
+    mut start: i64,
+    stop: usize,
+) -> Option<Vec<String>> {
     if start > vector.len() as i64 {
         start = -(vector.len() as i64);
     };
 
     let new_start = (vector.len() as i64) + start;
     get_vector_positive_index(vector, new_start as usize, stop)
-
 }
 
-fn get_vector_positive_index(vector: Vec<String>, start: usize, mut stop: usize) -> Option<Vec<String>> {
+fn get_vector_positive_index(
+    vector: Vec<String>,
+    start: usize,
+    mut stop: usize,
+) -> Option<Vec<String>> {
     if start > vector.len() {
-        return None
+        return None;
     };
     if stop >= vector.len() {
-        stop = vector.len()-1;
-    }; 
+        stop = vector.len() - 1;
+    };
 
     let mut result: Vec<String> = vec![];
     for i in vector.iter().take(stop + 1).skip(start) {
