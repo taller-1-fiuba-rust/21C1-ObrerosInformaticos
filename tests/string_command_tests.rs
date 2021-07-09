@@ -22,7 +22,6 @@ fn test_decrby() {
     assert_eq!(result, 7);
 }
 
-
 #[test]
 fn test_getdel() {
     let (_server, client) = common::setup();
