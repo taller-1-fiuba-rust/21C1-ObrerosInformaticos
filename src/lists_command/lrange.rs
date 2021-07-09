@@ -22,11 +22,12 @@ pub fn run(
         Ok(val) => 
             match val {
                 Some(vec_values) => {
-                    builder.add(ProtocolType::Array(vec_values));
+                    builder.add(ProtocolType::Array(vec_values.into_iter().map(ProtocolType::String).collect(),));
                     Ok(())
                 },
                 None => {
                     builder.add(ProtocolType::String("(empty list)".to_string()));
+                    Ok(())
                 }
             }   
         Err(s) => {

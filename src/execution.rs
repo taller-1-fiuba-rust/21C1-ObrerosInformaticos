@@ -96,7 +96,6 @@ impl Execution {
             "flushdb" => flushdb::run(builder, self.data.clone()),
             "dbsize" => dbsize::run(builder, self.data.clone()),
             "lpushx" => lpushx::run(builder, cmd.arguments(), self.data.clone()),
-            "lrange" => lrange::run(builder, cmd.arguments(), self.data.clone()),
             "lset" => lset::run(builder, cmd.arguments(), self.data.clone()),
             "rpushx" => rpushx::run(builder, cmd.arguments(), self.data.clone()),
             "rpush" => rpush::run(builder, cmd.arguments(), self.data.clone()),
@@ -111,6 +110,7 @@ impl Execution {
             "srem" => srem::run(builder, cmd.arguments(), self.data.clone()),
             "scard" => scard::run(builder, cmd.arguments(), self.data.clone()),
             "sadd" => sadd::run(builder, cmd.arguments(), self.data.clone()),
+            "lrange" => lrange::run(builder, cmd.arguments(), self.data.clone()),
             _ => Err("Unknown command."),
         }
     }
