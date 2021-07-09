@@ -9,7 +9,7 @@ pub fn run(
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
     if arguments.len() < 2 {
-        return Err("lpushx must have arguments");
+        return Err("ERR wrong number of arguments for 'lpush' command");
     }
 
     let mut string_arguments: Vec<String> = arguments
@@ -20,7 +20,7 @@ pub fn run(
     let key = string_arguments[0].clone();
     string_arguments.remove(0);
 
-    let list_len = data.lpushx(key, string_arguments);
+    let list_len = data.lpush(key, string_arguments);
 
     match list_len {
         Ok(len) => {
@@ -97,6 +97,6 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(":0\r\n", builder.serialize());
+        assert_eq!(":1\r\n", builder.serialize());
     }
 }

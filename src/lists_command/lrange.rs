@@ -16,7 +16,7 @@ pub fn run(
     let first_index = arguments[1].clone().integer()?;
     let second_index = arguments[2].clone().integer()?;
 
-    let values = data.lset(key, first_index, second_index);
+    let values = data.lrange(key, first_index, second_index);
 
     match values {
         Ok(val) => 

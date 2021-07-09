@@ -9,22 +9,20 @@ pub fn run(
     data: Arc<DataStorage>,
 ) -> Result<(), &'static str> {
     if arguments.len() < 2 {
-        return Err("lpushx must have arguments");
+        return Err("ERR wrong number of arguments for 'srem' command");
     }
+    let key = arguments[0].clone().string()?;
 
-    let mut string_arguments: Vec<String> = arguments
+    let string_arguments: Vec<String> = arguments
         .into_iter()
         .map(|x| x.string())
         .collect::<Result<_, _>>()?;
 
-    let key = string_arguments[0].clone();
-    string_arguments.remove(0);
+    let result = data.srem(key, string_arguments[1..].to_owned());
 
-    let list_len = data.lpushx(key, string_arguments);
-
-    match list_len {
-        Ok(len) => {
-            builder.add(ProtocolType::Integer(len as i64));
+    match result {
+        Ok(s) => {
+            builder.add(ProtocolType::Integer(s));
             Ok(())
         }
         Err(s) => Err(s),
@@ -32,65 +30,44 @@ pub fn run(
 }
 
 #[cfg(test)]
-
 mod tests {
     use super::*;
     use crate::protocol::types::ProtocolType;
     use crate::storage::data_storage::DataStorage;
     use crate::storage::data_storage::Value;
+    use std::collections::HashSet;
     use std::sync::Arc;
 
     #[test]
-    fn insert_one_key() {
+    fn srem_value_correct() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        data.set("Test", Value::Vec(["value".to_string()].to_vec()))
-            .unwrap();
+        let mut set: HashSet<String> = HashSet::new();
+        set.insert("1".to_string());
+        data.set("Test", Value::HashSet(set)).unwrap();
 
         run(
             &mut builder,
             vec![
                 ProtocolType::String("Test".to_string()),
-                ProtocolType::String("value2".to_string()),
-            ],
-            data.clone(),
-        )
-        .unwrap();
-
-        assert_eq!(":2\r\n", builder.serialize());
-    }
-
-    #[test]
-    fn insert_keys() {
-        let data = Arc::new(DataStorage::new());
-        let mut builder = ResponseBuilder::new();
-        data.set("Test", Value::Vec(["1".to_string()].to_vec()))
-            .unwrap();
-
-        run(
-            &mut builder,
-            vec![
-                ProtocolType::String("Test".to_string()),
-                ProtocolType::String("2".to_string()),
-                ProtocolType::String("3".to_string()),
-                ProtocolType::String("4".to_string()),
-            ],
-            data.clone(),
-        )
-        .unwrap();
-
-        assert_eq!(":4\r\n", builder.serialize());
-    }
-
-    #[test]
-    fn insert_to_a_not_existing_key() {
-        let data = Arc::new(DataStorage::new());
-        let mut builder = ResponseBuilder::new();
-
-        run(
-            &mut builder,
-            vec![
                 ProtocolType::String("1".to_string()),
+            ],
+            data.clone(),
+        )
+        .unwrap();
+
+        assert_eq!(":1\r\n", builder.serialize());
+    }
+
+    #[test]
+    fn srem_value_not_correct() {
+        let data = Arc::new(DataStorage::new());
+        let mut builder = ResponseBuilder::new();
+
+        run(
+            &mut builder,
+            vec![
+                ProtocolType::String("Test".to_string()),
                 ProtocolType::String("2".to_string()),
             ],
             data.clone(),

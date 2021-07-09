@@ -9,7 +9,9 @@ pub fn run(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,
 ) -> Result<(), &'static str> {
-    assert!(arguments.len() > 1);
+    if arguments.len() <= 1 {
+        return Err("Wrong number of arguments");
+    }
 
     let name = arguments[0].clone().string()?;
     let value = Value::String(arguments[1].clone().string()?);

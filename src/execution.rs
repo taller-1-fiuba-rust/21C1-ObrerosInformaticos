@@ -3,15 +3,16 @@ use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
-use crate::lists_command::{lpushx, lrange};
+use crate::lists_command::{lindex, llen, lpop, lpush, lpushx, lrem, lset, rpop, rpush, rpushx, lrange};
 use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
-use crate::server_command::{config, dbsize, info, ping};
+use crate::server_command::{config, dbsize, flushdb, info, ping};
+use crate::set_command::{sadd, scard, sismember, smembers, srem};
 use crate::storage::data_storage::DataStorage;
-use crate::string_command::{append, decrby, get, getdel, getset, mset, set, strlen};
+use crate::string_command::{append, decrby, get, getdel, getset, incrby, mget, mset, set, strlen};
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
@@ -22,7 +23,7 @@ pub struct Execution {
     sys_time: Arc<SystemTime>,
     client_connected: u64,
     logger: Arc<Logger>,
-    pubsub: Arc<Mutex<PublisherSubscriber>>,
+    pubsub: Arc<PublisherSubscriber>,
 }
 
 impl Execution {
@@ -31,7 +32,7 @@ impl Execution {
         config: Arc<Mutex<Configuration>>,
         sys_time: Arc<SystemTime>,
         logger: Arc<Logger>,
-        pubsub: Arc<Mutex<PublisherSubscriber>>,
+        pubsub: Arc<PublisherSubscriber>,
     ) -> Self {
         Execution {
             data,
@@ -80,9 +81,11 @@ impl Execution {
             "strlen" => strlen::run(self.data.clone(), cmd.arguments(), builder),
             "getset" => getset::run(builder, cmd.arguments(), &self.data),
             "decrby" => decrby::run(self.data.clone(), cmd.arguments(), builder),
+            "incrby" => incrby::run(self.data.clone(), cmd.arguments(), builder),
             "append" => append::run(cmd.arguments(), builder, self.data.clone()),
             "getdel" => getdel::run(cmd.arguments(), builder, self.data.clone()),
             "get" => get::run(cmd.arguments(), builder, self.data.clone()),
+            "mget" => mget::run(cmd.arguments(), builder, self.data.clone()),
             "unsubscribe" => {
                 unsubscribe::run(self.pubsub.clone(), client, builder, cmd.arguments())
             }
@@ -90,9 +93,24 @@ impl Execution {
             "publish" => publish::run(self.pubsub.clone(), builder, cmd.arguments()),
             "punsubscribe" => punsubscribe::run(self.pubsub.clone(), client, builder),
             "pubsub" => pubsub::run(self.pubsub.clone(), builder, cmd.arguments()),
+            "flushdb" => flushdb::run(builder, self.data.clone()),
             "dbsize" => dbsize::run(builder, self.data.clone()),
             "lpushx" => lpushx::run(builder, cmd.arguments(), self.data.clone()),
             "lrange" => lrange::run(builder, cmd.arguments(), self.data.clone()),
+            "lset" => lset::run(builder, cmd.arguments(), self.data.clone()),
+            "rpushx" => rpushx::run(builder, cmd.arguments(), self.data.clone()),
+            "rpush" => rpush::run(builder, cmd.arguments(), self.data.clone()),
+            "rpop" => rpop::run(builder, cmd.arguments(), self.data.clone()),
+            "lindex" => lindex::run(cmd.arguments(), builder, self.data.clone()),
+            "lpush" => lpush::run(builder, cmd.arguments(), self.data.clone()),
+            "llen" => llen::run(cmd.arguments(), builder, self.data.clone()),
+            "lpop" => lpop::run(cmd.arguments(), builder, self.data.clone()),
+            "lrem" => lrem::run(builder, cmd.arguments(), self.data.clone()),
+            "sismember" => sismember::run(builder, cmd.arguments(), self.data.clone()),
+            "smembers" => smembers::run(builder, cmd.arguments(), self.data.clone()),
+            "srem" => srem::run(builder, cmd.arguments(), self.data.clone()),
+            "scard" => scard::run(builder, cmd.arguments(), self.data.clone()),
+            "sadd" => sadd::run(builder, cmd.arguments(), self.data.clone()),
             _ => Err("Unknown command."),
         }
     }
