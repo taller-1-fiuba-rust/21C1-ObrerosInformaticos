@@ -33,6 +33,16 @@ fn test_persist() {
     assert_eq!(val1, 1);
 }
 
+#[test]
+fn test_keys() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "MSET age 1 ate 1 ame 1 key 1 fisura 1");
+    let mut result: Vec<String> = common::query_string(&client, "KEYS a?e");
+    result.sort();
+    assert_eq!(result, vec!["age", "ame", "ate"]);
+}
+
+#[test]
 fn test_type() {
     let (_server, client) = common::setup();
     let val1: String = common::query_string(&client, "SET my_key1 value");
