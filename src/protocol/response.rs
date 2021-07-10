@@ -21,13 +21,12 @@ impl ResponseBuilder {
     }
 
     /// Returns the response as a String
-    pub fn to_string(&self) -> String{
+    pub fn to_string(&self) -> String {
         self.results
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<String>>()
             .join("")
-
     }
 
     /// Serialiazes the objects into a RESP compatible format.

@@ -23,14 +23,19 @@ pub struct ListenerThread {
 }
 
 impl ListenerThread {
-    pub fn new(addr: String, execution: Arc<Execution>, logger: Arc<Logger>, config: Arc<Mutex<Configuration>>) -> Self {
+    pub fn new(
+        addr: String,
+        execution: Arc<Execution>,
+        logger: Arc<Logger>,
+        config: Arc<Mutex<Configuration>>,
+    ) -> Self {
         let pool = ThreadPool::new(32);
         ListenerThread {
             pool,
             addr,
             execution,
             logger,
-            config
+            config,
         }
     }
 
@@ -70,11 +75,16 @@ impl ListenerThread {
     }
 
     /// Handles a socket connection and executes the command extracted from it.
-    fn handle_connection(client: Arc<Client>, execution: Arc<Execution>, logger: Arc<Logger>, config: Arc<Mutex<Configuration>>) {
+    fn handle_connection(
+        client: Arc<Client>,
+        execution: Arc<Execution>,
+        logger: Arc<Logger>,
+        config: Arc<Mutex<Configuration>>,
+    ) {
         let commands_result = client.parse_commands();
         if let Err(e) = commands_result {
             let verbose = config.lock().unwrap().get_verbose().clone();
-            if  verbose == 1{
+            if verbose == 1 {
                 println!("{}", &e);
             }
             logger.log(&e).unwrap();
@@ -83,7 +93,13 @@ impl ListenerThread {
         let commands = commands_result.unwrap();
         for command in commands {
             Self::log_command(&command, logger.clone(), config.clone());
-            Self::execute_command(&command, client.clone(), execution.clone(), logger.clone(), config.clone());
+            Self::execute_command(
+                &command,
+                client.clone(),
+                execution.clone(),
+                logger.clone(),
+                config.clone(),
+            );
         }
 
         if !client.is_closed() {
@@ -104,7 +120,7 @@ impl ListenerThread {
                 .join(" ")
         );
         let verbose = config.lock().unwrap().get_verbose().clone();
-        if  verbose == 1{
+        if verbose == 1 {
             println!("{}", &msg);
         }
         logger.log(&msg).unwrap();
@@ -116,7 +132,7 @@ impl ListenerThread {
         client: Arc<Client>,
         execution: Arc<Execution>,
         logger: Arc<Logger>,
-        config: Arc<Mutex<Configuration>>
+        config: Arc<Mutex<Configuration>>,
     ) {
         let mut response = ResponseBuilder::new();
 
@@ -128,9 +144,14 @@ impl ListenerThread {
     }
 
     /// Write a response from a response builder to the desired socket.
-    fn write_response(client: Arc<Client>, response: &ResponseBuilder, logger: Arc<Logger>, config: Arc<Mutex<Configuration>>) {
+    fn write_response(
+        client: Arc<Client>,
+        response: &ResponseBuilder,
+        logger: Arc<Logger>,
+        config: Arc<Mutex<Configuration>>,
+    ) {
         let verbose = config.lock().unwrap().get_verbose().clone();
-        if  verbose == 1{
+        if verbose == 1 {
             println!("{}", &response.to_string());
         }
         logger.log(&response.to_string()).unwrap();

@@ -76,8 +76,7 @@ impl Server {
                     println!("Error saving data from dbfile");
                 };
                 let ten_mins = Duration::from_secs(600);
-                let a = Duration::from_secs(15);
-                thread::sleep(a);
+                thread::sleep(ten_mins);
             }
         });
         self.sender = Some(server_sender);

@@ -200,11 +200,11 @@ impl Configuration {
         self.timeout = new_timeout;
     }
 
-    pub fn set_dbfilename(&mut self, new_dbfilename: String){
+    pub fn set_dbfilename(&mut self, new_dbfilename: String) {
         self.dbfilename = new_dbfilename;
     }
 
-    pub fn set_logfile(&mut self, new_logfile: String){
+    pub fn set_logfile(&mut self, new_logfile: String) {
         self.logfile = new_logfile;
     }
 }

@@ -26,9 +26,8 @@ impl Logger {
                     Message::Message(string) => write(&string, &file),
                     Message::File(new_file) => {
                         file = new_file;
-                    },
+                    }
                     Message::Terminate => break,
-                    _ => ()
                 }
             }
         });
@@ -57,8 +56,8 @@ impl Logger {
                 if sender.send(Message::File(file)).is_err() {
                     return Err("No se pudo loggear el mensaje");
                 }
-            },
-            Err(_) => return Err("No se pudo cambiar el nombre de archivo")
+            }
+            Err(_) => return Err("No se pudo cambiar el nombre de archivo"),
         }
         Ok(())
     }
