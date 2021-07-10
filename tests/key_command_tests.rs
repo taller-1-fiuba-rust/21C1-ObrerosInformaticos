@@ -22,6 +22,17 @@ fn test_rename() {
     assert!(val1.is_none());
     assert_eq!(val2, "hola");
 }
+
+#[test]
+fn test_persist() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "SET my_key hola");
+    let result: i32 = common::query_string(&client, "EXPIRE my_key 100");
+    let val1: i64 = common::query_string(&client, "PERSIST my_key");
+    assert_eq!(result, 1);
+    assert_eq!(val1, 1);
+}
+
 fn test_type() {
     let (_server, client) = common::setup();
     let val1: String = common::query_string(&client, "SET my_key1 value");
