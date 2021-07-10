@@ -24,15 +24,12 @@ pub fn run(
 
     for key in arguments.iter() {
         let str_key = key.clone().string()?;
-        match data.modify_last_key_access(&str_key, now) {
-            Ok(last_access) => {
-                let _res = logger.log(&format!(
-                    "Previous last access from touch command: {}",
-                    last_access.as_secs()
-                ));
-                keys_touched += 1;
-            }
-            Err(_) => (),
+        if let Ok(last_access) = data.modify_last_key_access(&str_key, now) {
+            let _res = logger.log(&format!(
+                "Previous last access from touch command: {}",
+                last_access.as_secs()
+            ));
+            keys_touched += 1;
         }
     }
     builder.add(ProtocolType::Integer(keys_touched));

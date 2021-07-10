@@ -83,7 +83,7 @@ impl ListenerThread {
     ) {
         let commands_result = client.parse_commands();
         if let Err(e) = commands_result {
-            let verbose = config.lock().unwrap().get_verbose().clone();
+            let verbose = config.lock().unwrap().get_verbose();
             if verbose == 1 {
                 println!("{}", &e);
             }
@@ -119,7 +119,7 @@ impl ListenerThread {
                 .collect::<Vec<_>>()
                 .join(" ")
         );
-        let verbose = config.lock().unwrap().get_verbose().clone();
+        let verbose = config.lock().unwrap().get_verbose();
         if verbose == 1 {
             println!("{}", &msg);
         }
@@ -140,7 +140,7 @@ impl ListenerThread {
             logger.log("Error").unwrap();
             response.add(ProtocolType::Error(e.to_string()));
         }
-        Self::write_response(client, &response, logger, config.clone());
+        Self::write_response(client, &response, logger, config);
     }
 
     /// Write a response from a response builder to the desired socket.
@@ -150,7 +150,7 @@ impl ListenerThread {
         logger: Arc<Logger>,
         config: Arc<Mutex<Configuration>>,
     ) {
-        let verbose = config.lock().unwrap().get_verbose().clone();
+        let verbose = config.lock().unwrap().get_verbose();
         if verbose == 1 {
             println!("{}", &response.to_string());
         }
