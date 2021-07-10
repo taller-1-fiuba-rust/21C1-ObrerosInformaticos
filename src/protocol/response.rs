@@ -46,7 +46,14 @@ impl ResponseBuilder {
 
 impl fmt::Display for ResponseBuilder {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "I am A")
+        let asd = self
+            .results
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join("");
+
+        write!(f, "{}", asd)
     }
 }
 #[cfg(test)]

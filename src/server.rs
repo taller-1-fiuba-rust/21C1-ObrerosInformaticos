@@ -70,7 +70,6 @@ impl Server {
         let handle_store_data = thread::spawn(move || loop {
             loop {
                 let dbfilename = configuration.lock().unwrap().get_dbfilename().clone();
-                println!("{}", &dbfilename);
                 let result = data_storage.save_data(&dbfilename);
                 if result.is_err() {
                     println!("Error saving data from dbfile");
