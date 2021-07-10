@@ -11,6 +11,17 @@ fn test_copy() {
 }
 
 #[test]
+fn test_rename() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "SET my_key hola");
+    let result: String = common::query_string(&client, "RENAME my_key my_key2");
+    let val1: Option<String> = common::query_string(&client, "GET my_key");
+    let val2: String = common::query_string(&client, "GET my_key2");
+
+    assert_eq!(result, "OK");
+    assert!(val1.is_none());
+    assert_eq!(val2, "hola");
+}
 fn test_type() {
     let (_server, client) = common::setup();
     let val1: String = common::query_string(&client, "SET my_key1 value");
