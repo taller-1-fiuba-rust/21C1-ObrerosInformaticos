@@ -4,6 +4,7 @@ use crate::pubsub::PublisherSubscriber;
 use regex::Regex;
 use std::sync::Arc;
 
+/// The PUBSUB command is an introspection command that allows to inspect the state of the Pub/Sub subsystem.
 pub fn run(
     pubsub: Arc<PublisherSubscriber>,
     builder: &mut ResponseBuilder,

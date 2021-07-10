@@ -3,7 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 use std::sync::Arc;
 
-/// Execute the pub/sub publish command.
+/// Posts a message to the given channel.
 pub fn run(
     pubsub: Arc<PublisherSubscriber>,
     builder: &mut ResponseBuilder,

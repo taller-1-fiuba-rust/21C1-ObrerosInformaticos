@@ -17,6 +17,7 @@ use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
 #[allow(dead_code)]
+/// Struct which holds an execution context for the server
 pub struct Execution {
     data: Arc<DataStorage>,
     config: Arc<Mutex<Configuration>>,

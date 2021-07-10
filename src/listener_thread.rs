@@ -124,6 +124,7 @@ impl ListenerThread {
         client.send(&response_str).unwrap();
     }
 
+    /// Prints and logs a message
     fn print_and_log(&self, msg: String) {
         println!("{}", msg);
         self.logger.log(&msg).unwrap();
