@@ -4,6 +4,9 @@ use crate::storage::data_storage::DataStorage;
 use crate::storage::data_storage::Value;
 use std::sync::Arc;
 
+/// Returns a sorted vec stored at the given key. If the keys holds a string value
+/// it returns an error.
+/// It has two optionals params:[desc -> descendent, store -> to store the result at the specified key]
 pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,

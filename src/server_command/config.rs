@@ -4,6 +4,9 @@ use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use std::sync::{Arc, Mutex};
 
+/// Includes CONFIG SET and CONFIG GET
+/// CONFIG GET: returns the specified configuration from the server, or returns all configuration if '*' given.
+/// CONFIG SET: sets the configuration given.
 pub fn run(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs;
 
 const DEFAULT_VERBOSE: u8 = 0;
-const DEFAULT_PORT: u16 = 6380;
+const DEFAULT_PORT: u16 = 6379;
 const DEFAULT_TIMEOUT: u32 = 0;
 const DEFAULT_DBFILENAME: &str = "dump.rdb";
 const DEFAULT_LOGFILE: &str = "logfile.txt";
@@ -15,6 +15,7 @@ const DEFAULT_IP: &str = "127.0.0.1";
 //  4) Add the check and set to the set_all_params function.
 //  5) Add the get_/attribute/ function to return the value.
 
+///The basic configuration for de server. Includes [Verbose, Port, Timeout, DBFilename, LOGfile, IP]
 #[allow(dead_code)]
 #[derive(Default)]
 pub struct Configuration {
@@ -28,8 +29,8 @@ pub struct Configuration {
 
 #[allow(dead_code)]
 impl Configuration {
+    ///Returns the default configuration
     pub fn new() -> Self {
-        //Returns the default configuration
         Configuration {
             verbose: DEFAULT_VERBOSE,
             port: DEFAULT_PORT,
@@ -40,10 +41,9 @@ impl Configuration {
         }
     }
 
+    /// Re-sets the configuration based on a configuration file (.config).
+    /// If any problem happens, it returns a string describing the problem.
     pub fn set_config(&mut self, file_path: &str) -> Result<bool, String> {
-        // Re-sets the configuration based on a configuration file (.config).
-        // If any problem happens, it returns a string describing the problem.
-
         let map;
         match self.parse(file_path) {
             Ok(map_) => map = map_,
@@ -57,10 +57,10 @@ impl Configuration {
         Ok(true)
     }
 
+    /// Returns a map <Attribute_name, Attribute_value> containing all the attributes
+    /// that the file contained.
+    /// If any problem happens, it returns a String describing the problem.
     fn parse(&mut self, file_path: &str) -> Result<HashMap<String, String>, String> {
-        // Returns a map <Attribute_name, Attribute_value> containing all the attributes
-        // that the file contained.
-        // If any problem happens, it returns a String describing the problem.
         let file: String = match fs::read_to_string(file_path) {
             Ok(file) => file,
             Err(_) => return Err("Error al intentar abrir el archivo".to_string()),
@@ -82,11 +82,10 @@ impl Configuration {
         Ok(map)
     }
 
+    /// Sets all the params and checks the validity of some of them.
+    /// If everything is OK, it returns none.
+    /// If any problem happens, it returns a string describing the problem.
     fn set_all_params(&mut self, map: HashMap<String, String>) -> Option<String> {
-        // Sets all the params and checks the validity of some of them.
-        // If everything is OK, it returns none.
-        // If any problem happens, it returns a string describing the problem.
-
         if let Some(verbose_) = map.get("verbose") {
             if !self.check_number_between(verbose_, 0, 1) {
                 return Some("Verbosidad mal configurada.".to_string());
@@ -147,7 +146,6 @@ impl Configuration {
     }
 
     fn check_number_between(&mut self, number: &str, bottom: u32, top: u32) -> bool {
-        // It checks that a string number is between two other numbers.
         let int_number: u32;
         match number.parse::<u32>() {
             Ok(x) => int_number = x,

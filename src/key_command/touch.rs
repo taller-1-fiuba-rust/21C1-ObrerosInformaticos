@@ -5,6 +5,8 @@ use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+/// Sets the last access of the keys given to the actual time
+/// Returns the amount of keys touched
 pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,
@@ -42,12 +44,13 @@ pub fn run(
 mod tests {
     use super::*;
     use crate::storage::data_storage::Value;
+    use std::fs;
 
     #[test]
     fn test_touch_one_key() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        let logger = Arc::new(Logger::new("").unwrap());
+        let logger = Arc::new(Logger::new(".TEST.txt").unwrap());
 
         data.set("src", Value::String("value".to_string())).unwrap();
 
@@ -58,7 +61,7 @@ mod tests {
             logger,
         )
         .unwrap();
-
+        let _ = fs::remove_file(".TEST.txt");
         assert_eq!(builder.serialize(), ":1\r\n");
     }
 
@@ -66,7 +69,7 @@ mod tests {
     fn test_touch_two_key() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        let logger = Arc::new(Logger::new("").unwrap());
+        let logger = Arc::new(Logger::new(".TEST.txt").unwrap());
 
         data.set("src", Value::String("value".to_string())).unwrap();
         data.set("asd", Value::String("value".to_string())).unwrap();
@@ -82,6 +85,7 @@ mod tests {
         )
         .unwrap();
 
+        let _ = fs::remove_file(".TEST.txt");
         assert_eq!(builder.serialize(), ":2\r\n");
     }
 
@@ -89,7 +93,7 @@ mod tests {
     fn test_send_two_but_only_one_touched() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        let logger = Arc::new(Logger::new("").unwrap());
+        let logger = Arc::new(Logger::new(".TEST.txt").unwrap());
 
         data.set("src", Value::String("value".to_string())).unwrap();
 
@@ -103,7 +107,7 @@ mod tests {
             logger,
         )
         .unwrap();
-
+        let _ = fs::remove_file(".TEST.txt");
         assert_eq!(builder.serialize(), ":1\r\n");
     }
 
@@ -111,7 +115,7 @@ mod tests {
     fn test_no_keys_touched() {
         let data = Arc::new(DataStorage::new());
         let mut builder = ResponseBuilder::new();
-        let logger = Arc::new(Logger::new("").unwrap());
+        let logger = Arc::new(Logger::new(".TEST.txt").unwrap());
 
         run(
             &mut builder,
@@ -124,6 +128,7 @@ mod tests {
         )
         .unwrap();
 
+        let _ = fs::remove_file(".TEST.txt");
         assert_eq!(builder.serialize(), ":0\r\n");
     }
 }

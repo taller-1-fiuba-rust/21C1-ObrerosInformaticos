@@ -4,6 +4,9 @@ use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+/// Returns the remaining time to live of a key that has a timeout.
+/// -1 if there's no expiration for the given key
+/// -2 if theres no value for that key
 pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,

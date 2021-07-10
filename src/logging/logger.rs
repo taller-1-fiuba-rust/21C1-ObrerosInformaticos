@@ -15,6 +15,7 @@ enum Message {
     Terminate,
 }
 
+///Structure to wrote information to a logfile
 impl Logger {
     pub fn new(file_dir: &str) -> Result<Self, &'static str> {
         let mut file = create_logfile(file_dir)?;
@@ -37,6 +38,7 @@ impl Logger {
         })
     }
 
+    ///Sends via channel a message to log into the file.
     pub fn log(&self, msg: &str) -> Result<(), &'static str> {
         match self.sender.lock() {
             Ok(sender) => {
@@ -49,6 +51,7 @@ impl Logger {
         Ok(())
     }
 
+    ///Changes the file that gets all the messages
     pub fn change_logfile_name(&self, new_name: String) -> Result<(), &'static str> {
         let file = create_logfile(&new_name)?;
         match self.sender.lock() {
