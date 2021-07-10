@@ -58,21 +58,26 @@ impl Server {
         ));
         let ttl = self.config.lock().unwrap().get_timeout();
         let logger_cpy = self.logger.clone();
+        let config_cpy = self.config.clone();
         let (server_sender, listener_receiver) = channel();
         let (listener_sender, server_receiver) = channel();
         let handle = thread::spawn(move || {
-            let listener = ListenerThread::new(addr_and_port, execution, logger_cpy);
+            let listener = ListenerThread::new(addr_and_port, execution, logger_cpy, config_cpy);
             listener.run(ttl, listener_sender, listener_receiver);
         });
         let data_storage = self.data.clone();
+        let configuration = self.config.clone();
         let handle_store_data = thread::spawn(move || loop {
             loop {
-                let result = data_storage.save_data(&dbfile);
+                let dbfilename = configuration.lock().unwrap().get_dbfilename().clone();
+                println!("{}", &dbfilename);
+                let result = data_storage.save_data(&dbfilename);
                 if result.is_err() {
                     println!("Error saving data from dbfile");
                 };
                 let ten_mins = Duration::from_secs(600);
-                thread::sleep(ten_mins);
+                let a = Duration::from_secs(15);
+                thread::sleep(a);
             }
         });
         self.sender = Some(server_sender);

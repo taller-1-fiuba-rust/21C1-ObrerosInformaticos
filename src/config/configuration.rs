@@ -101,7 +101,7 @@ impl Configuration {
             self.logfile = logfile_.to_string();
             if self.verbose == 1 {
                 println!(
-                    "Configuración del archivo de logs cargada : {}",
+                    "Configuración del nombre del archivo de logs cargada : {}",
                     self.logfile
                 );
             }
