@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs;
 
 const DEFAULT_VERBOSE: u8 = 0;
-const DEFAULT_PORT: u16 = 6379;
+const DEFAULT_PORT: u16 = 6380;
 const DEFAULT_TIMEOUT: u32 = 0;
 const DEFAULT_DBFILENAME: &str = "dump.rdb";
 const DEFAULT_LOGFILE: &str = "logfile.txt";
