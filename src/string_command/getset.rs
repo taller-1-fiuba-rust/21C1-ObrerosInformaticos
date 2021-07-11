@@ -4,6 +4,9 @@ use crate::storage::data_storage::DataStorage;
 use crate::storage::data_storage::Value;
 use std::sync::Arc;
 
+/// Atomically sets key to value and returns the old value stored at key.
+/// Returns an error when key exists but does not hold a string value.
+/// Any previous time to live associated with the key is discarded on successful SET operation.
 pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,

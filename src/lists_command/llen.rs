@@ -4,6 +4,9 @@ use crate::storage::data_storage::DataStorage;
 use crate::storage::data_storage::Value;
 use std::sync::Arc;
 
+/// Returns the length of the list stored at key.
+/// If key does not exist, it is interpreted as an empty list and 0 is returned.
+/// An error is returned when the value stored at key is not a list.
 pub fn run(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,

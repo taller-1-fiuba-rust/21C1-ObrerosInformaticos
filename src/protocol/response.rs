@@ -1,4 +1,5 @@
 use crate::protocol::types::ProtocolType;
+use std::fmt;
 
 ///
 /// Struct for building responses in RESP format. Stores ProtocolTypes and serializes them.
@@ -34,6 +35,18 @@ impl ResponseBuilder {
     }
 }
 
+impl fmt::Display for ResponseBuilder {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let asd = self
+            .results
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join("");
+
+        write!(f, "{}", asd)
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;

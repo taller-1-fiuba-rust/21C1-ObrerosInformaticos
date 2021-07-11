@@ -4,12 +4,13 @@ use crate::storage::data_storage::DataStorage;
 use crate::storage::data_storage::Value;
 use std::sync::Arc;
 
+/// Returns the string representation of the type of the value stored at key.
+/// The different types that can be returned are: string, list, set, zset, hash and stream.
 pub fn run(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,
     data: &Arc<DataStorage>,
 ) -> Result<(), &'static str> {
-    //This command
     if arguments.len() != 1 {
         return Err("ERR wrong number of arguments for 'type' command");
     }

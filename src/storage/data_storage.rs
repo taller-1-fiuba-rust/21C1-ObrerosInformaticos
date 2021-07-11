@@ -443,18 +443,25 @@ impl DataStorage {
         &self,
         key: &str,
         last_access_since_unix_epoch: Duration,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Duration, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let copy_key = key.to_string();
 
         if lock.contains_key(&copy_key) {
+            let previous_last_access = lock.get_mut(&copy_key).unwrap().last_access();
             let result = lock
                 .get_mut(&copy_key)
                 .unwrap()
                 .set_last_access(last_access_since_unix_epoch);
-            match result {
-                Ok(_s) => return Ok(()),
-                Err(_s) => {
+            match previous_last_access {
+                Ok(l_a) => match result {
+                    Ok(_s) => return Ok(l_a),
+                    Err(_s) => {
+                        self.delete_key(&key)?;
+                        return Err("last access not modify not existing key");
+                    }
+                },
+                Err(_) => {
                     self.delete_key(&key)?;
                     return Err("last access not modify not existing key");
                 }
