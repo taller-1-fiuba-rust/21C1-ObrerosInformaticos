@@ -20,7 +20,23 @@ pub enum Value {
 }
 
 #[allow(dead_code)]
+///Implementation of the Value structure.
 impl Value {
+    /// Given a possible Value String, it analyzes if the value
+    /// can be obtained as a string and returns it, if it is another type of data,
+    /// it returns an error.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// let value = Value::String("hola".to_string());
+    /// value.string();
+    /// ```
+    ///
     pub fn string(&self) -> Result<String, &'static str> {
         match self {
             Value::String(s) => Ok(s.clone()),
@@ -28,6 +44,21 @@ impl Value {
         }
     }
 
+    /// Given a possible Value Array, it analyzes if the value
+    /// can be obtained as an array and returns it, if it is another type of data,
+    /// it returns an error.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::Value::Vec;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// let value = Value::Vec(["hola".to_string()].to_vec());
+    /// value.array();
+    /// ```
+    ///
     pub fn array(&self) -> Result<Vec<String>, &'static str> {
         match self {
             Value::Vec(v) => Ok(v.clone()),
@@ -35,6 +66,23 @@ impl Value {
         }
     }
 
+    /// Given a possible Value HashSet, it analyzes if the value
+    /// can be obtained as a set and returns it, if it is another type of data,
+    /// it returns an error.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::Value::Vec;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use std::collections::HashSet;
+    /// let set = HashSet::new();
+    /// let value = Value::HashSet(set);
+    /// value.set();
+    /// ```
+    ///
     pub fn set(&self) -> Result<HashSet<String>, &'static str> {
         match self {
             Value::HashSet(s) => Ok(s.clone()),
@@ -52,8 +100,19 @@ pub struct DataStorage {
 
 /// Implementation of the DataStorage structure.
 #[allow(dead_code)]
+#[allow(clippy::new_without_default)]
 impl DataStorage {
-    /// Create the DataStorage structure.
+    /// Create the DataStorage structure. Initially the database will be instantiated empty
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// ```
+    ///
     pub fn new() -> Self {
         DataStorage {
             data: Arc::new(RwLock::new(HashMap::new())),
@@ -67,6 +126,20 @@ impl DataStorage {
     /// previously created.
     /// POST: DataStorage is loaded with the data
     /// that contained the file.
+    /// # Arguments
+    ///
+    /// * `file` - A string slice that holds the name of the file to use.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.load_data(&"new_file.txt");
+    /// ```
+    ///
     pub fn load_data(&self, file: &str) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         match parser::parse_data(file, &mut lock) {
@@ -77,9 +150,23 @@ impl DataStorage {
 
     /// Given a file name, save the data of the
     /// database in it.
-    /// PRE: The DataStorage structure must be created.
-    /// POST: The file contains the information that had
+    /// The DataStorage structure must be created.
+    /// At the end, the file contains the information that had
     /// in the structure.
+    /// # Arguments
+    ///
+    /// * `file` - A string slice that holds the name of the file to use.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.save_data(&"file.txt");
+    /// ```
+    ///
     pub fn save_data(&self, file: &str) -> Result<(), &'static str> {
         let lock = self.data.read().ok().ok_or("Failed to lock database")?;
         parser::store_data(file, &lock);
@@ -87,16 +174,39 @@ impl DataStorage {
     }
 
     /// Given a key and a value, it stores them in the database.
-    /// PRE: The DataStorage structure must be created.
-    /// POST: The key is stored in the structure with its value
+    /// The DataStorage structure must be created.
+    /// At the end, the key is stored in the structure with its value
     /// corresponding and with expiration time 0 given that the
     /// default keys never expire.
+    /// # Arguments
+    ///
+    /// * `key` - A string slice that holds the name of the key to store.
+    /// * `value` - A Value slice that holds the value to store.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// let data = DataStorage::new();
+    /// data.set(&"key", Value::String("hola".to_string()));
+    /// ```
+    ///
     pub fn set(&self, key: &str, value: Value) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         self.do_set(&mut lock, key, value)?;
         Ok(())
     }
 
+    /// Safety function used to set a key and a value in the data base.
+    /// # Arguments
+    ///
+    /// * `lock` - A RwLockWriteGuard slice that holds lock to the lock to safely access the structure.
+    /// * `key` - A string slice that holds the name of the key to store.
+    /// * `value` - A Value slice that holds the value to store.
     fn do_set(
         &self,
         lock: &mut RwLockWriteGuard<HashMap<String, Entry>>,
@@ -112,7 +222,26 @@ impl DataStorage {
         Ok(())
     }
 
-    /// Set multiple keys at once
+    /// Set multiple keys at once in the data structure.
+    /// # Arguments
+    ///
+    /// * `keys` - A Vector of strings that holds the name of the keys to store.
+    /// * `values` - A Vector of Values that holds the values to store.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// let data = DataStorage::new();
+    /// let values = vec![Value::String("value1".to_string()), Value::String("value2".to_string())];
+    /// let keys = vec!["key1".to_string(), "key2".to_string()];
+    /// data.set_multiple(keys, values);
+    /// ```
+    ///
     pub fn set_multiple(&self, keys: Vec<String>, values: Vec<Value>) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         for (key, value) in keys.iter().zip(values) {
@@ -122,9 +251,23 @@ impl DataStorage {
     }
 
     /// Remove the key with its corresponding value from the structure.
-    /// PRE: The DataStorage structure must be created.
-    /// POST: The key is removed and its corresponding value. In case
+    /// The DataStorage structure must be created.
+    /// At the end, the key is removed and its corresponding value. In case
     /// if the key is not in the structure, an error is thrown.
+    /// # Arguments
+    ///
+    /// * `key` - A strings that holds the name of the key to delete.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.delete_key(&"key".to_string());
+    /// ```
+    ///
     pub fn delete_key(&self, key: &str) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         match lock.remove(key) {
@@ -134,6 +277,17 @@ impl DataStorage {
     }
 
     ///Delete all the keys of the currently selected DB.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.delete_all();
+    /// ```
+    ///
     pub fn delete_all(&self) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         lock.clear();
@@ -141,12 +295,36 @@ impl DataStorage {
     }
 
     ///Return TRUE if the storage is empty or FALSE if not.
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// let empty = data.is_empty();
+    /// ```
+    ///
     pub fn is_empty(&self) -> bool {
         let lock = self.data.read().unwrap();
         lock.is_empty()
     }
 
     /// Returns OK if the key exists in the database and error otherwise.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// let exists = data.exists_key(&"key".to_string());
+    /// ```
+    ///
     pub fn exists_key(&self, key: &str) -> Result<(), &'static str> {
         let value = self.get(&key);
         match value {
@@ -156,6 +334,16 @@ impl DataStorage {
     }
 
     /// Returns the number of elements in the database.
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// let len = data.len();
+    /// ```
+    ///
     pub fn len(&self) -> Result<usize, &'static str> {
         let lock = self.data.read().ok().ok_or("Failed to lock database")?;
         let mut count = 0;
@@ -169,11 +357,35 @@ impl DataStorage {
     }
 
     /// Returns a read reference for the DataStorage structure.
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// let read_data = data.read();
+    /// ```
+    ///
     pub fn read(&self) -> RwLockReadGuard<'_, HashMap<String, Entry>> {
         self.data.read().unwrap()
     }
 
     /// Returns a copy of the value at key or none if it doesnt exist.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// let key = data.get(&"key".to_string());
+    /// ```
+    ///
     pub fn get(&self, key: &str) -> Option<Value> {
         let result = self.get_with_expiration(key);
         if let Some((_, value)) = result {
@@ -183,7 +395,21 @@ impl DataStorage {
         }
     }
 
-    /// Returns a tuple of expiration and value.
+    /// Given a key it returns a tuple of expiration and value.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// let value = data.get_with_expiration(&"key".to_string());
+    /// ```
+    ///
     pub fn get_with_expiration(&self, key: &str) -> Option<(Option<Duration>, Value)> {
         let lock = self.data.read().ok()?;
 
@@ -212,9 +438,14 @@ impl DataStorage {
         None
     }
 
-    /// Returns Ok(Some(entryF)) for a specified key
+    /// Give a key it returns Ok(Some(entryF)) for a specified key,
     /// Returns Ok(None) if the key has expired
     /// Returns Err() if theres no value for that key
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get.
+    /// * `lock` - A RwLockWriteGuard slice that holds lock to the lock to safely access the structure.
+    ///
     pub fn get_entry<'i>(
         &self,
         key: &str,
@@ -245,6 +476,22 @@ impl DataStorage {
         }
     }
 
+    ///Removes and returns the first elements of the list stored at key.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to delete the first value in the list.
+    /// * `count` - A usize slice.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// let value = data.lpop("key".to_string(), 0);
+    /// ```
+    ///
     pub fn lpop(&self, key: String, count: usize) -> Result<Vec<String>, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let mut result = Vec::new();
@@ -260,6 +507,11 @@ impl DataStorage {
     }
 
     /// Applies a function to a list and returns its resulting length
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to delete.
+    /// * `lock` - A RwLockWriteGuard slice that holds lock to the lock to safely access the structure.
+    ///
     fn do_apply_vec<F: FnMut(&mut Vec<String>)>(
         &self,
         key: String,
@@ -287,8 +539,24 @@ impl DataStorage {
             None => Ok(0),
         }
     }
-    ///Append the value at the end of the string if key already exists and is a string
-    ///If key does not exist it is created and set as an empty string.
+
+    /// Append the value at the end of the string if key already exists and is a string
+    /// If key does not exist it is created and set as an empty string.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get and append the value.
+    /// * `value` - A string to append in the current value for the given key.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// let value = data.append("key".to_string(), "new_value".to_string());
+    /// ```
+    ///
     pub fn append(&self, key: String, value: String) -> Result<usize, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let res_entry = self.get_entry(&key, &mut lock);
@@ -326,6 +594,22 @@ impl DataStorage {
         }
     }
 
+    ///Given a key returns the string value.
+    ///In case there is another type of data stored in that key, an error is returned.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// let value = data.get_string_value("key".to_string());
+    /// ```
+    ///
     pub fn get_string_value(&self, key: String) -> Result<Option<String>, &'static str> {
         let value = self.get(&key);
 
@@ -339,6 +623,26 @@ impl DataStorage {
         }
     }
 
+    /// Atomically sets key to value and returns the old value stored at key.
+    /// Returns an error when key exists but does not hold a string value.
+    /// Any previous time to live associated with the key is discarded on successful SET operation.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get and change the value.
+    /// * `new_value` - A string that holds the new value to set.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// let data = DataStorage::new();
+    /// data.getset(&"key", Value::String("hola".to_string()));
+    /// ```
+    ///
     pub fn getset(&self, key: &str, new_value: Value) -> Result<String, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let res_entry = self.get_entry(key, &mut lock);
@@ -366,7 +670,25 @@ impl DataStorage {
         }
     }
 
-    /// Renames a key and fails if it does not exist.
+    /// Renames key to newkey.
+    /// It returns an error when key does not exist.
+    /// If newkey already exists it is overwritten
+    /// when this happens RENAME executes an implicit DEL operation.
+    /// # Arguments
+    ///
+    /// * `src` - A string that holds the name of the key to get and rename.
+    /// * `Dst` - A string that holds the new name of the key to set.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.rename(&"key", &"new_key");
+    /// ```
+    ///
     pub fn rename(&self, src: &str, dst: &str) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let res_entry = self.get_entry(src, &mut lock);
@@ -390,7 +712,26 @@ impl DataStorage {
         }
     }
 
-    /// Adds a key into the db with the specified expiration date
+    /// Adds a key into the data base with the specified expiration date.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to add.
+    /// * `value` - A string that holds the value to set.
+    /// * `expiration_time_since_unix_epoch` - A Duration that holds the expiration time of the key since unix epoch.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use std::time::{SystemTime, UNIX_EPOCH};
+    /// let data = DataStorage::new();
+    /// data.add_with_expiration(&"key", Value::String("hola".to_string()), SystemTime::now().duration_since(UNIX_EPOCH).unwrap());
+    /// ```
+    ///
     pub fn add_with_expiration(
         &self,
         key: &str,
@@ -403,9 +744,27 @@ impl DataStorage {
     }
 
     /// Set an expiration to a given key.
-    /// PRE: The DataStorage structure must be created.
-    /// POST: The key has a set expiration time. In case
+    /// The DataStorage structure must be created.
+    /// At the end, the key has a set expiration time. In case
     /// if the key does not exist in the structure, an error is thrown.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to add the expiration.
+    /// * `expiration_time_since_unix_epoch` - A Duration that holds the expiration time of the key since unix epoch.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use std::time::{SystemTime, UNIX_EPOCH};
+    /// let data = DataStorage::new();
+    /// data.set_expiration_to_key(Some(SystemTime::now().duration_since(UNIX_EPOCH).unwrap()), &"key");
+    /// ```
+    ///
     pub fn set_expiration_to_key(
         &self,
         expiration_time_since_unix_epoch: Option<Duration>,
@@ -424,11 +783,38 @@ impl DataStorage {
         }
     }
 
+    /// Return TRUE if the data base contains the key or FALSE otherwise.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to add the expiration.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.contains_key("key".to_string());
+    /// ```
+    ///
     pub fn contains_key(&self, key: String) -> bool {
         let lock = self.read();
         lock.contains_key(&key)
     }
 
+    /// Get a Vector with all the keys stores in the data base.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// let keys: Vec<String> = data.get_keys();
+    /// ```
+    ///
     pub fn get_keys(&self) -> Vec<String> {
         let lock = self.read();
         let mut result = Vec::new();
@@ -439,6 +825,24 @@ impl DataStorage {
     }
 
     ///Modify last key access if the key exist or is not expired.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to modify last access.
+    /// * `last_access_since_unix_epoch` - A Duration that holds the expiration time of the key since unix epoch.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use std::time::{SystemTime, UNIX_EPOCH};
+    /// let data = DataStorage::new();
+    /// data.modify_last_key_access(&"key", SystemTime::now().duration_since(UNIX_EPOCH).unwrap());
+    /// ```
+    ///
     pub fn modify_last_key_access(
         &self,
         key: &str,
@@ -463,6 +867,25 @@ impl DataStorage {
         Err("last access not modify")
     }
 
+    /// Increments the number stored at key by increment.
+    /// If the key does not exist, it is set to 0 before performing the operation.
+    /// An error is returned if the key contains a value of the wrong type or
+    /// contains a string that can not be represented as integer.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to increment the asociated value.
+    /// * `numeric_value` - A i64 number that holds the number to add to the old value.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.increment_value("key".to_string(), 5);
+    /// ```
+    ///
     pub fn increment_value(&self, key: String, numeric_value: i64) -> Result<i64, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let value = lock.get(&key);
@@ -492,6 +915,25 @@ impl DataStorage {
         }
     }
 
+    /// Decrements the number stored at key by increment.
+    /// If the key does not exist, it is set to 0 before performing the operation.
+    /// An error is returned if the key contains a value of the wrong type or
+    /// contains a string that can not be represented as integer.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to decrement the asociated value.
+    /// * `numeric_value` - A i64 number that holds the number to subtract to the old value.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.decrement_value("key".to_string(), 5);
+    /// ```
+    ///
     pub fn decrement_value(&self, key: String, numeric_value: i64) -> Result<i64, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let value = lock.get(&key);
@@ -518,26 +960,91 @@ impl DataStorage {
     }
 
     /// Push a vector of values to the specified list by appending them to the left of the list.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to push the new values.
+    /// * `vec_values` - A Vector of Strings that holds the new values to push.
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.lpushx("key".to_string(), ["hola".to_string()].to_vec());
+    /// ```
+    ///
     pub fn lpushx(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
         self.pushx(key, vec_values, |list, element| list.insert(0, element))
     }
 
     /// Push a vector of values to the specified list by appending them to the left of the list or creating it.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to push the new values.
+    /// * `vec_values` - A Vector of Strings that holds the new values to push.
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.lpush("key".to_string(), ["hola".to_string()].to_vec());
+    /// ```
+    ///
     pub fn lpush(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
         self.push(key, vec_values, |list, element| list.insert(0, element))
     }
 
     /// Push a vector of values to the specified list by appending them to the right of the list.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to push the new values.
+    /// * `vec_values` - A Vector of Strings that holds the new values to push.
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.rpushx("key".to_string(), ["hola".to_string()].to_vec());
+    /// ```
+    ///
     pub fn rpushx(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
         self.pushx(key, vec_values, |list, element| list.push(element))
     }
 
     /// Push a vector of values to the specified list by appending them to the right of the list.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to push the new values.
+    /// * `vec_values` - A Vector of Strings that holds the new values to push.
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.rpush("key".to_string(), ["hola".to_string()].to_vec());
+    /// ```
+    ///
     pub fn rpush(&self, key: String, vec_values: Vec<String>) -> Result<usize, &'static str> {
         self.push(key, vec_values, |list, element| list.push(element))
     }
 
-    /// Pop count values from the given list
+    /// Pop count values from the given list.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to push the new values.
+    /// * `count` - A usize number containing the number of items to remove.
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// let data = DataStorage::new();
+    /// data.rpop("key".to_string(), 2);
+    /// ```
+    ///
     pub fn rpop(&self, key: String, count: usize) -> Result<Vec<String>, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let mut result = Vec::new();
@@ -552,7 +1059,7 @@ impl DataStorage {
         Ok(result)
     }
 
-    /// Push a vector of values to the specified list or create a new if it does not exist
+    /// Push a vector of values to the specified list or create a new if it does not exist.
     fn push(
         &self,
         key: String,
@@ -573,7 +1080,7 @@ impl DataStorage {
         }
     }
 
-    /// Push to the list and do nothing if it doesnt exist
+    /// Push to the list and do nothing if it doesnt exist.
     fn pushx(
         &self,
         key: String,
@@ -599,6 +1106,23 @@ impl DataStorage {
         })
     }
 
+    /// Sets the list element at index to element.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get.
+    /// * `index` - A i64 number containing the index position to set de value.
+    /// * `value` - A string that holds the value to set.
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// let data = DataStorage::new();
+    /// data.set(&"key", Value::Vec(["hola".to_string()].to_vec()));
+    /// data.lset("key".to_string(), 0, "mundo".to_string());
+    ///
     pub fn lset(&self, key: String, index: i64, value: String) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let res_entry = self.get_entry(&key, &mut lock);
@@ -635,6 +1159,27 @@ impl DataStorage {
         }
     }
 
+    /// Removes the first count occurrences of elements equal to element from the list stored at key.
+    /// The count argument influences the operation in the following ways:
+    /// count > 0: Remove elements equal to element moving from head to tail.
+    /// count < 0: Remove elements equal to element moving from tail to head.
+    /// count = 0: Remove all elements equal to element.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get.
+    /// * `index` - A i64 number containing the count argument.
+    /// * `value` - A string that holds the value to remove.
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// let data = DataStorage::new();
+    /// data.set(&"key", Value::Vec(["hola".to_string(), "hola".to_string()].to_vec()));
+    /// data.lrem("key".to_string(), 0, "hola".to_string());
+    ///
     pub fn lrem(&self, key: String, index: i64, value: String) -> Result<i64, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let res_entry = self.get_entry(&key, &mut lock);
@@ -689,6 +1234,25 @@ impl DataStorage {
         }
     }
 
+    /// Returns if the input is a member of the set stored at key.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get.
+    /// * `input_val` - A String that holds the member to check.
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use std::collections::HashSet;
+    /// let data = DataStorage::new();
+    /// let mut set = HashSet::new();
+    /// set.insert("hola".to_string());
+    /// data.set(&"key", Value::HashSet(set));
+    /// data.sismember("key".to_string(), "hola".to_string());
+    ///
     pub fn sismember(&self, key: String, input_val: String) -> Result<i64, &'static str> {
         let value = self.get(&key);
         match value {
@@ -707,6 +1271,28 @@ impl DataStorage {
         }
     }
 
+    /// Remove the specified members from the set stored at key.
+    /// Specified members that are not a member of this set are ignored.
+    /// If key does not exist, it is treated as an empty set and this command returns 0.
+    /// An error is returned when the value stored at key is not a set.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get.
+    /// * `values` - A String that holds the members to remove.
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use std::collections::HashSet;
+    /// let data = DataStorage::new();
+    /// let mut set = HashSet::new();
+    /// set.insert("hola".to_string());
+    /// data.set(&"key", Value::HashSet(set));
+    /// data.srem("key".to_string(), vec!["hola".to_string()]);
+    ///
     pub fn srem(&self, key: String, values: Vec<String>) -> Result<i64, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let res_entry = self.get_entry(&key, &mut lock);
@@ -732,6 +1318,28 @@ impl DataStorage {
         }
     }
 
+    /// Add the specified members to the set stored at key.
+    /// Specified members that are already a member of this set are ignored.
+    /// If key does not exist, a new set is created before adding the specified members.
+    /// An error is returned when the value stored at key is not a set.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get.
+    /// * `values` - A String that holds the members to add.
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use std::collections::HashSet;
+    /// let data = DataStorage::new();
+    /// let mut set = HashSet::new();
+    /// set.insert("hola".to_string());
+    /// data.set(&"key", Value::HashSet(set));
+    /// data.sadd("key".to_string(), vec!["mundo".to_string()]);
+    ///
     pub fn sadd(&self, key: String, values: Vec<String>) -> Result<i64, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
         let res_entry = self.get_entry(&key, &mut lock);
@@ -773,6 +1381,24 @@ impl DataStorage {
         }
     }
 
+    /// Returns all the members of the set value stored at key.
+    /// # Arguments
+    ///
+    /// * `key` - A string that holds the name of the key to get.
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use proyecto_taller_1::storage::data_storage::Value::String;
+    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use std::collections::HashSet;
+    /// let data = DataStorage::new();
+    /// let mut set = HashSet::new();
+    /// set.insert("hola".to_string());
+    /// data.set(&"key", Value::HashSet(set));
+    /// let members = data.smember("key".to_string());
+    ///
     pub fn smember(&self, key: String) -> Result<Vec<String>, &'static str> {
         let value = self.get(&key);
         match value {
