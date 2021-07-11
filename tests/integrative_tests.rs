@@ -40,7 +40,7 @@ fn test_2() {
 
     let val1: i64 = common::query_string(&client, "SADD first_key test asd");
     let val2: i64 = common::query_string(&client, "SCARD first_key");
-    // let val3: i64 = common::query_string(&client, "EXPIRE first_key 100");
+    let val3: i64 = common::query_string(&client, "EXPIRE first_key 100");
     let val4: i64 = common::query_string(&client, "TTL first_key");
     let val5: String = common::query_string(&client, "RENAME first_key second_key");
     let val8: Vec<String> = common::query_string(&client, "SMEMBERS second_key");
@@ -52,10 +52,10 @@ fn test_2() {
 
     assert_eq!(val1, 2);
     assert_eq!(val2, 2);
-    // assert_eq!(val3, 1);
-    // assert_eq!(val4, 100);
+    assert_eq!(val3, 1);
+    assert_eq!(val4, 100);
     assert_eq!(val5, "OK");
-    assert_eq!(val8, ["test", "asd"]);
+    assert!(val8 == ["test", "asd"] || val8 == ["asd", "test"]);
     assert_eq!(val9, 1);
     assert_eq!(val10, 1);
     assert_eq!(val11, 2);
