@@ -11,6 +11,23 @@ static STRING: &str = "|STRING|";
 
 /// Given a file and a data structure get the information from the file
 /// and stores it in the structure, respecting the contained data types.
+/// # Arguments
+///
+/// * `file` - A String slice that holds the name of the file to parse.
+/// * `data` - A HashMap<String, Entry> where the data obtained from the file will be saved.
+///
+/// # Example
+///
+/// Basic usage:
+///
+/// ```
+/// use proyecto_taller_1::storage::parser;
+/// use proyecto_taller_1::storage::entry::Entry;
+/// use std::collections::HashMap;
+/// let mut set: HashMap<String, Entry> = HashMap::new();
+/// parser::parse_data(&"data_file.txt", &mut set);
+/// ```
+///
 pub fn parse_data(file: &str, data: &mut HashMap<String, Entry>) -> Result<(), &'static str> {
     match file_reader::read_lines(file) {
         Ok(lines) => {
@@ -36,6 +53,23 @@ pub fn parse_data(file: &str, data: &mut HashMap<String, Entry>) -> Result<(), &
 
 /// Given a file and a data structure take the information of the structure
 /// and stores it in the file, respecting the predefined storage structure.
+/// # Arguments
+///
+/// * `file` - A String slice that holds the name of the file to save the data.
+/// * `data` - A HashMap<String, Entry> from where the data will be taken to store.
+///
+/// # Example
+///
+/// Basic usage:
+///
+/// ```
+/// use proyecto_taller_1::storage::parser;
+/// use proyecto_taller_1::storage::entry::Entry;
+/// use std::collections::HashMap;
+/// let mut set: HashMap<String, Entry> = HashMap::new();
+/// parser::store_data(&"data_file.txt", &mut set);
+/// ```
+///
 pub fn store_data(file: &str, data: &HashMap<String, Entry>) {
     for (key, entry) in &*data {
         match entry.value() {
