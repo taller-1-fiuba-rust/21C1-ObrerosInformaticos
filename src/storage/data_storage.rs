@@ -292,14 +292,18 @@ impl DataStorage {
         match res_entry.unwrap() {
             Some(entry) => match entry.value() {
                 Ok(val) => match val {
-                    Value::String(_) => Ok(0),
+                    Value::String(_) => {
+                        Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                    }
                     Value::Vec(mut v) => {
                         apply(&mut v);
                         let len = v.len();
                         entry.update_value(Value::Vec(v))?;
                         Ok(len)
                     }
-                    Value::HashSet(_) => Ok(0),
+                    Value::HashSet(_) => {
+                        Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                    }
                 },
                 Err(_) => Ok(0),
             },
