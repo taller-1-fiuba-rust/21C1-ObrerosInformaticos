@@ -13,6 +13,7 @@ use std::time::Duration;
 use std::time::SystemTime;
 
 #[allow(dead_code)]
+/// A server struct
 pub struct Server {
     addr: String,
     handle: Option<JoinHandle<()>>,
@@ -42,6 +43,7 @@ impl Server {
         }
     }
 
+    /// Run the redis server
     pub fn run(&mut self) {
         let dbfile = self.config.lock().unwrap().get_dbfilename().clone();
         let result = self.data.load_data(&dbfile);
@@ -84,10 +86,12 @@ impl Server {
         self.handle_store_data = Some(handle_store_data);
     }
 
+    /// Returns the joined address and port
     fn get_addr_and_port(&self) -> String {
         self.addr.clone() + ":" + &self.config.lock().unwrap().get_port().to_string()
     }
 
+    /// Checks if the server is running, if so it updates it's internal running state.
     #[allow(dead_code)]
     pub fn poll_running(&mut self) -> bool {
         if let Some(receiver) = &self.receiver {
@@ -98,6 +102,7 @@ impl Server {
         self.is_running
     }
 
+    /// Waits for the server to finish executing
     pub fn join(&mut self) {
         if self.handle.is_none() || self.handle_store_data.is_none() {
             panic!("Server was joined before ran.");
@@ -106,6 +111,7 @@ impl Server {
         self.handle.take().unwrap().join().unwrap();
     }
 
+    /// Stops listening for new connections
     pub fn shutdown(&mut self) {
         if let Some(sender) = &self.sender {
             match sender.send(()) {

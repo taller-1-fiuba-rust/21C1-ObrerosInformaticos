@@ -127,6 +127,18 @@ impl DataStorage {
     /// if the key is not in the structure, an error is thrown.
     pub fn delete_key(&self, key: &str) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        self.do_delete_key(&mut lock, key)
+    }
+
+    /// Remove the key with its corresponding value from the structure.
+    /// PRE: The DataStorage structure must be created.
+    /// POST: The key is removed and its corresponding value. In case
+    /// if the key is not in the structure, an error is thrown.
+    fn do_delete_key<'i>(
+        &self,
+        lock: &'i mut RwLockWriteGuard<HashMap<String, Entry>>,
+        key: &str,
+    ) -> Result<(), &'static str> {
         match lock.remove(key) {
             Some(_a) => Ok(()),
             None => Err("Not key in HashMap"),
@@ -221,24 +233,31 @@ impl DataStorage {
         lock: &'i mut RwLockWriteGuard<HashMap<String, Entry>>,
     ) -> Result<Option<&'i mut Entry>, &'static str> {
         if lock.contains_key(key) {
-            let entry: &mut Entry = lock.get_mut(key).unwrap();
+            let entry: &Entry = lock.get(key).unwrap();
             let key_exp = entry.key_expiration();
 
-            match key_exp {
+            let res = match key_exp {
                 Ok(expiration) => match expiration {
                     Some(exp) => {
                         let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
                         if exp > now {
-                            self.modify_last_key_access(&key, now).unwrap();
-                            Ok(Some(entry))
+                            self.do_modify_last_key_access(lock, &key, now).unwrap();
+                            Ok(Some(()))
                         } else {
-                            self.delete_key(key)?;
+                            self.do_delete_key(lock, key)?;
                             Ok(None)
                         }
                     }
-                    None => Ok(Some(entry)),
+                    None => Ok(Some(())),
                 },
                 Err(_) => Err("No value for that key"),
+            };
+            match res {
+                Ok(v) => match v {
+                    Some(_) => Ok(Some(lock.get_mut(key).unwrap())),
+                    None => Ok(None),
+                },
+                Err(e) => Err(e),
             }
         } else {
             Err("No value for that key")
@@ -438,13 +457,23 @@ impl DataStorage {
         result
     }
 
-    ///Modify last key access if the key exist or is not expired.
+    ///Lock and do modify last key access if the key exist or is not expired.
     pub fn modify_last_key_access(
         &self,
         key: &str,
         last_access_since_unix_epoch: Duration,
     ) -> Result<Duration, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        self.do_modify_last_key_access(&mut lock, key, last_access_since_unix_epoch)
+    }
+
+    ///Do modify last key access if the key exist or is not expired.
+    fn do_modify_last_key_access<'i>(
+        &self,
+        lock: &'i mut RwLockWriteGuard<HashMap<String, Entry>>,
+        key: &str,
+        last_access_since_unix_epoch: Duration,
+    ) -> Result<Duration, &'static str> {
         let copy_key = key.to_string();
 
         if lock.contains_key(&copy_key) {

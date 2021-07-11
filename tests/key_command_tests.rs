@@ -6,11 +6,11 @@ fn test_del() {
     let _: () = common::query_string(&client, "SET first_key test_del");
     let _: () = common::query_string(&client, "SET second_key test");
     let result: i32 = common::query_string(&client, "DEL first_key second_key");
-    let val_1: String = common::query_string(&client, "GET first_key");
-    let val_2: String = common::query_string(&client, "GET second_key");
+    let val_1: Option<String> = common::query_string(&client, "GET first_key");
+    let val_2: Option<String> = common::query_string(&client, "GET second_key");
     assert_eq!(result, 2);
-    assert_eq!(val_1, "(nil)");
-    assert_eq!(val_2, "(nil)");
+    assert!(val_1.is_none());
+    assert!(val_2.is_none());
 }
 
 #[test]
@@ -53,7 +53,7 @@ fn test_persist() {
 }
 
 #[test]
-fn test_keys() {
+fn test_keys_all() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET first_key test");
     let result: Vec<String> = common::query_string(&client, "KEYS *");
@@ -68,6 +68,42 @@ fn test_copy() {
     let val: String = common::query_string(&client, "GET clone");
     assert_eq!(result, 1);
     assert_eq!(val, "hola");
+}
+
+#[test]
+fn test_rename() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "SET my_key hola");
+    let result: String = common::query_string(&client, "RENAME my_key my_key2");
+    let val1: Option<String> = common::query_string(&client, "GET my_key");
+    let val2: String = common::query_string(&client, "GET my_key2");
+
+    assert_eq!(result, "OK");
+    assert!(val1.is_none());
+    assert_eq!(val2, "hola");
+}
+
+#[test]
+fn test_rename_with_exp() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "SET my_key hola");
+    let _: () = common::query_string(&client, "EXPIRE my_key 100");
+    let result: String = common::query_string(&client, "RENAME my_key my_key2");
+    let val1: i32 = common::query_string(&client, "TTL my_key2");
+    let val2: String = common::query_string(&client, "GET my_key2");
+
+    assert_eq!(result, "OK");
+    assert!(val1 > 50);
+    assert_eq!(val2, "hola");
+}
+
+#[test]
+fn test_keys2() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "MSET age 1 ate 1 ame 1 key 1 fisura 1");
+    let mut result: Vec<String> = common::query_string(&client, "KEYS a?e");
+    result.sort();
+    assert_eq!(result, vec!["age", "ame", "ate"]);
 }
 
 #[test]
