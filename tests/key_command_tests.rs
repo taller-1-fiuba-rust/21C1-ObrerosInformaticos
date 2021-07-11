@@ -83,7 +83,6 @@ fn test_rename() {
     assert_eq!(val2, "hola");
 }
 
-
 #[test]
 fn test_rename_with_exp() {
     let (_server, client) = common::setup();
