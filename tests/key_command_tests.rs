@@ -6,11 +6,11 @@ fn test_del() {
     let _: () = common::query_string(&client, "SET first_key test_del");
     let _: () = common::query_string(&client, "SET second_key test");
     let result: i32 = common::query_string(&client, "DEL first_key second_key");
-    let val_1: String = common::query_string(&client, "GET first_key");
-    let val_2: String = common::query_string(&client, "GET second_key");
+    let val_1: Option<String> = common::query_string(&client, "GET first_key");
+    let val_2: Option<String> = common::query_string(&client, "GET second_key");
     assert_eq!(result, 2);
-    assert_eq!(val_1, "(nil)");
-    assert_eq!(val_2, "(nil)");
+    assert!(val_1.is_none());
+    assert!(val_2.is_none());
 }
 
 #[test]
