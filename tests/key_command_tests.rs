@@ -53,7 +53,7 @@ fn test_persist() {
 }
 
 #[test]
-fn test_keys() {
+fn test_keys_all() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET first_key test");
     let result: Vec<String> = common::query_string(&client, "KEYS *");
@@ -83,18 +83,23 @@ fn test_rename() {
     assert_eq!(val2, "hola");
 }
 
+
 #[test]
-fn test_persist() {
+fn test_rename_with_exp() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET my_key hola");
-    let result: i32 = common::query_string(&client, "EXPIRE my_key 100");
-    let val1: i64 = common::query_string(&client, "PERSIST my_key");
-    assert_eq!(result, 1);
-    assert_eq!(val1, 1);
+    let _: () = common::query_string(&client, "EXPIRE my_key 100");
+    let result: String = common::query_string(&client, "RENAME my_key my_key2");
+    let val1: i32 = common::query_string(&client, "TTL my_key2");
+    let val2: String = common::query_string(&client, "GET my_key2");
+
+    assert_eq!(result, "OK");
+    assert!(val1 > 50);
+    assert_eq!(val2, "hola");
 }
 
 #[test]
-fn test_keys() {
+fn test_keys2() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "MSET age 1 ate 1 ame 1 key 1 fisura 1");
     let mut result: Vec<String> = common::query_string(&client, "KEYS a?e");

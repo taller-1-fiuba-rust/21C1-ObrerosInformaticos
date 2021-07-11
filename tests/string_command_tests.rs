@@ -80,15 +80,6 @@ fn test_set() {
 }
 
 #[test]
-fn test_strlen() {
-    let (_server, client) = common::setup();
-    let result: String = common::query_string(&client, "SET my_key asd");
-    let val: i32 = common::query_string(&client, "STRLEN my_key");
-    assert_eq!(result, "OK");
-    assert_eq!(val, 3);
-}
-
-#[test]
 fn test_set_get() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET my_key 42");
