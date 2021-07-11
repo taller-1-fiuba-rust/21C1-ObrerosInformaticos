@@ -1,7 +1,43 @@
 mod common;
 
 #[test]
+fn test_lrem() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "LPUSH my_key 1");
+    let _: () = common::query_string(&client, "LPUSH my_key 1");
+    let _: () = common::query_string(&client, "LPUSH my_key 2");
+    let _: () = common::query_string(&client, "LPUSH my_key 1");
+    let val: i32 = common::query_string(&client, "LREM my_key -2 1");
+    assert_eq!(val, 2);
+    let result: i64 = common::query_string(&client, "LLEN my_key");
+    assert_eq!(result, 2);
+    let first: i32 = common::query_string(&client, "LINDEX my_key 0");
+    let second: i32 = common::query_string(&client, "LINDEX my_key 1");
+    assert_eq!(first, 1);
+    assert_eq!(second, 2);
+}
+
+#[test]
 fn test_rpush() {
+    let (_server, client) = common::setup();
+    let c1: i32 = common::query_string(&client, "RPUSH my_key 1 2 3");
+    let val: i32 = common::query_string(&client, "LINDEX my_key 2");
+    assert_eq!(c1, 3);
+    assert_eq!(val, 3);
+}
+
+#[test]
+fn test_lset() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "RPUSH my_key 1 2 3");
+    let c1: String = common::query_string(&client, "LSET my_key 1 hola");
+    let val: String = common::query_string(&client, "LINDEX my_key 1");
+    assert_eq!(c1, "OK");
+    assert_eq!(val, "hola");
+}
+
+#[test]
+fn test_lindex() {
     let (_server, client) = common::setup();
     let c: i32 = common::query_string(&client, "RPUSH my_key 1 2 3");
     let val1: String = common::query_string(&client, "LINDEX my_key 0");
