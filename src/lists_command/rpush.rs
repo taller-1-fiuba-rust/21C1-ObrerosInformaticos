@@ -3,6 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
+/// Insert all the specified values at the tail of the list stored at key. If key does not exist, it is created as empty list before performing the push operation.
 pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,

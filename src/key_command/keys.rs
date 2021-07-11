@@ -4,6 +4,7 @@ use crate::storage::data_storage::DataStorage;
 use regex::Regex;
 use std::sync::Arc;
 
+/// Returns all keys matching pattern.
 pub fn run(
     db: Arc<DataStorage>,
     arguments: Vec<ProtocolType>,

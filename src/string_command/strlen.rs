@@ -3,6 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::{DataStorage, Value};
 use std::sync::Arc;
 
+/// Returns the length of the string value stored at key. An error is returned when key holds a non-string value.
 pub fn run(
     db: Arc<DataStorage>,
     arguments: Vec<ProtocolType>,

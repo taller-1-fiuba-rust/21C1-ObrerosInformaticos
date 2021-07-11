@@ -4,6 +4,8 @@ use crate::storage::data_storage::{DataStorage, Value};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
+/// Set key to hold the string value. If key already holds a value, it is overwritten, regardless of its type.
+/// Any previous time to live associated with the key is discarded on successful SET operation.
 pub fn run(
     db: Arc<DataStorage>,
     arguments: Vec<ProtocolType>,
