@@ -3,7 +3,9 @@ use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
-use crate::lists_command::{lindex, llen, lpop, lpush, lpushx, lrem, lset, rpop, rpush, rpushx};
+use crate::lists_command::{
+    lindex, llen, lpop, lpush, lpushx, lrange, lrem, lset, rpop, rpush, rpushx,
+};
 use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
@@ -110,6 +112,7 @@ impl Execution {
             "srem" => srem::run(builder, cmd.arguments(), self.data.clone()),
             "scard" => scard::run(builder, cmd.arguments(), self.data.clone()),
             "sadd" => sadd::run(builder, cmd.arguments(), self.data.clone()),
+            "lrange" => lrange::run(builder, cmd.arguments(), self.data.clone()),
             _ => Err("Unknown command."),
         }
     }

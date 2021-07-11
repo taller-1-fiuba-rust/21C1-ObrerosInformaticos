@@ -51,6 +51,25 @@ fn test_lindex() {
     assert!(val4.is_none());
 }
 
+fn vec_compare(va: &Vec<String>, vb: &Vec<String>) -> bool {
+    (va.len() == vb.len()) && va.iter().zip(vb).all(|(a, b)| (a == b))
+}
+
+#[test]
+fn test_lrange() {
+    let (_server, client) = common::setup();
+    let (): _ = common::query_string(&client, "RPUSH my_key 1 2 3");
+    let val1: Vec<String> = common::query_string(&client, "LRANGE my_key 0 2");
+    let val2: Vec<String> = common::query_string(&client, "LRANGE my_key 1 -2");
+    let val3: Vec<String> = common::query_string(&client, "LRANGE my_key -2 3");
+    assert!(vec_compare(
+        &val1,
+        &vec!["1".to_string(), "2".to_string(), "3".to_string()]
+    ));
+    assert!(vec_compare(&val2, &vec!["2".to_string()]));
+    assert!(vec_compare(&val3, &vec!["2".to_string(), "3".to_string()]));
+}
+
 #[test]
 fn test_rpushx_no_list() {
     let (_server, client) = common::setup();
