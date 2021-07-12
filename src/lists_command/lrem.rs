@@ -3,6 +3,11 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
+/// Removes the first count occurrences of elements equal to element from the list stored at key. 
+/// The count argument influences the operation in the following ways:
+/// count > 0: Remove elements equal to element moving from head to tail.
+/// count < 0: Remove elements equal to element moving from tail to head.
+/// count = 0: Remove all elements equal to element.
 pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,

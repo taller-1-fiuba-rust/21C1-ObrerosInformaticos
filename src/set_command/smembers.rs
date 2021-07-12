@@ -3,6 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
+/// Returns all the members of the set value stored at key.
 pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,

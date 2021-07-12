@@ -3,6 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
+///Removes the specified keys. A key is ignored if it does not exist.
 pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,

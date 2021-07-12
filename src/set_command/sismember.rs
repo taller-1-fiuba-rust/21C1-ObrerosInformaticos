@@ -3,6 +3,9 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
+/// Returns if member is a member of the set stored at key.
+/// 1 if the element is a member of the set.
+/// 0 if the element is not a member of the set, or if key does not exist.
 pub fn run(
     builder: &mut ResponseBuilder,
     arguments: Vec<ProtocolType>,

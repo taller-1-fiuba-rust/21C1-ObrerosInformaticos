@@ -5,9 +5,9 @@ use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-///Dada una clave y un valor setea el valor como expiracion
-///de la clave. Si el valor es negativo se elimina la clave de
-///la estructura de datos.
+/// Given a key and a value, set the value as expiration
+/// of the key. If the value is negative, the key of
+/// the data structure.
 pub fn run(
     builder: &mut ResponseBuilder,
     cmd: &Command,

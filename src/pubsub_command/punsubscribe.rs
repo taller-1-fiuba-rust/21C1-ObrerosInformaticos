@@ -5,6 +5,7 @@ use crate::pubsub::PublisherSubscriber;
 use crate::client::Client;
 use std::sync::Arc;
 
+///Unsubscribes the client from the given patterns, or from all of them if none is given.
 pub fn run(
     pubsub: Arc<PublisherSubscriber>,
     client: Arc<Client>,
