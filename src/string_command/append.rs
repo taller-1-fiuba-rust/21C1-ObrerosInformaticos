@@ -3,8 +3,8 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
-/// If key already exists and is a string, this command appends the 
-/// value at the end of the string. If key does not exist it is 
+/// If key already exists and is a string, this command appends the
+/// value at the end of the string. If key does not exist it is
 /// created and set as an empty string
 pub fn run(
     arguments: Vec<ProtocolType>,

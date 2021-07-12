@@ -3,7 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
-/// Get the value of key. If the key does not exist the special value nil is returned. 
+/// Get the value of key. If the key does not exist the special value nil is returned.
 /// An error is returned if the value stored at key is not a string,
 pub fn run(
     arguments: Vec<ProtocolType>,
