@@ -53,7 +53,8 @@ fn test_2() {
     assert_eq!(val1, 2);
     assert_eq!(val2, 2);
     assert_eq!(val3, 1);
-    assert_eq!(val4, 100);
+    assert!(val4 <= 100);
+    assert!(val4 > 80);
     assert_eq!(val5, "OK");
     assert!(val8 == ["test", "asd"] || val8 == ["asd", "test"]);
     assert_eq!(val9, 1);
@@ -101,4 +102,42 @@ fn test_3() {
     assert_eq!(val15, 1);
     assert_eq!(val18, 9);
     assert_eq!(val17, ["2", "5", "5", "6", "7"]);
+}
+
+#[test]
+fn test_4() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "MSET key1 10 key2 val2 key3 4");
+
+    let increment_val: i64 = common::query_string(&client, "INCRBY key1 2");
+    assert_eq!(increment_val, 12);
+
+    let decrement_val: i64 = common::query_string(&client, "DECRBY key1 10");
+    assert_eq!(decrement_val, 2);
+
+    let append_val: i64 = common::query_string(&client, "APPEND key2 _add");
+    assert_eq!(append_val, 8);
+    let append_val: i64 = common::query_string(&client, "APPEND key2 _add");
+    assert_eq!(append_val, 12);
+
+    let del_value: String = common::query_string(&client, "GETDEL key2");
+    assert_eq!(del_value, "val2_add_add".to_string());
+
+    let not_value: () = common::query_string(&client, "GET key2");
+    assert_eq!(not_value, ());
+}
+
+#[test]
+fn test_5() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "LPUSH key1 1 2 3 4 5");
+
+    let lrange_val: Vec<String> = common::query_string(&client, "LRANGE key1 -5 4");
+    assert_eq!(lrange_val, ["5", "4", "3", "2", "1"]);
+
+    let lrange_val: Vec<String> = common::query_string(&client, "LRANGE key1 1 -3");
+    assert_eq!(lrange_val, ["4", "3"]);
+
+    let lrange_val: Vec<String> = common::query_string(&client, "LRANGE key1 1 4");
+    assert_eq!(lrange_val, ["4", "3", "2", "1"]);
 }
