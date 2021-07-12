@@ -1,7 +1,43 @@
 mod common;
 
 #[test]
+fn test_lrem() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "LPUSH my_key 1");
+    let _: () = common::query_string(&client, "LPUSH my_key 1");
+    let _: () = common::query_string(&client, "LPUSH my_key 2");
+    let _: () = common::query_string(&client, "LPUSH my_key 1");
+    let val: i32 = common::query_string(&client, "LREM my_key -2 1");
+    assert_eq!(val, 2);
+    let result: i64 = common::query_string(&client, "LLEN my_key");
+    assert_eq!(result, 2);
+    let first: i32 = common::query_string(&client, "LINDEX my_key 0");
+    let second: i32 = common::query_string(&client, "LINDEX my_key 1");
+    assert_eq!(first, 1);
+    assert_eq!(second, 2);
+}
+
+#[test]
 fn test_rpush() {
+    let (_server, client) = common::setup();
+    let c1: i32 = common::query_string(&client, "RPUSH my_key 1 2 3");
+    let val: i32 = common::query_string(&client, "LINDEX my_key 2");
+    assert_eq!(c1, 3);
+    assert_eq!(val, 3);
+}
+
+#[test]
+fn test_lset() {
+    let (_server, client) = common::setup();
+    let _: () = common::query_string(&client, "RPUSH my_key 1 2 3");
+    let c1: String = common::query_string(&client, "LSET my_key 1 hola");
+    let val: String = common::query_string(&client, "LINDEX my_key 1");
+    assert_eq!(c1, "OK");
+    assert_eq!(val, "hola");
+}
+
+#[test]
+fn test_lindex() {
     let (_server, client) = common::setup();
     let c: i32 = common::query_string(&client, "RPUSH my_key 1 2 3");
     let val1: String = common::query_string(&client, "LINDEX my_key 0");
@@ -13,6 +49,25 @@ fn test_rpush() {
     assert_eq!(val2, "2");
     assert_eq!(val3, "3");
     assert!(val4.is_none());
+}
+
+fn vec_compare(va: &Vec<String>, vb: &Vec<String>) -> bool {
+    (va.len() == vb.len()) && va.iter().zip(vb).all(|(a, b)| (a == b))
+}
+
+#[test]
+fn test_lrange() {
+    let (_server, client) = common::setup();
+    let (): _ = common::query_string(&client, "RPUSH my_key 1 2 3");
+    let val1: Vec<String> = common::query_string(&client, "LRANGE my_key 0 2");
+    let val2: Vec<String> = common::query_string(&client, "LRANGE my_key 1 -2");
+    let val3: Vec<String> = common::query_string(&client, "LRANGE my_key -2 3");
+    assert!(vec_compare(
+        &val1,
+        &vec!["1".to_string(), "2".to_string(), "3".to_string()]
+    ));
+    assert!(vec_compare(&val2, &vec!["2".to_string()]));
+    assert!(vec_compare(&val3, &vec!["2".to_string(), "3".to_string()]));
 }
 
 #[test]

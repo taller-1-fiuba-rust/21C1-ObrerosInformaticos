@@ -270,6 +270,18 @@ impl DataStorage {
     ///
     pub fn delete_key(&self, key: &str) -> Result<(), &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        self.do_delete_key(&mut lock, key)
+    }
+
+    /// Remove the key with its corresponding value from the structure.
+    /// PRE: The DataStorage structure must be created.
+    /// POST: The key is removed and its corresponding value. In case
+    /// if the key is not in the structure, an error is thrown.
+    fn do_delete_key<'i>(
+        &self,
+        lock: &'i mut RwLockWriteGuard<HashMap<String, Entry>>,
+        key: &str,
+    ) -> Result<(), &'static str> {
         match lock.remove(key) {
             Some(_a) => Ok(()),
             None => Err("Not key in HashMap"),
@@ -452,24 +464,31 @@ impl DataStorage {
         lock: &'i mut RwLockWriteGuard<HashMap<String, Entry>>,
     ) -> Result<Option<&'i mut Entry>, &'static str> {
         if lock.contains_key(key) {
-            let entry: &mut Entry = lock.get_mut(key).unwrap();
+            let entry: &Entry = lock.get(key).unwrap();
             let key_exp = entry.key_expiration();
 
-            match key_exp {
+            let res = match key_exp {
                 Ok(expiration) => match expiration {
                     Some(exp) => {
                         let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
                         if exp > now {
-                            self.modify_last_key_access(&key, now).unwrap();
-                            Ok(Some(entry))
+                            self.do_modify_last_key_access(lock, &key, now).unwrap();
+                            Ok(Some(()))
                         } else {
-                            self.delete_key(key)?;
+                            self.do_delete_key(lock, key)?;
                             Ok(None)
                         }
                     }
-                    None => Ok(Some(entry)),
+                    None => Ok(Some(())),
                 },
                 Err(_) => Err("No value for that key"),
+            };
+            match res {
+                Ok(v) => match v {
+                    Some(_) => Ok(Some(lock.get_mut(key).unwrap())),
+                    None => Ok(None),
+                },
+                Err(e) => Err(e),
             }
         } else {
             Err("No value for that key")
@@ -525,14 +544,18 @@ impl DataStorage {
         match res_entry.unwrap() {
             Some(entry) => match entry.value() {
                 Ok(val) => match val {
-                    Value::String(_) => Ok(0),
+                    Value::String(_) => {
+                        Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                    }
                     Value::Vec(mut v) => {
                         apply(&mut v);
                         let len = v.len();
                         entry.update_value(Value::Vec(v))?;
                         Ok(len)
                     }
-                    Value::HashSet(_) => Ok(0),
+                    Value::HashSet(_) => {
+                        Err("WRONGTYPE Operation against a key holding the wrong kind of value")
+                    }
                 },
                 Err(_) => Ok(0),
             },
@@ -847,18 +870,35 @@ impl DataStorage {
         &self,
         key: &str,
         last_access_since_unix_epoch: Duration,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Duration, &'static str> {
         let mut lock = self.data.write().ok().ok_or("Failed to lock database")?;
+        self.do_modify_last_key_access(&mut lock, key, last_access_since_unix_epoch)
+    }
+
+    ///Do modify last key access if the key exist or is not expired.
+    fn do_modify_last_key_access<'i>(
+        &self,
+        lock: &'i mut RwLockWriteGuard<HashMap<String, Entry>>,
+        key: &str,
+        last_access_since_unix_epoch: Duration,
+    ) -> Result<Duration, &'static str> {
         let copy_key = key.to_string();
 
         if lock.contains_key(&copy_key) {
+            let previous_last_access = lock.get_mut(&copy_key).unwrap().last_access();
             let result = lock
                 .get_mut(&copy_key)
                 .unwrap()
                 .set_last_access(last_access_since_unix_epoch);
-            match result {
-                Ok(_s) => return Ok(()),
-                Err(_s) => {
+            match previous_last_access {
+                Ok(l_a) => match result {
+                    Ok(_s) => return Ok(l_a),
+                    Err(_s) => {
+                        self.delete_key(&key)?;
+                        return Err("last access not modify not existing key");
+                    }
+                },
+                Err(_) => {
                     self.delete_key(&key)?;
                     return Err("last access not modify not existing key");
                 }
@@ -1413,6 +1453,112 @@ impl DataStorage {
             None => Ok([].to_vec()),
         }
     }
+
+    pub fn lrange(
+        &self,
+        key: String,
+        first_index: i64,
+        second_index: i64,
+    ) -> Result<Option<Vec<String>>, &'static str> {
+        let value = self.get(&key);
+
+        match value {
+            Some(val) => match val {
+                Value::String(_) => Err("Not list value to that key"),
+                Value::Vec(vector) => {
+                    let mut result: Option<Vec<String>> = None;
+                    if first_index >= 0 && second_index >= 0 {
+                        result = get_vector_positive_index(
+                            vector,
+                            first_index as usize,
+                            second_index as usize,
+                        )
+                    } else if first_index < 0 && second_index > 0 {
+                        result =
+                            get_vector_start_negative(vector, first_index, second_index as usize)
+                    } else if first_index > 0 && second_index < 0 {
+                        result =
+                            get_vector_stop_negative(vector, first_index as usize, second_index)
+                    } else if first_index < 0 && second_index < 0 {
+                        result = get_vector_negative_index(vector, first_index, second_index)
+                    };
+                    Ok(result)
+                }
+                Value::HashSet(_) => Err("Not list value to that key"),
+            },
+            None => Err("Not value to that key"),
+        }
+    }
+}
+
+fn get_vector_negative_index(
+    vector: Vec<String>,
+    mut start: i64,
+    mut stop: i64,
+) -> Option<Vec<String>> {
+    if start > vector.len() as i64 {
+        start = -(vector.len() as i64);
+    };
+    if stop > vector.len() as i64 {
+        stop = -(vector.len() as i64);
+    };
+
+    let new_start = (vector.len() as i64) + start;
+    let new_stop = (vector.len() as i64) + stop;
+    if new_start > new_stop {
+        get_vector_positive_index(vector, new_stop as usize, new_start as usize)
+    } else {
+        get_vector_positive_index(vector, new_start as usize, new_stop as usize)
+    }
+}
+
+fn get_vector_stop_negative(
+    vector: Vec<String>,
+    start: usize,
+    mut stop: i64,
+) -> Option<Vec<String>> {
+    if stop > vector.len() as i64 {
+        stop = -(vector.len() as i64);
+    };
+
+    let new_stop = (vector.len() as i64) + stop;
+    if start as i64 > new_stop {
+        get_vector_positive_index(vector, new_stop as usize, start)
+    } else {
+        get_vector_positive_index(vector, start, new_stop as usize)
+    }
+}
+
+fn get_vector_start_negative(
+    vector: Vec<String>,
+    mut start: i64,
+    stop: usize,
+) -> Option<Vec<String>> {
+    if start > vector.len() as i64 {
+        start = -(vector.len() as i64);
+    };
+
+    let new_start = (vector.len() as i64) + start;
+    get_vector_positive_index(vector, new_start as usize, stop)
+}
+
+fn get_vector_positive_index(
+    vector: Vec<String>,
+    start: usize,
+    mut stop: usize,
+) -> Option<Vec<String>> {
+    if start > vector.len() {
+        return None;
+    };
+    if stop >= vector.len() {
+        stop = vector.len() - 1;
+    };
+
+    let mut result: Vec<String> = vec![];
+    for i in vector.iter().take(stop + 1).skip(start) {
+        result.push(i.to_string());
+    }
+    Some(result)
 }
 
 fn delete_last_values(

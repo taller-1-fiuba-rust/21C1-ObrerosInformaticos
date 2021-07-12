@@ -23,7 +23,7 @@ pub fn run(
                 Ok(())
             }
             None => {
-                builder.add(ProtocolType::String("(nil)".to_string()));
+                builder.add(ProtocolType::Nil());
                 Ok(())
             }
         },
@@ -65,6 +65,6 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(builder.serialize(), "$5\r\n(nil)\r\n");
+        assert_eq!(builder.serialize(), "$-1\r\n");
     }
 }

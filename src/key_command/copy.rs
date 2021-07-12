@@ -3,6 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
+/// This command copies the value stored at the source key to the destination key.
 pub fn run(
     db: Arc<DataStorage>,
     arguments: Vec<ProtocolType>,

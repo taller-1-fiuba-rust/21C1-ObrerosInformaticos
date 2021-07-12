@@ -3,6 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::{DataStorage, Value};
 use std::sync::Arc;
 
+/// Sets the given keys to their respective values. MSET replaces existing values with new values, just as regular SET.
 pub fn run(
     db: Arc<DataStorage>,
     arguments: Vec<ProtocolType>,

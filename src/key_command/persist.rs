@@ -3,6 +3,8 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
+/// Remove the existing timeout on key, turning the key from volatile (a key with an expire set) to
+/// persistent (a key that will never expire as no timeout is associated).
 pub fn run(
     db: Arc<DataStorage>,
     arguments: Vec<ProtocolType>,

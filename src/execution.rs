@@ -3,7 +3,9 @@ use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
 };
-use crate::lists_command::{lindex, llen, lpop, lpush, lpushx, lrem, lset, rpop, rpush, rpushx};
+use crate::lists_command::{
+    lindex, llen, lpop, lpush, lpushx, lrange, lrem, lset, rpop, rpush, rpushx,
+};
 use crate::logging::logger::Logger;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
@@ -17,6 +19,7 @@ use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
 #[allow(dead_code)]
+/// Struct which holds an execution context for the server
 pub struct Execution {
     data: Arc<DataStorage>,
     config: Arc<Mutex<Configuration>>,
@@ -69,13 +72,18 @@ impl Execution {
             "keys" => keys::run(self.data.clone(), cmd.arguments(), builder),
             "rename" => rename::run(self.data.clone(), cmd.arguments(), builder),
             "persist" => persist::run(self.data.clone(), cmd.arguments(), builder),
-            "config" => config::run(cmd.arguments(), builder, self.config.clone()),
+            "config" => config::run(
+                cmd.arguments(),
+                builder,
+                self.config.clone(),
+                self.logger.clone(),
+            ),
             "type" => key_type::run(cmd.arguments(), builder, &self.data),
             "del" => del::run(builder, cmd.arguments(), &self.data),
             "sort" => sort::run(builder, cmd.arguments(), &self.data),
             "exists" => exists::run(builder, cmd.arguments(), &self.data),
             "ttl" => ttl::run(builder, cmd.arguments(), &self.data),
-            "touch" => touch::run(builder, cmd.arguments(), &self.data),
+            "touch" => touch::run(builder, cmd.arguments(), &self.data, self.logger.clone()),
             "mset" => mset::run(self.data.clone(), cmd.arguments(), builder),
             "set" => set::run(self.data.clone(), cmd.arguments(), builder),
             "strlen" => strlen::run(self.data.clone(), cmd.arguments(), builder),
@@ -110,6 +118,7 @@ impl Execution {
             "srem" => srem::run(builder, cmd.arguments(), self.data.clone()),
             "scard" => scard::run(builder, cmd.arguments(), self.data.clone()),
             "sadd" => sadd::run(builder, cmd.arguments(), self.data.clone()),
+            "lrange" => lrange::run(builder, cmd.arguments(), self.data.clone()),
             _ => Err("Unknown command."),
         }
     }

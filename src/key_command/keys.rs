@@ -4,6 +4,7 @@ use crate::storage::data_storage::DataStorage;
 use regex::Regex;
 use std::sync::Arc;
 
+/// Returns all keys matching pattern.
 pub fn run(
     db: Arc<DataStorage>,
     arguments: Vec<ProtocolType>,
@@ -19,6 +20,7 @@ pub fn run(
     let mut pattern_str = arguments[0].clone().string()?;
     // For matching a single character regex uses . instead of ?
     pattern_str = pattern_str.replace("?", ".");
+    pattern_str = pattern_str.replace("*", ".*");
     let pattern = format!("^{}$", pattern_str);
     let re = Regex::new(&pattern).ok().ok_or("Error parsing the regex")?;
     let all_keys = db.get_keys();

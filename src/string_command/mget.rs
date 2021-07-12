@@ -4,6 +4,9 @@ use crate::storage::data_storage::DataStorage;
 use crate::storage::data_storage::Value;
 use std::sync::Arc;
 
+/// Returns the values of all specified keys.
+/// For every key that does not hold a string value or does not exist, the special value nil is returned.
+/// Because of this, the operation never fails.
 pub fn run(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,
