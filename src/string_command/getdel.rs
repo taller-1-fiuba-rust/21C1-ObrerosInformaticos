@@ -3,6 +3,7 @@ use crate::protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
+/// Get the value of key and delete the key.
 pub fn run(
     arguments: Vec<ProtocolType>,
     builder: &mut ResponseBuilder,
