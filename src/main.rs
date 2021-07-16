@@ -18,6 +18,7 @@ mod set_command;
 mod storage;
 mod string_command;
 mod threadpool;
+mod monitor;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

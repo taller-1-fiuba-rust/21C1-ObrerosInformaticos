@@ -1,5 +1,6 @@
 use crate::config::configuration::Configuration;
 use crate::execution::Execution;
+use crate::monitor::Monitor;
 use crate::listener_thread::ListenerThread;
 use crate::logging::logger::Logger;
 use crate::pubsub::PublisherSubscriber;
@@ -57,6 +58,7 @@ impl Server {
             self.sys_time.clone(),
             self.logger.clone(),
             Arc::new(PublisherSubscriber::new()),
+            Monitor::new(),
         ));
         let ttl = self.config.lock().unwrap().get_timeout();
         let logger_cpy = self.logger.clone();
