@@ -129,8 +129,8 @@ impl Execution {
             "scard" => scard::run(builder, cmd.arguments(), self.data.clone()),
             "sadd" => sadd::run(builder, cmd.arguments(), self.data.clone()),
             "lrange" => lrange::run(builder, cmd.arguments(), self.data.clone()),
-            "monitor" => monitor::run(&self.monitor, client),
-            "quit" => quit::run(&self.monitor, client),
+            "monitor" => monitor::run(&self.monitor, client, builder),
+            "quit" => quit::run(&self.monitor, client, builder),
             _ => Err("Unknown command."),
         }
     }
