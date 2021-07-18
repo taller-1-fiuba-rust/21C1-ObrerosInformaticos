@@ -1,5 +1,4 @@
 use crate::client::Client;
-use crate::monitor::Monitor;
 use crate::config::configuration::Configuration;
 use crate::key_command::{
     copy, del, exists, expire, expireat, key_type, keys, persist, rename, sort, touch, ttl,
@@ -8,12 +7,13 @@ use crate::lists_command::{
     lindex, llen, lpop, lpush, lpushx, lrange, lrem, lset, rpop, rpush, rpushx,
 };
 use crate::logging::logger::Logger;
+use crate::monitor::Monitor;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
-use crate::server_command::{config, dbsize, flushdb, info, ping, monitor};
+use crate::server_command::{config, dbsize, flushdb, info, monitor, ping};
 use crate::set_command::{sadd, scard, sismember, smembers, srem};
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{append, decrby, get, getdel, getset, incrby, mget, mset, set, strlen};
@@ -40,7 +40,6 @@ impl Execution {
         logger: Arc<Logger>,
         pubsub: Arc<PublisherSubscriber>,
         monitor: Monitor,
-
     ) -> Self {
         Execution {
             data,
@@ -49,7 +48,7 @@ impl Execution {
             client_connected: 0,
             logger,
             pubsub,
-            monitor
+            monitor,
         }
     }
 
@@ -69,7 +68,7 @@ impl Execution {
             return Err("A client in pub/sub mode can only use SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE, PUNSUBSCRIBE, PING and QUIT");
         }
 
-        if self.monitor.is_active(){
+        if self.monitor.is_active() {
             let msg = get_message(cmd);
             self.monitor.send(&msg.serialize())?;
         }
@@ -138,10 +137,12 @@ impl Execution {
 
 fn get_message(cmd: &Command) -> ResponseBuilder {
     let command = cmd.name();
-    let mut arguments: Vec<String> = cmd.arguments()
-    .into_iter()
-    .map(|x| x.string())
-    .collect::<Result<_, _>>().unwrap();
+    let mut arguments: Vec<String> = cmd
+        .arguments()
+        .into_iter()
+        .map(|x| x.string())
+        .collect::<Result<_, _>>()
+        .unwrap();
     arguments.insert(0, command);
     let mut msg = ResponseBuilder::new();
     msg.add(ProtocolType::String(arguments.join(" ")));
