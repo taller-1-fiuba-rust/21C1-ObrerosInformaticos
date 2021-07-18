@@ -7,11 +7,13 @@ use crate::lists_command::{
     lindex, llen, lpop, lpush, lpushx, lrange, lrem, lset, rpop, rpush, rpushx,
 };
 use crate::logging::logger::Logger;
+use crate::monitor::Monitor;
 use crate::protocol::command::Command;
 use crate::protocol::response::ResponseBuilder;
+use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
-use crate::server_command::{config, dbsize, flushdb, info, ping};
+use crate::server_command::{config, dbsize, flushdb, info, monitor, ping, quit};
 use crate::set_command::{sadd, scard, sismember, smembers, srem};
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{append, decrby, get, getdel, getset, incrby, mget, mset, set, strlen};
@@ -27,6 +29,7 @@ pub struct Execution {
     client_connected: u64,
     logger: Arc<Logger>,
     pubsub: Arc<PublisherSubscriber>,
+    monitor: Monitor,
 }
 
 impl Execution {
@@ -36,6 +39,7 @@ impl Execution {
         sys_time: Arc<SystemTime>,
         logger: Arc<Logger>,
         pubsub: Arc<PublisherSubscriber>,
+        monitor: Monitor,
     ) -> Self {
         Execution {
             data,
@@ -44,6 +48,7 @@ impl Execution {
             client_connected: 0,
             logger,
             pubsub,
+            monitor,
         }
     }
 
@@ -61,6 +66,11 @@ impl Execution {
             )
         {
             return Err("A client in pub/sub mode can only use SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE, PUNSUBSCRIBE, PING and QUIT");
+        }
+
+        if self.monitor.is_active() {
+            let msg = get_message(cmd);
+            self.monitor.send(&msg.serialize())?;
         }
 
         match &cmd.name().to_ascii_lowercase()[..] {
@@ -119,7 +129,23 @@ impl Execution {
             "scard" => scard::run(builder, cmd.arguments(), self.data.clone()),
             "sadd" => sadd::run(builder, cmd.arguments(), self.data.clone()),
             "lrange" => lrange::run(builder, cmd.arguments(), self.data.clone()),
+            "monitor" => monitor::run(&self.monitor, client, builder),
+            "quit" => quit::run(&self.monitor, client, builder),
             _ => Err("Unknown command."),
         }
     }
+}
+
+fn get_message(cmd: &Command) -> ResponseBuilder {
+    let command = cmd.name();
+    let mut arguments: Vec<String> = cmd
+        .arguments()
+        .into_iter()
+        .map(|x| x.string())
+        .collect::<Result<_, _>>()
+        .unwrap();
+    arguments.insert(0, command);
+    let mut msg = ResponseBuilder::new();
+    msg.add(ProtocolType::String(arguments.join(" ")));
+    msg
 }

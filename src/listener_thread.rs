@@ -13,6 +13,9 @@ use crate::client::Client;
 use std::sync::mpsc::{Receiver, Sender, TryRecvError};
 use std::sync::{Arc, Mutex};
 
+// Globals
+const THREADS: usize = 32;
+
 /// Struct which listens for connections and executes the given commands.
 pub struct ListenerThread {
     pool: ThreadPool,
@@ -29,7 +32,7 @@ impl ListenerThread {
         logger: Arc<Logger>,
         config: Arc<Mutex<Configuration>>,
     ) -> Self {
-        let pool = ThreadPool::new(32);
+        let pool = ThreadPool::new(THREADS);
         ListenerThread {
             pool,
             addr,
