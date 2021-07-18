@@ -4,9 +4,11 @@ This document describes the high-level architecture of our Redis implementation.
 
 ## High-level overview
 
-When the server starts up, it listens for TCP connections on a specific address. 
-
 ![](img/high_level.png)
+
+When the server starts up, it listens for TCP connections on a specific address. It parses this request into a `Command`
+object with arguments and name, and then finds an executing function for this `Command`. The command is executed, usually against the database
+and a response is built. Finally, the response is sent back through the connection.
 
 ### Normal command flow
 
