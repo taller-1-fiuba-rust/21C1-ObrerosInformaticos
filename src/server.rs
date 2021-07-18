@@ -13,6 +13,9 @@ use std::thread::JoinHandle;
 use std::time::Duration;
 use std::time::SystemTime;
 
+// Globals
+const DURATION: u64 = 600;
+
 #[allow(dead_code)]
 /// A server struct
 pub struct Server {
@@ -78,7 +81,7 @@ impl Server {
                 if result.is_err() {
                     println!("Error saving data from dbfile");
                 };
-                let ten_mins = Duration::from_secs(600);
+                let ten_mins = Duration::from_secs(DURATION);
                 thread::sleep(ten_mins);
             }
         });

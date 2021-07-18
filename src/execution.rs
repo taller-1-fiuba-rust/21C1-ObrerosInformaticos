@@ -70,17 +70,7 @@ impl Execution {
         }
 
         if self.monitor.is_active(){
-            let command = cmd.name();
-            let mut arguments: Vec<String> = cmd.arguments()
-            .into_iter()
-            .map(|x| x.string())
-            .collect::<Result<_, _>>()?;
-
-            arguments.insert(0, command);
-
-            let mut msg = ResponseBuilder::new();
-            msg.add(ProtocolType::String(arguments.join(" ")));
-
+            let msg = get_message(cmd);
             self.monitor.send(&msg.serialize())?;
         }
 
@@ -144,4 +134,16 @@ impl Execution {
             _ => Err("Unknown command."),
         }
     }
+}
+
+fn get_message(cmd: &Command) -> ResponseBuilder {
+    let command = cmd.name();
+    let mut arguments: Vec<String> = cmd.arguments()
+    .into_iter()
+    .map(|x| x.string())
+    .collect::<Result<_, _>>().unwrap();
+    arguments.insert(0, command);
+    let mut msg = ResponseBuilder::new();
+    msg.add(ProtocolType::String(arguments.join(" ")));
+    msg
 }
