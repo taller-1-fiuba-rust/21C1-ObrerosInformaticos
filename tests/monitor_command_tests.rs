@@ -1,3 +1,5 @@
+use redis::{FromRedisValue};
+
 mod common;
 
 #[test]
@@ -6,16 +8,13 @@ fn test_monitor() {
     let client1 = common::setup_client(port);
     let client2 = common::setup_client(port);
 
-    let mut conn1 = client1.get_connection().unwrap();
-    let mut monitor = conn1.as_pubsub();
+    let mut monitor_conn = client1.get_connection().unwrap();
+    let _ : () = redis::cmd("MONITOR").query(&mut monitor_conn).unwrap();
+    let _ : () = common::query_string(&client2, "KEYS *");
 
-    let _: () = common::query_string(&monitor, "MONITOR");
-    let _: () = common::query_string(&client2, "keys *");
+    let msg1 = (&mut monitor_conn).recv_response().unwrap();
 
-    let msg1 = monitor.get_message();
+    assert_eq!(String::from_redis_value(&msg1).unwrap(), "KEYS *");
 
-    assert_eq!(
-        msg1.unwrap().get_payload::<String>().unwrap(),
-        "keys *"
-    );
+    let _: () = common::query_string(&client1, "QUIT");
 }
