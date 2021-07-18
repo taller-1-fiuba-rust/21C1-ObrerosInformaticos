@@ -4,3 +4,4 @@ pub mod flushdb;
 pub mod info;
 pub mod monitor;
 pub mod ping;
+pub mod quit;

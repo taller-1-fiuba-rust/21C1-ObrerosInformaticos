@@ -13,7 +13,7 @@ use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
-use crate::server_command::{config, dbsize, flushdb, info, monitor, ping};
+use crate::server_command::{config, dbsize, flushdb, info, monitor, ping, quit};
 use crate::set_command::{sadd, scard, sismember, smembers, srem};
 use crate::storage::data_storage::DataStorage;
 use crate::string_command::{append, decrby, get, getdel, getset, incrby, mget, mset, set, strlen};
@@ -130,6 +130,7 @@ impl Execution {
             "sadd" => sadd::run(builder, cmd.arguments(), self.data.clone()),
             "lrange" => lrange::run(builder, cmd.arguments(), self.data.clone()),
             "monitor" => monitor::run(&self.monitor, client),
+            "quit" => quit::run(&self.monitor, client),
             _ => Err("Unknown command."),
         }
     }

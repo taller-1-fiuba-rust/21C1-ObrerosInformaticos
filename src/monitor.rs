@@ -60,6 +60,12 @@ impl Monitor {
         Ok(())
     }
 
+    pub fn remove(&self, client: Arc<Client>) -> Result<(), &'static str> {
+        let mut lock = self.clients.write().ok().ok_or("Failed to lock database")?;
+        self. do_remove(client, &mut lock);
+        Ok(())
+    }
+
     fn do_remove(&self, client: Arc<Client>, lock: &mut RwLockWriteGuard<Vec<Arc<Client>>>) {
         if let Some(pos) = lock.iter().position(|x| *x == client) {
             lock.remove(pos);
