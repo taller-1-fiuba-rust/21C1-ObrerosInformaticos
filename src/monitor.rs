@@ -62,7 +62,7 @@ impl Monitor {
 
     pub fn remove(&self, client: Arc<Client>) -> Result<(), &'static str> {
         let mut lock = self.clients.write().ok().ok_or("Failed to lock database")?;
-        self. do_remove(client, &mut lock);
+        self.do_remove(client, &mut lock);
         Ok(())
     }
 

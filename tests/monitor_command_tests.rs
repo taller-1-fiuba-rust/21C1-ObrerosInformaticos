@@ -1,4 +1,4 @@
-use redis::{FromRedisValue};
+use redis::FromRedisValue;
 
 mod common;
 
@@ -9,8 +9,8 @@ fn test_monitor() {
     let client2 = common::setup_client(port);
 
     let mut monitor_conn = client1.get_connection().unwrap();
-    let _ : () = redis::cmd("MONITOR").query(&mut monitor_conn).unwrap();
-    let _ : () = common::query_string(&client2, "KEYS *");
+    let _: () = redis::cmd("MONITOR").query(&mut monitor_conn).unwrap();
+    let _: () = common::query_string(&client2, "KEYS *");
 
     let msg1 = (&mut monitor_conn).recv_response().unwrap();
 
