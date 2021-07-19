@@ -10,6 +10,8 @@ When the server starts up, it listens for TCP connections on a specific address.
 object with arguments and name, and then finds an executing function for this `Command`. The command is executed, usually against the database
 and a response is built. Finally, the response is sent back through the connection.
 
+![](img/high_level2.png)
+
 ### Normal command flow
 
 Whenever a non-pubsub command is received the flow is as follows:
