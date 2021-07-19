@@ -1,7 +1,7 @@
 mod common;
 
 #[test]
-/// Integration test to test the correct flow of the PING command 
+/// Integration test to test the correct flow of the PING command
 fn test_ping() {
     let (_server, client) = common::setup();
     let result: String = common::query_string(&client, "PING");

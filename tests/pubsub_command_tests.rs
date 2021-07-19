@@ -58,7 +58,7 @@ fn test_subscribe_and_publish() {
 }
 
 #[test]
-/// Integration test to test the correct flow of the SUBSCRIBE AND PUBLISH command 
+/// Integration test to test the correct flow of the SUBSCRIBE AND PUBLISH command
 /// with multiple clients
 fn test_multiple_clients() {
     let (_server, port) = common::setup_server();
@@ -108,7 +108,7 @@ fn test_multiple_clients() {
 }
 
 #[test]
-/// Integration test to test the correct flow of the UNSUBSCRIBE command 
+/// Integration test to test the correct flow of the UNSUBSCRIBE command
 /// with multiple clients
 fn test_multiple_unsubscribe() {
     let (_server, port) = common::setup_server();
@@ -142,7 +142,7 @@ fn test_numsub() {
 }
 
 #[test]
-/// Integration test to test the correct flow of the PUBSUB command 
+/// Integration test to test the correct flow of the PUBSUB command
 /// with no pattern.
 fn test_pubsub_channels_no_pattern() {
     let (_server, port) = common::setup_server();
@@ -163,7 +163,7 @@ fn test_pubsub_channels_no_pattern() {
 }
 
 #[test]
-/// Integration test to test the correct flow of the PUBSUB command 
+/// Integration test to test the correct flow of the PUBSUB command
 /// with channel pattern.
 fn test_pubsub_channels_pattern() {
     let (_server, port) = common::setup_server();
