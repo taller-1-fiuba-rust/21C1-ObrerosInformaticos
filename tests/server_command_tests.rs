@@ -1,6 +1,7 @@
 mod common;
 
 #[test]
+/// Integration test to test the correct flow of the PING command 
 fn test_ping() {
     let (_server, client) = common::setup();
     let result: String = common::query_string(&client, "PING");
@@ -8,6 +9,7 @@ fn test_ping() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the CONFIG command
 fn test_config() {
     let (_server, client) = common::setup();
     let result: Vec<i64> = common::query_string(&client, "CONFIG GET verbose");
