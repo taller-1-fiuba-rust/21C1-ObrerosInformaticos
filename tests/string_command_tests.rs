@@ -1,6 +1,7 @@
 mod common;
 
 #[test]
+/// Integration test to test the correct flow of the APPEND command
 fn test_append() {
     let (_server, client) = common::setup();
     let result: i64 = common::query_string(&client, "EXISTS mykey");
@@ -14,6 +15,7 @@ fn test_append() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the DECRBY command
 fn test_decrby() {
     let (_server, client) = common::setup();
     let result: String = common::query_string(&client, "SET key1 10");
@@ -23,6 +25,7 @@ fn test_decrby() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the GETDEL command
 fn test_getdel() {
     let (_server, client) = common::setup();
     let result: String = common::query_string(&client, "SET key1 Hello");
@@ -34,6 +37,7 @@ fn test_getdel() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the MGET command
 fn test_mget() {
     let (_server, client) = common::setup();
     let result: String = common::query_string(&client, "SET key1 Hello");
@@ -47,6 +51,7 @@ fn test_mget() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the STRLEN command
 fn test_strlen() {
     let (_server, client) = common::setup();
     let result: String = common::query_string(&client, "SET mykey Hello");
@@ -56,6 +61,7 @@ fn test_strlen() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the INCRBY command
 fn test_incrby_ok() {
     let (_server, client) = common::setup();
     let result: String = common::query_string(&client, "SET my_key 5");
@@ -71,6 +77,7 @@ fn test_incrby_ok() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the SET command
 fn test_set() {
     let (_server, client) = common::setup();
     let result: String = common::query_string(&client, "SET my_key 42");
@@ -80,6 +87,7 @@ fn test_set() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the SET AND GET command
 fn test_set_get() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET my_key 42");
@@ -90,6 +98,7 @@ fn test_set_get() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the MSET command
 fn test_mset() {
     let (_server, client) = common::setup();
     let result: String = common::query_string(&client, "MSET my_key1 hola1 my_key2 hola2");
@@ -101,6 +110,7 @@ fn test_mset() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the GETSET command
 fn test_getset() {
     let (_server, client) = common::setup();
     let result: String = common::query_string(&client, "SET my_key1 hola1");

@@ -1,6 +1,7 @@
 mod common;
 
 #[test]
+/// Integration test to test the correct flow of the SADD command
 fn test_sadd_add_different_values() {
     let (_server, client) = common::setup();
     let c: i32 = common::query_string(&client, "SADD my_key 1 2 3");
@@ -19,6 +20,7 @@ fn test_sadd_add_different_values() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the SADD command
 fn test_sadd_add_different_values_some_old() {
     let (_server, client) = common::setup();
     let first_add: i32 = common::query_string(&client, "SADD my_key 1 2 3");
@@ -37,6 +39,7 @@ fn test_sadd_add_different_values_some_old() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the SCARD command
 fn test_scard() {
     let (_server, client) = common::setup();
     let first_add: i32 = common::query_string(&client, "SADD my_key 1 2 3");
@@ -63,6 +66,7 @@ fn test_scard() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the SMEMBERS command
 fn test_smembers() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SADD my_key 1 2 3");
@@ -72,6 +76,7 @@ fn test_smembers() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the SISMEMBER command
 fn sismember() {
     let (_server, client) = common::setup();
     let add: i32 = common::query_string(&client, "SADD my_key 1 2 3");
@@ -85,6 +90,7 @@ fn sismember() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the SREM command
 fn srem() {
     let (_server, client) = common::setup();
     let add: i32 = common::query_string(&client, "SADD my_key 1 2 3");

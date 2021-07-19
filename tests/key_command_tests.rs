@@ -1,6 +1,7 @@
 mod common;
 
 #[test]
+/// Integration test to test the correct flow of the DEL command
 fn test_del() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET first_key test_del");
@@ -14,6 +15,7 @@ fn test_del() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the EXISTS command
 fn test_exists() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET first_key test");
@@ -23,6 +25,7 @@ fn test_exists() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the EXPIRE command
 fn test_expire() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET first_key test_1");
@@ -32,6 +35,7 @@ fn test_expire() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the EXPIRE AT command
 fn test_expireat() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET first_key test");
@@ -41,6 +45,7 @@ fn test_expireat() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the PERSIST command
 fn test_persist() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET key test");
@@ -53,6 +58,7 @@ fn test_persist() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the KEYS ALL command
 fn test_keys_all() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET first_key test");
@@ -61,6 +67,7 @@ fn test_keys_all() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the COPY command
 fn test_copy() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET my_key hola");
@@ -71,6 +78,7 @@ fn test_copy() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the RENAME command
 fn test_rename() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET my_key hola");
@@ -84,6 +92,7 @@ fn test_rename() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the RENAME WITH EXPIRATION command
 fn test_rename_with_exp() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET my_key hola");
@@ -98,6 +107,7 @@ fn test_rename_with_exp() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the KEYS command
 fn test_keys2() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "MSET age 1 ate 1 ame 1 key 1 fisura 1");
@@ -107,6 +117,7 @@ fn test_keys2() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the TYPE command
 fn test_type() {
     let (_server, client) = common::setup();
     let val1: String = common::query_string(&client, "SET my_key1 value");
@@ -126,6 +137,7 @@ fn test_type() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the SORT command
 fn test_sort() {
     let (_server, client) = common::setup();
     let val1: i64 = common::query_string(&client, "RPUSH my_key1 3 2 6");
@@ -159,6 +171,7 @@ fn test_sort() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the TTL command
 fn test_ttl() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET my_key hola");

@@ -3,6 +3,7 @@ use redis::FromRedisValue;
 mod common;
 
 #[test]
+/// Integration test to test the correct flow of the MONITOR command
 fn test_monitor() {
     let (_server, port) = common::setup_server();
     let client1 = common::setup_client(port);

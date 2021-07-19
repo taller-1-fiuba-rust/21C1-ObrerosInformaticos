@@ -1,6 +1,7 @@
 mod common;
 
 #[test]
+/// Integration test to test a flow of several commands.
 fn test_1() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "SET first_key test");
@@ -34,6 +35,7 @@ fn test_1() {
 }
 
 #[test]
+/// Integration test to test a flow of several commands.
 fn test_2() {
     let (_server, client) = common::setup();
     let _: String = common::query_string(&client, "CONFIG SET verbose 1");
@@ -65,6 +67,7 @@ fn test_2() {
 }
 
 #[test]
+/// Integration test to test a flow of several commands.
 fn test_3() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "MSET first test1 second test2");
@@ -105,6 +108,7 @@ fn test_3() {
 }
 
 #[test]
+/// Integration test to test a flow of several commands.
 fn test_4() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "MSET key1 10 key2 val2 key3 4");
@@ -128,6 +132,7 @@ fn test_4() {
 }
 
 #[test]
+/// Integration test to test a flow of several commands.
 fn test_5() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "LPUSH key1 1 2 3 4 5");
