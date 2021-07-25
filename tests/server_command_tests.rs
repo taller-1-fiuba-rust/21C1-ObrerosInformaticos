@@ -35,13 +35,26 @@ fn test_config() {
 
 #[test]
 #[should_panic]
+/// Integration test to test the timeout of the requests
 fn test_timeout() {
-    let (_server, mut client) = common::setup();
+    let (_server, client) = common::setup();
     let res : String = common::query_string(&client, "CONFIG SET TIMEOUT 1");
+    let mut conn = client.get_connection().unwrap();
 
     assert_eq!(res, "Ok");
     sleep(Duration::from_secs(2));
-    let a :  = common::query_string(&client, "INFO");
-    //assert_eq!(client.check_connection(), false);
-    //assert!(!client.is_open());
+    let _: () = redis::cmd("INFO").query(&mut conn).unwrap();
+}
+
+#[test]
+/// Integration test to test the timeout of the requests
+fn test_timeout_unlimited() {
+    let (_server, client) = common::setup();
+    let res : String = common::query_string(&client, "CONFIG SET TIMEOUT 0");
+    let mut conn = client.get_connection().unwrap();
+
+    assert_eq!(res, "Ok");
+    sleep(Duration::from_secs(2));
+    let _: () = redis::cmd("INFO").query(&mut conn).unwrap();
+    assert!(conn.is_open());
 }
