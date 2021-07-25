@@ -5,6 +5,7 @@ mod key_command;
 mod listener_thread;
 mod lists_command;
 pub mod logging;
+pub mod monitor;
 mod protocol;
 mod pubsub;
 mod pubsub_command;

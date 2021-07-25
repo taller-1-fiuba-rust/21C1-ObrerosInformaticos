@@ -2,6 +2,7 @@ use crate::config::configuration::Configuration;
 use crate::execution::Execution;
 use crate::listener_thread::ListenerThread;
 use crate::logging::logger::Logger;
+use crate::monitor::Monitor;
 use crate::pubsub::PublisherSubscriber;
 use crate::storage::data_storage::DataStorage;
 use std::net::TcpStream;
@@ -11,6 +12,9 @@ use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
 use std::time::SystemTime;
+
+// Globals
+const DURATION: u64 = 600;
 
 #[allow(dead_code)]
 /// A server struct
@@ -57,6 +61,7 @@ impl Server {
             self.sys_time.clone(),
             self.logger.clone(),
             Arc::new(PublisherSubscriber::new()),
+            Monitor::new(),
         ));
         let ttl = self.config.lock().unwrap().get_timeout();
         let logger_cpy = self.logger.clone();
@@ -76,7 +81,7 @@ impl Server {
                 if result.is_err() {
                     println!("Error saving data from dbfile");
                 };
-                let ten_mins = Duration::from_secs(600);
+                let ten_mins = Duration::from_secs(DURATION);
                 thread::sleep(ten_mins);
             }
         });

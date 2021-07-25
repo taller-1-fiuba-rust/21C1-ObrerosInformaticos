@@ -1,6 +1,7 @@
 mod common;
 
 #[test]
+/// Integration test to test the correct flow of the LREM command
 fn test_lrem() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "LPUSH my_key 1");
@@ -18,6 +19,7 @@ fn test_lrem() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the RPUSH command
 fn test_rpush() {
     let (_server, client) = common::setup();
     let c1: i32 = common::query_string(&client, "RPUSH my_key 1 2 3");
@@ -27,6 +29,7 @@ fn test_rpush() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the LSET command
 fn test_lset() {
     let (_server, client) = common::setup();
     let _: () = common::query_string(&client, "RPUSH my_key 1 2 3");
@@ -37,6 +40,7 @@ fn test_lset() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the LINDEX command
 fn test_lindex() {
     let (_server, client) = common::setup();
     let c: i32 = common::query_string(&client, "RPUSH my_key 1 2 3");
@@ -56,6 +60,7 @@ fn vec_compare(va: &Vec<String>, vb: &Vec<String>) -> bool {
 }
 
 #[test]
+/// Integration test to test the correct flow of the LRANGE command
 fn test_lrange() {
     let (_server, client) = common::setup();
     let (): _ = common::query_string(&client, "RPUSH my_key 1 2 3");
@@ -71,6 +76,7 @@ fn test_lrange() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the RPUSHX command
 fn test_rpushx_no_list() {
     let (_server, client) = common::setup();
     let c: i32 = common::query_string(&client, "RPUSHX my_key 1 2 3 4 5");
@@ -80,6 +86,7 @@ fn test_rpushx_no_list() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the RPUSHX command
 fn test_rpushx() {
     let (_server, client) = common::setup();
     let c1: i32 = common::query_string(&client, "RPUSH my_key 1");
@@ -91,6 +98,7 @@ fn test_rpushx() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the RPOP command
 fn test_rpop_nil() {
     let (_server, client) = common::setup();
     let result: Option<String> = common::query_string(&client, "RPOP no_such_key");
@@ -98,6 +106,7 @@ fn test_rpop_nil() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the RPOP command
 fn test_rpop_many() {
     let (_server, client) = common::setup();
     let c1: i32 = common::query_string(&client, "RPUSH my_key 1 2 3 4 5");
@@ -109,6 +118,7 @@ fn test_rpop_many() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the LLEN command
 fn test_llen_nil() {
     let (_server, client) = common::setup();
     let result: i64 = common::query_string(&client, "LLEN no_key");
@@ -116,6 +126,7 @@ fn test_llen_nil() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the LPOP command
 fn test_lpop_nil() {
     let (_server, client) = common::setup();
     let result: Option<String> = common::query_string(&client, "LPOP no_such_key");
@@ -123,6 +134,7 @@ fn test_lpop_nil() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the LLEN command
 fn test_llen_many() {
     let (_server, client) = common::setup();
     let c1: i32 = common::query_string(&client, "RPUSH my_key 1 2 3 4 5");
@@ -136,6 +148,7 @@ fn test_llen_many() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the LPOP command
 fn test_lpop_many() {
     let (_server, client) = common::setup();
     let c1: i32 = common::query_string(&client, "RPUSH my_key 1 2 3 4 5");
@@ -147,6 +160,7 @@ fn test_lpop_many() {
 }
 
 #[test]
+/// Integration test to test the correct flow of the LPUSH command
 fn test_lpush() {
     let (_server, client) = common::setup();
     let c: i32 = common::query_string(&client, "LPUSH my_key 1 2 3");

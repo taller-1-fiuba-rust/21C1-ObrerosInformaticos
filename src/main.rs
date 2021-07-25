@@ -9,6 +9,7 @@ mod key_command;
 mod listener_thread;
 mod lists_command;
 mod logging;
+mod monitor;
 mod protocol;
 mod pubsub;
 mod pubsub_command;
