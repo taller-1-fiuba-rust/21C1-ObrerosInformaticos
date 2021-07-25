@@ -6,7 +6,7 @@ use std::net::TcpStream;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
 
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 static CLIENT_ID: AtomicU64 = AtomicU64::new(0);
 
@@ -74,7 +74,8 @@ impl Client {
         let mut reader = BufReader::new(copy);
         let mut line = String::new();
         let mut offset = 0;
-
+        let now = SystemTime::now();
+        let timeout = 10;
         loop {
             let read_result = reader.read_line(&mut line);
             match read_result {
@@ -103,8 +104,31 @@ impl Client {
                     }
                 }
             }
-        }
+            let new_now = SystemTime::now();
+            let difference = new_now.duration_since(now);
+            let result = difference.unwrap();
+            
+            if timeout != 0 && result.as_secs() > timeout  && commands.is_empty() && !self.in_pubsub_mode(){
+                println!("se esta cerrando");
+                self.closed.store(true, Ordering::SeqCst);
+                // self.write_socket.lock()
+                // .ok()
+                // .ok_or("Failed to lock socket")?
+                // .write_all("".as_bytes())
+                // .ok()
+                // .ok_or("Error while writing to client")?;
 
+                // self.write_socket
+                // .lock().ok().ok_or("err")?.flush().unwrap();
+                println!("1");
+                self.read_socket.lock().unwrap().shutdown(std::net::Shutdown::Both).unwrap();   
+                println!("2");
+                self.write_socket.lock().unwrap().shutdown(std::net::Shutdown::Both).unwrap();
+                println!("3");
+                return Ok(commands);
+            }
+        }
+        println!("ok");
         Ok(commands)
     }
 }

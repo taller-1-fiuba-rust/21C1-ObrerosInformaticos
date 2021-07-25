@@ -91,6 +91,7 @@ impl ListenerThread {
             return;
         }
         let commands = commands_result.unwrap();
+        println!("{}", commands.len());
         for command in commands {
             Self::log_command(&command, logger.clone(), config.clone());
             Self::execute_command(
@@ -102,8 +103,11 @@ impl ListenerThread {
             );
         }
 
+        println!("{}", client.is_closed());
         if !client.is_closed() {
             Self::handle_connection(client, execution, logger, config);
+        } else {
+            drop(client);
         }
     }
 
