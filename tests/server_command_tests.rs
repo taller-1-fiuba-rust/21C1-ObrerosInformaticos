@@ -1,3 +1,7 @@
+use std::time::{Duration};
+use std::thread::sleep;
+use redis::ConnectionLike;
+
 mod common;
 
 #[test]
@@ -25,4 +29,17 @@ fn test_config() {
     assert_eq!(result3[0], "dump.rdb");
     assert_eq!(result5, "Ok");
     assert_eq!(result6[0], 1);
+}
+
+#[test]
+#[should_panic]
+fn test_timeout() {
+    let (_server, mut client) = common::setup();
+    let res : String = common::query_string(&client, "CONFIG SET TIMEOUT 1");
+
+    assert_eq!(res, "Ok");
+    sleep(Duration::from_secs(2));
+    let a :  = common::query_string(&client, "INFO");
+    //assert_eq!(client.check_connection(), false);
+    //assert!(!client.is_open());
 }
