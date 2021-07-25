@@ -83,16 +83,17 @@ impl ListenerThread {
         config: Arc<Mutex<Configuration>>,
     ) {
         let config_lock = config.lock().unwrap();
-        let commands_result = client.parse_commands(config_lock.get_timeout() as u64);
+        let timeout = config_lock.get_timeout();
+        let verbose = config_lock.get_verbose();
+        drop(config_lock);
+        let commands_result = client.parse_commands(timeout as u64);
         if let Err(e) = commands_result {
-            let verbose = config_lock.get_verbose();
             if verbose == 1 {
                 println!("{}", &e);
             }
             logger.log(&e).unwrap();
             return;
         }
-        drop(config_lock);
 
         let commands = commands_result.unwrap();
         for command in commands {
