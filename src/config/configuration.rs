@@ -25,6 +25,7 @@ pub struct Configuration {
     dbfilename: String,
     logfile: String,
     ip: String,
+    config_file: Option<String>,
 }
 
 #[allow(dead_code)]
@@ -38,6 +39,7 @@ impl Configuration {
             dbfilename: DEFAULT_DBFILENAME.to_string(),
             logfile: DEFAULT_LOGFILE.to_string(),
             ip: DEFAULT_IP.to_string(),
+            config_file: None,
         }
     }
 
@@ -53,6 +55,7 @@ impl Configuration {
         if let Some(err) = self.set_all_params(map) {
             return Err(err);
         }
+        self.config_file = Some(file_path.to_string());
 
         Ok(true)
     }
@@ -156,6 +159,10 @@ impl Configuration {
             return true;
         }
         false
+    }
+
+    pub fn get_configfile(&self) -> Option<String> {
+        self.config_file.clone()
     }
 
     pub fn get_verbose(&self) -> u8 {

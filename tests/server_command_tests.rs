@@ -1,6 +1,6 @@
-use std::time::{Duration};
-use std::thread::sleep;
 use redis::ConnectionLike;
+use std::thread::sleep;
+use std::time::Duration;
 
 mod common;
 
@@ -38,7 +38,7 @@ fn test_config() {
 /// Integration test to test the timeout of the requests
 fn test_timeout() {
     let (_server, client) = common::setup();
-    let res : String = common::query_string(&client, "CONFIG SET TIMEOUT 1");
+    let res: String = common::query_string(&client, "CONFIG SET TIMEOUT 1");
     let mut conn = client.get_connection().unwrap();
 
     assert_eq!(res, "Ok");
@@ -50,7 +50,7 @@ fn test_timeout() {
 /// Integration test to test the timeout of the requests
 fn test_timeout_unlimited() {
     let (_server, client) = common::setup();
-    let res : String = common::query_string(&client, "CONFIG SET TIMEOUT 0");
+    let res: String = common::query_string(&client, "CONFIG SET TIMEOUT 0");
     let mut conn = client.get_connection().unwrap();
 
     assert_eq!(res, "Ok");

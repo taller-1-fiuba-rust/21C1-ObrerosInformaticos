@@ -2,7 +2,7 @@ use crate::protocol::command::Command;
 use crate::protocol::request::Request;
 use std::hash::{Hash, Hasher};
 use std::io::{BufRead, BufReader, Write};
-use std::net::{TcpStream, Shutdown};
+use std::net::{Shutdown, TcpStream};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
 
@@ -106,7 +106,11 @@ impl Client {
             let new_now = SystemTime::now();
             let difference = new_now.duration_since(now);
             let result = difference.unwrap();
-            if timeout != 0 && result.as_secs() > timeout && commands.is_empty() && !self.in_pubsub_mode(){
+            if timeout != 0
+                && result.as_secs() > timeout
+                && commands.is_empty()
+                && !self.in_pubsub_mode()
+            {
                 self.closed.store(true, Ordering::SeqCst);
                 locked_socket.shutdown(Shutdown::Both).unwrap();
                 break;

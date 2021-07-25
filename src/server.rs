@@ -15,6 +15,7 @@ use std::time::SystemTime;
 
 // Globals
 const DURATION: u64 = 600;
+pub const THREADS: usize = 32;
 
 #[allow(dead_code)]
 /// A server struct

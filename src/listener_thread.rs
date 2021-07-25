@@ -5,6 +5,7 @@ use crate::protocol::command::Command;
 
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
+use crate::server::THREADS;
 use crate::threadpool::ThreadPool;
 
 use std::net::TcpListener;
@@ -12,9 +13,6 @@ use std::net::TcpListener;
 use crate::client::Client;
 use std::sync::mpsc::{Receiver, Sender, TryRecvError};
 use std::sync::{Arc, Mutex};
-
-// Globals
-const THREADS: usize = 32;
 
 /// Struct which listens for connections and executes the given commands.
 pub struct ListenerThread {
