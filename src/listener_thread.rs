@@ -81,17 +81,19 @@ impl ListenerThread {
         logger: Arc<Logger>,
         config: Arc<Mutex<Configuration>>,
     ) {
-        let commands_result = client.parse_commands();
+        let config_lock = config.lock().unwrap();
+        let commands_result = client.parse_commands(config_lock.get_timeout() as u64);
         if let Err(e) = commands_result {
-            let verbose = config.lock().unwrap().get_verbose();
+            let verbose = config_lock.get_verbose();
             if verbose == 1 {
                 println!("{}", &e);
             }
             logger.log(&e).unwrap();
             return;
         }
+        drop(config_lock);
+
         let commands = commands_result.unwrap();
-        println!("{}", commands.len());
         for command in commands {
             Self::log_command(&command, logger.clone(), config.clone());
             Self::execute_command(
@@ -103,11 +105,8 @@ impl ListenerThread {
             );
         }
 
-        println!("{}", client.is_closed());
         if !client.is_closed() {
             Self::handle_connection(client, execution, logger, config);
-        } else {
-            drop(client);
         }
     }
 

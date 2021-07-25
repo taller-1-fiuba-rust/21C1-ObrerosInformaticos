@@ -2,7 +2,7 @@ use crate::protocol::command::Command;
 use crate::protocol::request::Request;
 use std::hash::{Hash, Hasher};
 use std::io::{BufRead, BufReader, Write};
-use std::net::TcpStream;
+use std::net::{TcpStream, Shutdown};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
 
@@ -60,7 +60,7 @@ impl Client {
     }
 
     /// Parses a command from a socket connection
-    pub fn parse_commands(&self) -> Result<Vec<Command>, String> {
+    pub fn parse_commands(&self, timeout: u64) -> Result<Vec<Command>, String> {
         let locked_socket = self
             .read_socket
             .lock()
@@ -75,7 +75,6 @@ impl Client {
         let mut line = String::new();
         let mut offset = 0;
         let now = SystemTime::now();
-        let timeout = 10;
         loop {
             let read_result = reader.read_line(&mut line);
             match read_result {
@@ -107,28 +106,12 @@ impl Client {
             let new_now = SystemTime::now();
             let difference = new_now.duration_since(now);
             let result = difference.unwrap();
-            
-            if timeout != 0 && result.as_secs() > timeout  && commands.is_empty() && !self.in_pubsub_mode(){
-                println!("se esta cerrando");
+            if timeout != 0 && result.as_secs() > timeout && commands.is_empty() && !self.in_pubsub_mode(){
                 self.closed.store(true, Ordering::SeqCst);
-                // self.write_socket.lock()
-                // .ok()
-                // .ok_or("Failed to lock socket")?
-                // .write_all("".as_bytes())
-                // .ok()
-                // .ok_or("Error while writing to client")?;
-
-                // self.write_socket
-                // .lock().ok().ok_or("err")?.flush().unwrap();
-                println!("1");
-                self.read_socket.lock().unwrap().shutdown(std::net::Shutdown::Both).unwrap();   
-                println!("2");
-                self.write_socket.lock().unwrap().shutdown(std::net::Shutdown::Both).unwrap();
-                println!("3");
-                return Ok(commands);
+                locked_socket.shutdown(Shutdown::Both).unwrap();
+                break;
             }
         }
-        println!("ok");
         Ok(commands)
     }
 }
