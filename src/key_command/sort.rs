@@ -49,32 +49,45 @@ pub fn run(
 
 fn basic_sort(key: String, data: &Arc<DataStorage>) -> Result<Vec<String>, &'static str> {
     let mut values = get_values(data, key)?;
-    values.sort();
-    Ok(values)
+    values.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let new_values = values.into_iter().map(|x| x.to_string()).collect();
+    Ok(new_values)
 }
 
 fn inverse_sort(key: String, data: &Arc<DataStorage>) -> Result<Vec<String>, &'static str> {
     let mut values = get_values(data, key)?;
-    values.sort_by(|a, b| b.cmp(a));
-    Ok(values)
+    values.sort_by(|a, b| b.partial_cmp(a).unwrap());
+    let new_values = values.into_iter().map(|x| x.to_string()).collect();
+    Ok(new_values)
 }
 
-fn get_values(data: &Arc<DataStorage>, key: String) -> Result<Vec<String>, &'static str> {
+fn get_values(data: &Arc<DataStorage>, key: String) -> Result<Vec<f64>, &'static str> {
     let values = data.get(&key);
     match values {
         None => Err("None"),
         Some(Value::String(_)) => {
             Err("WRONGTYPE Operation against a key holding the wrong kind of value")
         }
-        Some(Value::Vec(vec)) => Ok(vec),
+        Some(Value::Vec(vec)) => return parse_to_int(vec),
         Some(Value::HashSet(set)) => {
             let mut sorted_vec = Vec::new();
             for element in set.iter() {
                 sorted_vec.push(element.clone());
             }
-            Ok(sorted_vec)
+            return parse_to_int(sorted_vec);
         }
     }
+}
+
+fn parse_to_int(vec: Vec<String>) -> Result<Vec<f64>, &'static str> {
+    let mut new_vec: Vec<f64> = Vec::new();
+    for i in vec.into_iter() {
+        match i.parse() {
+            Ok(nmb) => new_vec.push(nmb),
+            Err(_) => return Err("ERR One or more scores can't be converted into double"),
+        }
+    }
+    Ok(new_vec)
 }
 
 fn send_result(builder: &mut ResponseBuilder, values: Vec<String>) {
@@ -124,11 +137,11 @@ mod tests {
         let mut builder = ResponseBuilder::new();
         let mut vc = Vec::new();
 
-        vc.push("asd".to_string());
         vc.push("1".to_string());
-        vc.push("3".to_string());
-        vc.push("bsd".to_string());
-        vc.push("2".to_string());
+        vc.push("10".to_string());
+        vc.push("5".to_string());
+        vc.push("30".to_string());
+        vc.push("100".to_string());
 
         data.set("key", Value::Vec(vc)).unwrap();
 
@@ -141,7 +154,7 @@ mod tests {
 
         assert_eq!(
             builder.serialize(),
-            "*5\r\n$1\r\n1\r\n$1\r\n2\r\n$1\r\n3\r\n$3\r\nasd\r\n$3\r\nbsd\r\n"
+            "*5\r\n$1\r\n1\r\n$1\r\n5\r\n$2\r\n10\r\n$2\r\n30\r\n$3\r\n100\r\n"
         );
     }
 
@@ -159,17 +172,16 @@ mod tests {
 
         data.set("key", Value::HashSet(vc)).unwrap();
 
-        run(
+        let result = run(
             &mut builder,
             vec![ProtocolType::String("key".to_string())],
             &data.clone(),
-        )
-        .unwrap();
-
-        assert_eq!(
-            builder.serialize(),
-            "*5\r\n$1\r\n1\r\n$1\r\n2\r\n$1\r\n3\r\n$3\r\nasd\r\n$3\r\nbsd\r\n"
         );
+
+        match result {
+            Ok(_) => assert!(false),
+            Err(msg) => assert_eq!(msg, "ERR One or more scores can't be converted into double"),
+        }
     }
 
     #[test]
