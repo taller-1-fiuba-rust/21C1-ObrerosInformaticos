@@ -5,6 +5,7 @@ use crate::protocol::command::Command;
 
 use crate::protocol::response::ResponseBuilder;
 use crate::protocol::types::ProtocolType;
+use crate::server::THREADS;
 use crate::threadpool::ThreadPool;
 
 use std::net::TcpListener;
@@ -12,9 +13,6 @@ use std::net::TcpListener;
 use crate::client::Client;
 use std::sync::mpsc::{Receiver, Sender, TryRecvError};
 use std::sync::{Arc, Mutex};
-
-// Globals
-const THREADS: usize = 32;
 
 /// Struct which listens for connections and executes the given commands.
 pub struct ListenerThread {
@@ -84,15 +82,19 @@ impl ListenerThread {
         logger: Arc<Logger>,
         config: Arc<Mutex<Configuration>>,
     ) {
-        let commands_result = client.parse_commands();
+        let config_lock = config.lock().unwrap();
+        let timeout = config_lock.get_timeout();
+        let verbose = config_lock.get_verbose();
+        drop(config_lock);
+        let commands_result = client.parse_commands(timeout as u64);
         if let Err(e) = commands_result {
-            let verbose = config.lock().unwrap().get_verbose();
             if verbose == 1 {
                 println!("{}", &e);
             }
             logger.log(&e).unwrap();
             return;
         }
+
         let commands = commands_result.unwrap();
         for command in commands {
             Self::log_command(&command, logger.clone(), config.clone());

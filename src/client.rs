@@ -2,11 +2,11 @@ use crate::protocol::command::Command;
 use crate::protocol::request::Request;
 use std::hash::{Hash, Hasher};
 use std::io::{BufRead, BufReader, Write};
-use std::net::TcpStream;
+use std::net::{Shutdown, TcpStream};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
 
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 static CLIENT_ID: AtomicU64 = AtomicU64::new(0);
 
@@ -60,7 +60,7 @@ impl Client {
     }
 
     /// Parses a command from a socket connection
-    pub fn parse_commands(&self) -> Result<Vec<Command>, String> {
+    pub fn parse_commands(&self, timeout: u64) -> Result<Vec<Command>, String> {
         let locked_socket = self
             .read_socket
             .lock()
@@ -74,7 +74,7 @@ impl Client {
         let mut reader = BufReader::new(copy);
         let mut line = String::new();
         let mut offset = 0;
-
+        let now = SystemTime::now();
         loop {
             let read_result = reader.read_line(&mut line);
             match read_result {
@@ -103,8 +103,19 @@ impl Client {
                     }
                 }
             }
+            let new_now = SystemTime::now();
+            let difference = new_now.duration_since(now);
+            let result = difference.unwrap();
+            if timeout != 0
+                && result.as_secs() > timeout
+                && commands.is_empty()
+                && !self.in_pubsub_mode()
+            {
+                self.closed.store(true, Ordering::SeqCst);
+                locked_socket.shutdown(Shutdown::Both).unwrap();
+                break;
+            }
         }
-
         Ok(commands)
     }
 }
