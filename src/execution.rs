@@ -137,7 +137,10 @@ impl Execution {
 }
 
 fn get_message(cmd: &Command) -> ResponseBuilder {
-    let command = cmd.name();
+    let mut command = cmd.name();
+    if command == "COMMAND" {
+        command = "NEW CONNECTION".to_string();
+    }
     let mut arguments: Vec<String> = cmd
         .arguments()
         .into_iter()
