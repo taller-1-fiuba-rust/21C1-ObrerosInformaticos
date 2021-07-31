@@ -1,7 +1,10 @@
 use crate::server::THREADS;
-use crate::threadpool::ThreadPool;
+use threadpool::threadpool::ThreadPool;
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
+use std::time::Duration;
+use std::str::Utf8Error;
+use crate::http;
 
 /// Struct which listens for connections and executes the given commands.
 pub struct Listener {
@@ -41,9 +44,36 @@ impl Listener {
     }
 
     fn handle_connection(mut socket: TcpStream) {
-        let mut buffer = String::new();
+        let request_result = Listener::read_request_string(&mut socket);
+        if let Err(_) = request_result {
+            // write invalid header
+            return;
+        }
+        let request = Request::new(request_result.unwrap());
+        println!("{}", request_str);
+    }
 
-        let size = socket.read_to_string(&mut buffer).unwrap();
-        println!("{}", buffer);
+    fn read_request_string(stream: &mut TcpStream) -> Result<String, &'static str> {
+        let mut contents = Vec::new();
+        let mut buffer = [0;512];
+        stream.set_read_timeout(Some(Duration::from_millis(10)));
+        loop {
+            match stream.read(&mut buffer) {
+                Ok(r) => {
+                    if r == 0 {
+                        break
+                    }
+                    contents.extend_from_slice(&buffer[0..r]);
+                }
+                Err(_) => {
+                    /*
+                    if !contents.is_empty() {
+                        break;
+                    }*/
+                    break
+                }
+            }
+        }
+        String::from_utf8(contents).ok().ok_or("Bad request")
     }
 }
