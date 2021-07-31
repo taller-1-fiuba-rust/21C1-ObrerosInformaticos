@@ -10,7 +10,6 @@ mod listener_thread;
 mod lists_command;
 mod logging;
 mod monitor;
-mod protocol;
 mod pubsub;
 mod pubsub_command;
 mod server;
@@ -18,7 +17,6 @@ mod server_command;
 mod set_command;
 mod storage;
 mod string_command;
-mod threadpool;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

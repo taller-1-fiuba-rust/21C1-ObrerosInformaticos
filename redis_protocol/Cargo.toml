@@ -1,5 +1,5 @@
 [package]
-name = "redis-protocol"
+name = "redis_protocol"
 version = "0.1.0"
 authors = ["Maximiliano Levi <maxilevi77@gmail.com>"]
 edition = "2018"

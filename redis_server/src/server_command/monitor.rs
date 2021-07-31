@@ -1,7 +1,7 @@
 use crate::client::Client;
 use crate::monitor::Monitor;
-use crate::protocol::response::ResponseBuilder;
-use crate::protocol::types::ProtocolType;
+use redis_protocol::response::ResponseBuilder;
+use redis_protocol::types::ProtocolType;
 use std::sync::Arc;
 
 ///Add client to monitor.

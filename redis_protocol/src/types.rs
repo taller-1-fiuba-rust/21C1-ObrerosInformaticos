@@ -109,7 +109,7 @@ impl ToString for ProtocolType {
 
 #[cfg(test)]
 mod tests {
-    use crate::protocol::types::ProtocolType;
+    use super::*;
 
     #[test]
     fn test_get_integer() {

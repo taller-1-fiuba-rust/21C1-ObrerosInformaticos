@@ -1,5 +1,5 @@
-use crate::protocol::response::ResponseBuilder;
-use crate::protocol::types::ProtocolType;
+use redis_protocol::response::ResponseBuilder;
+use redis_protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use regex::Regex;
 use std::sync::Arc;
@@ -39,8 +39,8 @@ pub fn run(
 
 mod tests {
     use super::*;
-    use crate::protocol::parser::array::ArrayParser;
-    use crate::protocol::parser::ProtocolParser;
+    use redis_protocol::parser::array::ArrayParser;
+    use redis_protocol::parser::ProtocolParser;
     use crate::storage::data_storage::Value;
 
     fn get_test_data() -> (Arc<DataStorage>, ResponseBuilder) {

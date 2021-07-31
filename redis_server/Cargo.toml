@@ -9,5 +9,5 @@ edition = "2018"
 [dependencies]
 regex = "1"
 redis = "*"
-redis-protocol = { path = "../redis-protocol" }
+redis_protocol = { path = "../redis_protocol" }
 threadpool = { path = "../threadpool" }

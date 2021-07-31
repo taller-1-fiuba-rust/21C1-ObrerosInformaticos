@@ -1,4 +1,4 @@
-use crate::protocol::types::ProtocolType;
+use crate::types::ProtocolType;
 use std::fmt;
 
 ///

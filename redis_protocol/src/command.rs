@@ -1,4 +1,4 @@
-use crate::protocol::types::ProtocolType;
+use crate::types::ProtocolType;
 
 ///
 /// Representation of a RESP command. e.g. The command "SET key value" will be equivalent to

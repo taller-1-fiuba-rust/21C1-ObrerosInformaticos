@@ -1,12 +1,12 @@
 use crate::config::configuration::Configuration;
 use crate::execution::Execution;
 use crate::logging::logger::Logger;
-use crate::protocol::command::Command;
+use redis_protocol::command::Command;
 
-use crate::protocol::response::ResponseBuilder;
-use crate::protocol::types::ProtocolType;
+use redis_protocol::response::ResponseBuilder;
+use redis_protocol::types::ProtocolType;
 use crate::server::THREADS;
-use crate::threadpool::ThreadPool;
+use threadpool::threadpool::ThreadPool;
 
 use std::net::TcpListener;
 

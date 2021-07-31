@@ -8,9 +8,9 @@ use crate::lists_command::{
 };
 use crate::logging::logger::Logger;
 use crate::monitor::Monitor;
-use crate::protocol::command::Command;
-use crate::protocol::response::ResponseBuilder;
-use crate::protocol::types::ProtocolType;
+use redis_protocol::command::Command;
+use redis_protocol::response::ResponseBuilder;
+use redis_protocol::types::ProtocolType;
 use crate::pubsub::PublisherSubscriber;
 use crate::pubsub_command::{publish, pubsub, punsubscribe, subscribe, unsubscribe};
 use crate::server_command::{config, dbsize, flushdb, info, monitor, ping, quit};

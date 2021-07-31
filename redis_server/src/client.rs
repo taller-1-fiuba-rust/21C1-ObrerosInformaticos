@@ -1,5 +1,5 @@
-use crate::protocol::command::Command;
-use crate::protocol::request::Request;
+use redis_protocol::command::Command;
+use redis_protocol::request::Request;
 use std::hash::{Hash, Hasher};
 use std::io::{BufRead, BufReader, Write};
 use std::net::{Shutdown, TcpStream};

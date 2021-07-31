@@ -1,5 +1,5 @@
-use crate::protocol::parser::ProtocolParser;
-use crate::protocol::types::ProtocolType;
+use crate::parser::ProtocolParser;
+use crate::types::ProtocolType;
 
 ///
 /// Parses a serialized RESP simple string into a ProtocolType::SimpleString

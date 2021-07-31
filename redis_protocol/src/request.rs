@@ -1,6 +1,6 @@
-use crate::protocol::command::Command;
-use crate::protocol::parser::array::ArrayParser;
-use crate::protocol::parser::ProtocolParser;
+use crate::command::Command;
+use crate::parser::array::ArrayParser;
+use crate::parser::ProtocolParser;
 
 /// Parses a RESP command request line by line.
 pub struct Request {

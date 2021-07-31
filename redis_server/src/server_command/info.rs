@@ -1,6 +1,6 @@
 use crate::config::configuration::Configuration;
-use crate::protocol::response::ResponseBuilder;
-use crate::protocol::types::ProtocolType;
+use redis_protocol::response::ResponseBuilder;
+use redis_protocol::types::ProtocolType;
 use crate::server::THREADS;
 use std::env;
 use std::sync::{Arc, Mutex};

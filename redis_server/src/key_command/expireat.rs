@@ -1,5 +1,5 @@
-use crate::protocol::response::ResponseBuilder;
-use crate::protocol::types::ProtocolType;
+use redis_protocol::response::ResponseBuilder;
+use redis_protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -59,7 +59,7 @@ pub fn run(
 
 mod tests {
     use super::*;
-    use crate::protocol::types::ProtocolType;
+    use redis_protocol::types::ProtocolType;
     use crate::storage::data_storage::DataStorage;
     use crate::storage::data_storage::Value;
     use std::sync::Arc;
