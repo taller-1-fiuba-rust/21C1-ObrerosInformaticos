@@ -3,9 +3,9 @@ use crate::execution::Execution;
 use crate::logging::logger::Logger;
 use redis_protocol::command::Command;
 
+use crate::server::THREADS;
 use redis_protocol::response::ResponseBuilder;
 use redis_protocol::types::ProtocolType;
-use crate::server::THREADS;
 use threadpool::threadpool::ThreadPool;
 
 use std::net::TcpListener;

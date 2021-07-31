@@ -1,6 +1,6 @@
+use crate::storage::data_storage::DataStorage;
 use redis_protocol::response::ResponseBuilder;
 use redis_protocol::types::ProtocolType;
-use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
 /// If key already exists and is a string, this command appends the

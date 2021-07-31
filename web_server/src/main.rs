@@ -1,6 +1,6 @@
-mod server;
-mod listener;
 mod http;
+mod listener;
+mod server;
 
 fn main() {
     let mut sv = server::Server::new("localhost", 8080);

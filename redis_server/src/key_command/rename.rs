@@ -1,6 +1,6 @@
+use crate::storage::data_storage::DataStorage;
 use redis_protocol::response::ResponseBuilder;
 use redis_protocol::types::ProtocolType;
-use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
 /// Renames key to newkey. It returns an error when key does not exist. If newkey already exists it is overwritten.

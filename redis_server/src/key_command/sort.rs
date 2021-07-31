@@ -1,7 +1,7 @@
-use redis_protocol::response::ResponseBuilder;
-use redis_protocol::types::ProtocolType;
 use crate::storage::data_storage::DataStorage;
 use crate::storage::data_storage::Value;
+use redis_protocol::response::ResponseBuilder;
+use redis_protocol::types::ProtocolType;
 use std::sync::Arc;
 
 /// Returns a sorted vec stored at the given key. If the keys holds a string value
@@ -68,13 +68,13 @@ fn get_values(data: &Arc<DataStorage>, key: String) -> Result<Vec<f64>, &'static
         Some(Value::String(_)) => {
             Err("WRONGTYPE Operation against a key holding the wrong kind of value")
         }
-        Some(Value::Vec(vec)) => return parse_to_int(vec),
+        Some(Value::Vec(vec)) => parse_to_int(vec),
         Some(Value::HashSet(set)) => {
             let mut sorted_vec = Vec::new();
             for element in set.iter() {
                 sorted_vec.push(element.clone());
             }
-            return parse_to_int(sorted_vec);
+            parse_to_int(sorted_vec)
         }
     }
 }

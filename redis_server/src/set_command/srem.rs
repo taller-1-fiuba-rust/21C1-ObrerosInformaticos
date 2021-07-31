@@ -1,6 +1,6 @@
+use crate::storage::data_storage::DataStorage;
 use redis_protocol::response::ResponseBuilder;
 use redis_protocol::types::ProtocolType;
-use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
 /// Remove the specified members from the set stored at key.
@@ -36,9 +36,9 @@ pub fn run(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use redis_protocol::types::ProtocolType;
     use crate::storage::data_storage::DataStorage;
     use crate::storage::data_storage::Value;
+    use redis_protocol::types::ProtocolType;
     use std::collections::HashSet;
     use std::sync::Arc;
 

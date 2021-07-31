@@ -1,10 +1,9 @@
+use crate::http;
 use crate::server::THREADS;
-use threadpool::threadpool::ThreadPool;
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 use std::time::Duration;
-use std::str::Utf8Error;
-use crate::http;
+use threadpool::threadpool::ThreadPool;
 
 /// Struct which listens for connections and executes the given commands.
 pub struct Listener {
@@ -15,10 +14,7 @@ pub struct Listener {
 impl Listener {
     pub fn new(addr: String) -> Self {
         let pool = ThreadPool::new(THREADS);
-        Listener {
-            pool,
-            addr,
-        }
+        Listener { pool, addr }
     }
 
     pub fn run(&self) {
@@ -30,10 +26,7 @@ impl Listener {
                 panic!("{}", e);
             }
         };
-        println!(
-            "Try REDIS WEBSERVER started on address '{}'...",
-            self.addr
-        );
+        println!("Try REDIS WEBSERVER started on address '{}'...", self.addr);
 
         for stream in listener.incoming() {
             let socket = stream.unwrap();
@@ -60,20 +53,16 @@ impl Listener {
 
     fn read_request_string(stream: &mut TcpStream) -> Result<String, &'static str> {
         let mut contents = Vec::new();
-        let mut buffer = [0;512];
-        stream.set_read_timeout(Some(Duration::from_millis(10)));
-        loop {
-            match stream.read(&mut buffer) {
-                Ok(r) => {
-                    if r == 0 {
-                        break
-                    }
-                    contents.extend_from_slice(&buffer[0..r]);
-                }
-                Err(_) => {
-                    break
-                }
+        let mut buffer = [0; 512];
+        stream
+            .set_read_timeout(Some(Duration::from_millis(10)))
+            .ok()
+            .ok_or("Failed to read from socket")?;
+        while let Ok(r) = stream.read(&mut buffer) {
+            if r == 0 {
+                break;
             }
+            contents.extend_from_slice(&buffer[0..r]);
         }
         String::from_utf8(contents).ok().ok_or("Bad request")
     }
