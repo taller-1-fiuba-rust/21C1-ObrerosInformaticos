@@ -31,9 +31,9 @@ impl Entry {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::entry::Entry;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::entry::Entry;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::time::SystemTime;
     /// use std::time::UNIX_EPOCH;
     /// let value = Value::String("hola".to_string());
@@ -56,9 +56,9 @@ impl Entry {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::entry::Entry;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::entry::Entry;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::time::SystemTime;
     /// use std::time::UNIX_EPOCH;
     /// let value = Value::String("hola".to_string());
@@ -85,9 +85,9 @@ impl Entry {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::entry::Entry;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::entry::Entry;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::time::SystemTime;
     /// use std::time::UNIX_EPOCH;
     /// let value = Value::String("hola".to_string());
@@ -113,9 +113,9 @@ impl Entry {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::entry::Entry;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::entry::Entry;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::time::SystemTime;
     /// use std::time::UNIX_EPOCH;
     /// let value = Value::String("hola".to_string());
@@ -146,9 +146,9 @@ impl Entry {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::entry::Entry;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::entry::Entry;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::time::SystemTime;
     /// use std::time::UNIX_EPOCH;
     /// let value = Value::String("hola".to_string());
@@ -181,9 +181,9 @@ impl Entry {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::entry::Entry;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::entry::Entry;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::time::SystemTime;
     /// use std::time::UNIX_EPOCH;
     /// let value = Value::String("hola".to_string());
@@ -216,9 +216,9 @@ impl Entry {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::entry::Entry;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::entry::Entry;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::time::SystemTime;
     /// use std::time::Duration;
     /// use std::time::UNIX_EPOCH;

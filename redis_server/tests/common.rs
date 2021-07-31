@@ -1,6 +1,6 @@
-use proyecto_taller_1::config::configuration::Configuration;
-use proyecto_taller_1::logging::logger::Logger;
-use proyecto_taller_1::server::Server;
+use redis_server::config::configuration::Configuration;
+use redis_server::logging::logger::Logger;
+use redis_server::server::Server;
 use redis::{Client, FromRedisValue};
 use std::sync::atomic::{AtomicU16, Ordering};
 use std::sync::Arc;

@@ -31,8 +31,8 @@ impl Value {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// let value = Value::String("hola".to_string());
     /// value.string();
     /// ```
@@ -53,8 +53,8 @@ impl Value {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::Value::Vec;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::Value::Vec;
+    /// use redis_server::storage::data_storage::Value;
     /// let value = Value::Vec(["hola".to_string()].to_vec());
     /// value.array();
     /// ```
@@ -75,8 +75,8 @@ impl Value {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::Value::Vec;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::Value::Vec;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::collections::HashSet;
     /// let set = HashSet::new();
     /// let value = Value::HashSet(set);
@@ -109,7 +109,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// ```
     ///
@@ -135,7 +135,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.load_data(&"new_file.txt");
     /// ```
@@ -162,7 +162,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.save_data(&"file.txt");
     /// ```
@@ -188,9 +188,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// let data = DataStorage::new();
     /// data.set(&"key", Value::String("hola".to_string()));
     /// ```
@@ -233,9 +233,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// let data = DataStorage::new();
     /// let values = vec![Value::String("value1".to_string()), Value::String("value2".to_string())];
     /// let keys = vec!["key1".to_string(), "key2".to_string()];
@@ -263,7 +263,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.delete_key(&"key".to_string());
     /// ```
@@ -295,7 +295,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.delete_all();
     /// ```
@@ -312,7 +312,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// let empty = data.is_empty();
     /// ```
@@ -332,7 +332,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// let exists = data.exists_key(&"key".to_string());
     /// ```
@@ -351,7 +351,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// let len = data.len();
     /// ```
@@ -374,7 +374,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// let read_data = data.read();
     /// ```
@@ -393,7 +393,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// let key = data.get(&"key".to_string());
     /// ```
@@ -417,7 +417,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// let value = data.get_with_expiration(&"key".to_string());
     /// ```
@@ -506,7 +506,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// let value = data.lpop("key".to_string(), 0);
     /// ```
@@ -575,7 +575,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// let value = data.append("key".to_string(), "new_value".to_string());
     /// ```
@@ -628,7 +628,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// let value = data.get_string_value("key".to_string());
     /// ```
@@ -659,9 +659,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// let data = DataStorage::new();
     /// data.getset(&"key", Value::String("hola".to_string()));
     /// ```
@@ -707,7 +707,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.rename(&"key", &"new_key");
     /// ```
@@ -747,9 +747,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::time::{SystemTime, UNIX_EPOCH};
     /// let data = DataStorage::new();
     /// data.add_with_expiration(&"key", Value::String("hola".to_string()), SystemTime::now().duration_since(UNIX_EPOCH).unwrap());
@@ -780,9 +780,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::time::{SystemTime, UNIX_EPOCH};
     /// let data = DataStorage::new();
     /// data.set_expiration_to_key(Some(SystemTime::now().duration_since(UNIX_EPOCH).unwrap()), &"key");
@@ -816,7 +816,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.contains_key("key".to_string());
     /// ```
@@ -833,7 +833,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// let keys: Vec<String> = data.get_keys();
     /// ```
@@ -858,9 +858,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::time::{SystemTime, UNIX_EPOCH};
     /// let data = DataStorage::new();
     /// data.modify_last_key_access(&"key", SystemTime::now().duration_since(UNIX_EPOCH).unwrap());
@@ -921,7 +921,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.increment_value("key".to_string(), 5);
     /// ```
@@ -969,7 +969,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.decrement_value("key".to_string(), 5);
     /// ```
@@ -1008,7 +1008,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.lpushx("key".to_string(), ["hola".to_string()].to_vec());
     /// ```
@@ -1026,7 +1026,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.lpush("key".to_string(), ["hola".to_string()].to_vec());
     /// ```
@@ -1044,7 +1044,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.rpushx("key".to_string(), ["hola".to_string()].to_vec());
     /// ```
@@ -1062,7 +1062,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.rpush("key".to_string(), ["hola".to_string()].to_vec());
     /// ```
@@ -1080,7 +1080,7 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::DataStorage;
     /// let data = DataStorage::new();
     /// data.rpop("key".to_string(), 2);
     /// ```
@@ -1156,9 +1156,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// let data = DataStorage::new();
     /// data.set(&"key", Value::Vec(["hola".to_string()].to_vec()));
     /// data.lset("key".to_string(), 0, "mundo".to_string());
@@ -1213,9 +1213,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// let data = DataStorage::new();
     /// data.set(&"key", Value::Vec(["hola".to_string(), "hola".to_string()].to_vec()));
     /// data.lrem("key".to_string(), 0, "hola".to_string());
@@ -1283,9 +1283,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::collections::HashSet;
     /// let data = DataStorage::new();
     /// let mut set = HashSet::new();
@@ -1323,9 +1323,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::collections::HashSet;
     /// let data = DataStorage::new();
     /// let mut set = HashSet::new();
@@ -1370,9 +1370,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::collections::HashSet;
     /// let data = DataStorage::new();
     /// let mut set = HashSet::new();
@@ -1429,9 +1429,9 @@ impl DataStorage {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::storage::data_storage::DataStorage;
-    /// use proyecto_taller_1::storage::data_storage::Value::String;
-    /// use proyecto_taller_1::storage::data_storage::Value;
+    /// use redis_server::storage::data_storage::DataStorage;
+    /// use redis_server::storage::data_storage::Value::String;
+    /// use redis_server::storage::data_storage::Value;
     /// use std::collections::HashSet;
     /// let data = DataStorage::new();
     /// let mut set = HashSet::new();

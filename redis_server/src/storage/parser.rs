@@ -21,8 +21,8 @@ static STRING: &str = "|STRING|";
 /// Basic usage:
 ///
 /// ```
-/// use proyecto_taller_1::storage::parser;
-/// use proyecto_taller_1::storage::entry::Entry;
+/// use redis_server::storage::parser;
+/// use redis_server::storage::entry::Entry;
 /// use std::collections::HashMap;
 /// let mut set: HashMap<String, Entry> = HashMap::new();
 /// parser::parse_data(&"data_file.txt", &mut set);
@@ -63,8 +63,8 @@ pub fn parse_data(file: &str, data: &mut HashMap<String, Entry>) -> Result<(), &
 /// Basic usage:
 ///
 /// ```
-/// use proyecto_taller_1::storage::parser;
-/// use proyecto_taller_1::storage::entry::Entry;
+/// use redis_server::storage::parser;
+/// use redis_server::storage::entry::Entry;
 /// use std::collections::HashMap;
 /// let mut set: HashMap<String, Entry> = HashMap::new();
 /// parser::store_data(&"data_file.txt", &mut set);

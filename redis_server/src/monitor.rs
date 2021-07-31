@@ -19,7 +19,7 @@ impl Monitor {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::monitor::Monitor;
+    /// use redis_server::monitor::Monitor;
     /// let monitor = Monitor::new();
     /// ```
     ///
@@ -37,7 +37,7 @@ impl Monitor {
     /// Basic usage:
     ///
     /// ```
-    /// use proyecto_taller_1::monitor::Monitor;
+    /// use redis_server::monitor::Monitor;
     /// let monitor = Monitor::new();
     /// monitor.send(&"Keys *".to_string());
     /// ```
