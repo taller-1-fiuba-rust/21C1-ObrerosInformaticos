@@ -38,19 +38,24 @@ impl Listener {
         for stream in listener.incoming() {
             let socket = stream.unwrap();
             self.pool.spawn(move || {
-                Listener::handle_connection(socket);
+                let result = Listener::handle_connection(socket);
+                if let Err(e) = result {
+                    println!("Error whilst parsing request:\n {}", e);
+                }
             });
         }
     }
 
-    fn handle_connection(mut socket: TcpStream) {
-        let request_result = Listener::read_request_string(&mut socket);
-        if let Err(_) = request_result {
-            // write invalid header
-            return;
+    fn handle_connection(mut socket: TcpStream) -> Result<String, &'static str> {
+        let request_str = Listener::read_request_string(&mut socket)?;
+        if request_str.is_empty() {
+            return Ok(String::new());
         }
-        let request = Request::new(request_result.unwrap());
-        println!("{}", request_str);
+        println!("Received HTTP request");
+        let request = http::request::Request::parse(request_str)?;
+
+        println!("{}", request.to_string());
+        Ok(String::new())
     }
 
     fn read_request_string(stream: &mut TcpStream) -> Result<String, &'static str> {
@@ -66,10 +71,6 @@ impl Listener {
                     contents.extend_from_slice(&buffer[0..r]);
                 }
                 Err(_) => {
-                    /*
-                    if !contents.is_empty() {
-                        break;
-                    }*/
                     break
                 }
             }
