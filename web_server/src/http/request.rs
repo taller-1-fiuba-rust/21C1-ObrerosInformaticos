@@ -11,8 +11,7 @@ pub struct Request {
 
 impl Request {
     pub fn parse(request_str: String) -> Result<Request, &'static str> {
-        #[allow(clippy::single_char_pattern)]
-        let mut lines = request_str.split("\n");
+        let mut lines = request_str.split("\r\n");
 
         let (method, endpoint) = Request::parse_method_and_endpoint(&mut lines)?;
         let headers = Request::parse_headers(&mut lines)?;
@@ -23,7 +22,7 @@ impl Request {
                 .parse::<u32>()
                 .ok()
                 .ok_or("Invalid Content-Length header")?;
-            body = lines.collect::<Vec<&str>>().join("\n")[..length as usize].to_string();
+            body = lines.collect::<Vec<&str>>().join("\r\n")[..length as usize].to_string();
         }
 
         Ok(Request {
