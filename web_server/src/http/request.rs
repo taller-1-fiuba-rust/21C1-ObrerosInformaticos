@@ -10,6 +10,26 @@ pub struct Request {
 }
 
 impl Request {
+    #[allow(dead_code)]
+    pub fn method(&self) -> &Method {
+        &self.method
+    }
+
+    #[allow(dead_code)]
+    pub fn endpoint(&self) -> &String {
+        &self.endpoint
+    }
+
+    #[allow(dead_code)]
+    pub fn body(&self) -> &String {
+        &self.body
+    }
+
+    #[allow(dead_code)]
+    pub fn headers(&self) -> &HashMap<String, String> {
+        &self.headers
+    }
+
     pub fn parse(request_str: String) -> Result<Request, &'static str> {
         let mut lines = request_str.split("\r\n");
 
