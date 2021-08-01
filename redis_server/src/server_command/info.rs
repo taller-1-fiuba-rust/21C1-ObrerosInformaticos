@@ -1,7 +1,7 @@
 use crate::config::configuration::Configuration;
+use crate::server::THREADS;
 use redis_protocol::response::ResponseBuilder;
 use redis_protocol::types::ProtocolType;
-use crate::server::THREADS;
 use std::env;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;

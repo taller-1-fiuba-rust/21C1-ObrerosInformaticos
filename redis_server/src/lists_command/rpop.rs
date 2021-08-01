@@ -1,6 +1,6 @@
+use crate::storage::data_storage::DataStorage;
 use redis_protocol::response::ResponseBuilder;
 use redis_protocol::types::ProtocolType;
-use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
 /// Removes and returns the last elements of the list stored at key.
@@ -38,9 +38,9 @@ pub fn run(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::storage::data_storage::{DataStorage, Value};
     use redis_protocol::response::ResponseBuilder;
     use redis_protocol::types::ProtocolType;
-    use crate::storage::data_storage::{DataStorage, Value};
     use std::sync::Arc;
 
     #[test]

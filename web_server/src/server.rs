@@ -1,6 +1,6 @@
+use crate::listener::Listener;
 use std::thread;
 use std::thread::JoinHandle;
-use crate::listener::Listener;
 
 pub const THREADS: usize = 32;
 
@@ -17,7 +17,7 @@ impl Server {
         Server {
             addr: addr.to_string(),
             port,
-            handle: None
+            handle: None,
         }
     }
 

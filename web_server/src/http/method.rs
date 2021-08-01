@@ -1,4 +1,3 @@
-
 pub enum Method {
     Get,
     Post,
@@ -9,7 +8,7 @@ impl Method {
         match method_str {
             "GET" => Ok(Method::Get),
             "POST" => Ok(Method::Post),
-            _ => Err("Not implemented")
+            _ => Err("Not implemented"),
         }
     }
 }
@@ -19,6 +18,7 @@ impl ToString for Method {
         match self {
             Method::Get => "GET",
             Method::Post => "POST",
-        }.to_string()
+        }
+        .to_string()
     }
 }

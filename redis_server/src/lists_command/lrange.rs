@@ -1,6 +1,6 @@
+use crate::storage::data_storage::DataStorage;
 use redis_protocol::response::ResponseBuilder;
 use redis_protocol::types::ProtocolType;
-use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
 /// Returns the specified elements of the list stored at key.
@@ -46,11 +46,11 @@ pub fn run(
 
 mod tests {
     use super::*;
+    use crate::storage::data_storage::DataStorage;
+    use crate::storage::data_storage::Value;
     use redis_protocol::parser::array::ArrayParser;
     use redis_protocol::parser::ProtocolParser;
     use redis_protocol::types::ProtocolType;
-    use crate::storage::data_storage::DataStorage;
-    use crate::storage::data_storage::Value;
     use std::sync::Arc;
 
     #[test]

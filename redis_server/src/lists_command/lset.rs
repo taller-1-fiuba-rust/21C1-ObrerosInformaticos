@@ -1,6 +1,6 @@
+use crate::storage::data_storage::DataStorage;
 use redis_protocol::response::ResponseBuilder;
 use redis_protocol::types::ProtocolType;
-use crate::storage::data_storage::DataStorage;
 use std::sync::Arc;
 
 /// Sets the list element at index to element.
@@ -33,9 +33,9 @@ pub fn run(
 
 mod tests {
     use super::*;
-    use redis_protocol::types::ProtocolType;
     use crate::storage::data_storage::DataStorage;
     use crate::storage::data_storage::Value;
+    use redis_protocol::types::ProtocolType;
     use std::sync::Arc;
 
     #[test]
