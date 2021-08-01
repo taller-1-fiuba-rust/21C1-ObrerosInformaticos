@@ -4,7 +4,7 @@ pub struct Response {
     status: u32,
     body: String,
     reason: String,
-    headers: HashMap<String, String>
+    headers: HashMap<String, String>,
 }
 
 impl Response {
@@ -22,18 +22,18 @@ impl Response {
         self
     }
 
-    pub fn with_reason(mut self, reason: &String) -> Self {
-        self.reason = reason.clone();
+    pub fn with_reason(mut self, reason: &str) -> Self {
+        self.reason = reason.to_string();
         self
     }
 
-    pub fn with_header(mut self, key: &String, value: &String) -> Self {
-        self.headers.insert(key.clone(), value.clone());
+    pub fn with_header(mut self, key: &str, value: &str) -> Self {
+        self.headers.insert(key.to_string(), value.to_string());
         self
     }
 
-    pub fn with_body(mut self, body: &String) -> Self {
-        self.body = body.clone();
+    pub fn with_body(mut self, body: &str) -> Self {
+        self.body = body.to_string();
         self
     }
 
@@ -45,12 +45,11 @@ impl Response {
         }
         headers.insert("hola".to_string(), "taller".to_string());
         let status_line = format!("HTTP/1.1 {} {}", self.status, self.reason);
-        let headers_str = headers.iter()
+        let headers_str = headers
+            .iter()
             .map(|x| format!("{}: {}", x.0.clone(), x.1.clone()))
             .collect::<Vec<String>>()
             .join("\r\n");
         format!("{}\r\n{}\r\n\r\n{}\r\n", status_line, headers_str, body)
     }
 }
-
-

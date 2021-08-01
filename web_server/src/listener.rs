@@ -1,11 +1,11 @@
 use crate::http;
-use crate::server::THREADS;
 use crate::request_handler::RequestHandler;
+use crate::server::THREADS;
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
+use std::sync::Arc;
 use std::time::Duration;
 use threadpool::threadpool::ThreadPool;
-use std::sync::Arc;
 
 /// Struct which listens for connections and executes the given commands.
 pub struct Listener {
@@ -18,7 +18,11 @@ impl Listener {
     pub fn new(addr: String) -> Self {
         let pool = ThreadPool::new(THREADS);
         let handler = Arc::new(RequestHandler::new());
-        Listener { pool, addr, handler }
+        Listener {
+            pool,
+            addr,
+            handler,
+        }
     }
 
     pub fn run(&self) {
@@ -32,7 +36,6 @@ impl Listener {
         };
         println!("Try Redis WEBSERVER started on address '{}'...", self.addr);
 
-
         for stream in listener.incoming() {
             let socket = stream.unwrap();
             let handler_cpy = self.handler.clone();
@@ -45,7 +48,10 @@ impl Listener {
         }
     }
 
-    fn handle_connection(mut socket: TcpStream, handler: Arc<RequestHandler>) -> Result<(), &'static str> {
+    fn handle_connection(
+        mut socket: TcpStream,
+        handler: Arc<RequestHandler>,
+    ) -> Result<(), &'static str> {
         let request_str = Listener::read_request_string(&mut socket)?;
         if request_str.is_empty() {
             return Ok(());
@@ -60,7 +66,10 @@ impl Listener {
         let response_str = response.serialize();
         println!("{}", response_str);
         let response_bytes = response_str.as_bytes();
-        socket.write_all(response_bytes).ok().ok_or("Failed to write to socket")
+        socket
+            .write_all(response_bytes)
+            .ok()
+            .ok_or("Failed to write to socket")
     }
 
     fn read_request_string(stream: &mut TcpStream) -> Result<String, &'static str> {
