@@ -22,11 +22,13 @@ impl Response {
         self
     }
 
+    #[allow(dead_code)]
     pub fn with_reason(mut self, reason: &str) -> Self {
         self.reason = reason.to_string();
         self
     }
 
+    #[allow(dead_code)]
     pub fn with_header(mut self, key: &str, value: &str) -> Self {
         self.headers.insert(key.to_string(), value.to_string());
         self
