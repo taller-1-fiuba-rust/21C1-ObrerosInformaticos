@@ -1,6 +1,7 @@
 function main () {
     executeWhenFind("main-frame", (element) => {
         element.innerHTML = `
+            <div id="header"> Try Redis </div>
             <div id="communication"></div>
             <div id="sender">
                 <input name="command"  type="text" id="command-input" >
@@ -15,22 +16,25 @@ function main () {
                     return;
                 }
                 let request = createRequest(command);
-                appendIntoCommunication(command);
+                appendRequest(command);
                 document.getElementById("command-input").value = "";
                 setTimeout(() => {
                     if (request.status == 200){
-
+                        appendResponse(request.responseText);
+                    } else if (request.status == 0){
+                        console.log(request);
+                        appendError("tenes cara de verga");
                     }
-                }, 500);
-
+                }, 100);
+                
             }
         })
-    })
+    })    
 }
 
 function createRequest(command){
     let request = new XMLHttpRequest();
-    request.open("POST", "localhost:8080/", true);
+    request.open("POST", "localhost:8080/eval", true);
     request.setRequestHeader('Content-Type', 'application/json');
     request.send(JSON.stringify({
         value: command
@@ -38,11 +42,31 @@ function createRequest(command){
     return request;
 }
 
-function appendIntoCommunication(command){
+function appendResponse(response){
+    let element = document.createElement("p");
+    element.classList += "responseMessage";
+    element.innerHTML = response; 
+    append(element);
+}
+
+function appendError(msg){
+    let element = document.createElement("p");
+    element.classList += "errorMessage";
+    element.innerHTML = "ERROR: " + msg; 
+    append(element);
+}
+
+function appendRequest(command){
     let text_command = document.createElement("p");
     text_command.style.margin = 0;
-    text_command.innerHTML = command;
-    document.getElementById("communication").appendChild(text_command);
+    text_command.innerHTML = ">  " + command;
+    append(text_command);
+}
+
+function append(append_item){
+    let element = document.getElementById("communication")
+    element.appendChild(append_item);
+    element.scrollTop = element.scrollHeight;
 }
 
 function executeWhenFind(id, apply, duration, begin) {

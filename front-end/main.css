@@ -16,10 +16,12 @@ body{
 
 #communication{
     min-height: 30vw;
+    max-height: 30vw;
     height: 100%;
-    padding: 2.5;
+    padding: 1%;
     background-color: beige;
-    overflow-y: auto;
+    overflow: auto;
+    font-size: x-large;
 }
 
 #sender{
@@ -30,4 +32,23 @@ body{
 
 #command-input{
     width: 100%;
+}
+
+#header{
+    color: red;
+    text-align: center;
+    font-size: 300%;
+}
+
+.responseMessage{
+    margin : 0;
+    font-weight: 600;
+    padding-top: 1%;
+}
+
+.errorMessage{
+    margin : 0;
+    color : red;
+    font-weight:600;
+    padding-top: 1%;
 }
