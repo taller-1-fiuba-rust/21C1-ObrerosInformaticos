@@ -1,12 +1,4 @@
 function main () {
-    executeWhenFind("main-frame", (element) => {
-        element.innerHTML = `
-            <div id="communication"></div>
-            <div id="sender">
-                <input name="command"  type="text" id="command-input" >
-            </div>`;
-    });
-
     executeWhenFind("command-input", (element)=> {
         element.addEventListener("keydown", (event) => {
             if (event.key === "Enter") {
@@ -15,14 +7,15 @@ function main () {
                     return;
                 }
                 let request = createRequest(command);
-                appendRequest(command);
-                document.getElementById("command-input").value = "";
+                appendCommand(command);
+
+                element.value = "";
                 setTimeout(() => {
                     if (request.status == 200){
                         appendResponse(request.responseText);
                     } else if (request.status == 0){
                         console.log(request);
-                        appendError("tenes cara de verga");
+                        appendError(`No se obtuvo respuesta al comando: <span class="black">${command}</span>`);
                     }
                 }, 100);
                 
@@ -51,13 +44,14 @@ function appendResponse(response){
 function appendError(msg){
     let element = document.createElement("p");
     element.classList += "errorMessage";
-    element.innerHTML = "ERROR: " + msg; 
+    element.innerHTML = "(error) " + msg; 
     append(element);
 }
 
-function appendRequest(command){
+function appendCommand(command){
     let text_command = document.createElement("p");
     text_command.style.margin = 0;
+    text_command.style.paddingTop = "1%";
     text_command.innerHTML = "<b>></b>  " + command;
     append(text_command);
 }

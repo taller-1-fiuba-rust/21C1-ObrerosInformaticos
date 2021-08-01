@@ -1,5 +1,4 @@
 body{
-    /* background-color: black; */
     background-color: rgb(240, 231, 231);
     margin: 0px;
     width: 100%;
@@ -28,13 +27,15 @@ body{
 }
 
 #sender{
-    /* background-color: grey; */
     margin: 0% 15%;
     padding: 1%;
 }
 
 #command-input{
     width: 100%;
+    text-align: center;
+    font-size: large;
+    font-weight: 900;
 }
 
 #header{
@@ -58,4 +59,9 @@ body{
     color : red;
     font-weight:600;
     padding-top: 1%;
+}
+
+.black{
+    color:black;
+    font-weight:500;
 }
