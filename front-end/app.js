@@ -1,7 +1,6 @@
 function main () {
     executeWhenFind("main-frame", (element) => {
         element.innerHTML = `
-            <div id="header"> Try Redis </div>
             <div id="communication"></div>
             <div id="sender">
                 <input name="command"  type="text" id="command-input" >
@@ -59,7 +58,7 @@ function appendError(msg){
 function appendRequest(command){
     let text_command = document.createElement("p");
     text_command.style.margin = 0;
-    text_command.innerHTML = ">  " + command;
+    text_command.innerHTML = "<b>></b>  " + command;
     append(text_command);
 }
 
