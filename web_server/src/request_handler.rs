@@ -22,7 +22,7 @@ impl RequestHandler {
         
         match request.method().to_string() {
             GET => {
-                //Archivo del front
+                
             },
             POST => {
                 if request.endpoint() == "/eval" && valid_command(request.body().clone()) {

@@ -3,7 +3,6 @@ use std::io::{Read, Write};
 use redis_protocol::types::ProtocolType;
 use std::str::from_utf8;
 
-
 pub fn send_request(connection_port: String, request: &String) -> Result<String, &'static str> {
 
   match TcpStream::connect(connection_port) {
