@@ -15,9 +15,9 @@ pub struct Listener {
 }
 
 impl Listener {
-    pub fn new(addr: String) -> Self {
+    pub fn new(addr: String, port: u16) -> Self {
         let pool = ThreadPool::new(THREADS);
-        let handler = Arc::new(RequestHandler::new());
+        let handler = Arc::new(RequestHandler::new(port));
         Listener {
             pool,
             addr,
