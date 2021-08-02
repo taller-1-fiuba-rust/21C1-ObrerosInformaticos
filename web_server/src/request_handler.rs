@@ -1,6 +1,7 @@
 use crate::http::request::Request;
 use crate::http::response::Response;
 use crate::client;
+use std::str::from_utf8;
 
 const GET: String = "GET".to_string();
 const POST: String = "POST".to_string();
@@ -22,7 +23,17 @@ impl RequestHandler {
         
         match request.method().to_string() {
             GET => {
-                
+                let file_path = "/front-end" + request.endpoint(); 
+                if file_path[-1] == "/" {
+                    file_path += "index.html";
+                }
+                let file_content = read_lines(file_path);
+                match file_content {
+                    Ok(content) => {
+                        Response::new().with_status(200).with_body(from_utf8(&content).unwrap().to_string())
+                    }
+                    Err(i) => Response::new().with_status(404).with_body(&"Not found".to_string())
+                }
             },
             POST => {
                 if request.endpoint() == "/eval" && valid_command(request.body().clone()) {
@@ -51,4 +62,16 @@ pub fn valid_command(body: String) -> bool {
     .unwrap_or("")
     .to_string();
     !commands.iter().any(|e| *e == cmd)
+}
+
+pub fn read_lines(filename: &str) -> Result<Vec<u8>, &'static str> {
+    let file = File::open(filename);
+    match file {
+        Ok(file_name) => {
+            let mut buffer = Vec::<u8>::new();
+            file.read_to_end(&mut buffer)?;
+            Ok(buffer)
+        }
+        Err(_i) => Err("Not existing file"), 
+    }
 }
