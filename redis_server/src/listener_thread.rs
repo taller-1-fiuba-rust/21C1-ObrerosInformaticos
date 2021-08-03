@@ -141,7 +141,7 @@ impl ListenerThread {
     ) {
         let mut response = ResponseBuilder::new();
 
-        if let Err(e) = execution.run(&command, &mut response, client.clone()) {
+        if let Err(e) = execution.run(command, &mut response, client.clone()) {
             logger.log("Error").unwrap();
             response.add(ProtocolType::Error(e.to_string()));
         }

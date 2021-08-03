@@ -338,7 +338,7 @@ impl DataStorage {
     /// ```
     ///
     pub fn exists_key(&self, key: &str) -> Result<(), &'static str> {
-        let value = self.get(&key);
+        let value = self.get(key);
         match value {
             Some(_) => Ok(()),
             None => Err("Not key in HashMap"),
@@ -433,7 +433,7 @@ impl DataStorage {
                 match result.value() {
                     Ok(value) => {
                         drop(lock);
-                        self.modify_last_key_access(&key, now().ok()?).unwrap();
+                        self.modify_last_key_access(key, now().ok()?).unwrap();
                         return Some((key_exp.unwrap(), value));
                     }
                     Err(_s) => {
@@ -472,7 +472,7 @@ impl DataStorage {
                     Some(exp) => {
                         let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
                         if exp > now {
-                            self.do_modify_last_key_access(lock, &key, now).unwrap();
+                            self.do_modify_last_key_access(lock, key, now).unwrap();
                             Ok(Some(()))
                         } else {
                             self.do_delete_key(lock, key)?;
@@ -894,12 +894,12 @@ impl DataStorage {
                 Ok(l_a) => match result {
                     Ok(_s) => return Ok(l_a),
                     Err(_s) => {
-                        self.delete_key(&key)?;
+                        self.delete_key(key)?;
                         return Err("last access not modify not existing key");
                     }
                 },
                 Err(_) => {
-                    self.delete_key(&key)?;
+                    self.delete_key(key)?;
                     return Err("last access not modify not existing key");
                 }
             }
