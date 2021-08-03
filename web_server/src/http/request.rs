@@ -69,7 +69,9 @@ impl<'a> Request<'a> {
         }
     }
 
-    fn parse_headers(lines: &mut Split<'a, &'a str>) -> Result<HashMap<&'a str, &'a str>, &'static str> {
+    fn parse_headers(
+        lines: &mut Split<'a, &'a str>,
+    ) -> Result<HashMap<&'a str, &'a str>, &'static str> {
         let mut headers = HashMap::new();
 
         loop {
@@ -80,10 +82,7 @@ impl<'a> Request<'a> {
                         break;
                     }
                     let idx = maybe_idx.unwrap();
-                    headers.insert(
-                        l[..idx].trim(),
-                        l[(idx + 1_usize)..].trim(),
-                    );
+                    headers.insert(l[..idx].trim(), l[(idx + 1_usize)..].trim());
                 }
                 None => return Err("Malformed HTTP headers, none"),
             }
@@ -95,7 +94,8 @@ impl<'a> Request<'a> {
 
 impl ToString for Request<'_> {
     fn to_string(&self) -> String {
-        let mut headers = self.headers
+        let mut headers = self
+            .headers
             .iter()
             .map(|x| format!("{}: {}", x.0.clone(), x.1.clone()))
             .collect::<Vec<String>>();
@@ -121,11 +121,15 @@ mod tests {
         headers.insert("Test", "Header");
         headers.insert("Content-Length", "9");
         let request = Request::parse("POST /test HTTP/1.1\r\nContent-Length: 9\r\nKey: Value\r\nTest: Header\r\n\r\nTest body").unwrap();
-        assert_eq!(request.to_string(), Request{
-            method: Method::Post,
-            endpoint: "/test",
-            headers,
-            body: "Test body".to_owned()
-        }.to_string());
+        assert_eq!(
+            request.to_string(),
+            Request {
+                method: Method::Post,
+                endpoint: "/test",
+                headers,
+                body: "Test body".to_owned()
+            }
+            .to_string()
+        );
     }
 }

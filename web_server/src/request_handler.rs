@@ -1,7 +1,7 @@
 use crate::client;
+use crate::http::method::Method;
 use crate::http::request::Request;
 use crate::http::response::Response;
-use crate::http::method::Method;
 use std::fs::File;
 use std::io::Read;
 
@@ -15,7 +15,6 @@ impl RequestHandler {
     pub fn new(port: u16) -> Self {
         RequestHandler { port }
     }
-
 
     pub fn handle(&self, request: &Request) -> Response {
         match request.method() {
@@ -52,7 +51,9 @@ impl RequestHandler {
                         .with_body("Internal server error".as_bytes().to_owned()),
                 }
             } else {
-                Response::new().with_status(200).with_body(INVALID_COMMAND_MSG.as_bytes().to_owned())
+                Response::new()
+                    .with_status(200)
+                    .with_body(INVALID_COMMAND_MSG.as_bytes().to_owned())
             }
         } else {
             Response::new()

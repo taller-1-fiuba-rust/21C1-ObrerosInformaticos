@@ -74,19 +74,29 @@ mod tests {
 
     #[test]
     fn test_response_reason() {
-        let response_str = String::from_utf8(Response::new().with_reason("NOT OK").serialize()).unwrap();
+        let response_str =
+            String::from_utf8(Response::new().with_reason("NOT OK").serialize()).unwrap();
         assert_eq!(response_str, "HTTP/1.1 200 NOT OK\r\n\r\n\r\n\r\n");
     }
 
     #[test]
     fn test_response_body() {
-        let response_str = String::from_utf8(Response::new().with_body("This is a test body".as_bytes().to_owned()).serialize()).unwrap();
-        assert_eq!(response_str, "HTTP/1.1 200 OK\r\nContent-Length: 19\r\n\r\nThis is a test body\r\n");
+        let response_str = String::from_utf8(
+            Response::new()
+                .with_body("This is a test body".as_bytes().to_owned())
+                .serialize(),
+        )
+        .unwrap();
+        assert_eq!(
+            response_str,
+            "HTTP/1.1 200 OK\r\nContent-Length: 19\r\n\r\nThis is a test body\r\n"
+        );
     }
 
     #[test]
     fn test_response_header() {
-        let response_str = String::from_utf8(Response::new().with_header("Good", "luck").serialize()).unwrap();
+        let response_str =
+            String::from_utf8(Response::new().with_header("Good", "luck").serialize()).unwrap();
         assert_eq!(response_str, "HTTP/1.1 200 OK\r\nGood: luck\r\n\r\n\r\n");
     }
 }

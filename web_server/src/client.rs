@@ -7,11 +7,12 @@ use std::time::Duration;
 pub fn send_request(connection_port: String, request: &str) -> Result<Vec<u8>, &'static str> {
     match TcpStream::connect(connection_port) {
         Ok(mut stream) => {
-
             write_query(&mut stream, request)?;
 
             let response_contents = read_response(&mut stream)?;
-            let response_str = String::from_utf8(response_contents).ok().ok_or("Invalid response from redis")?;
+            let response_str = String::from_utf8(response_contents)
+                .ok()
+                .ok_or("Invalid response from redis")?;
 
             parse_resp_into_bytes(&response_str)
         }
@@ -20,8 +21,16 @@ pub fn send_request(connection_port: String, request: &str) -> Result<Vec<u8>, &
 }
 
 fn write_query(stream: &mut TcpStream, request: &str) -> Result<(), &'static str> {
-    let protocol_string = ProtocolType::Array(request.split(' ').map(|x| x.to_owned()).map(ProtocolType::String).collect()).serialize();
-    stream.write_all(protocol_string.as_bytes())
+    let protocol_string = ProtocolType::Array(
+        request
+            .split(' ')
+            .map(|x| x.to_owned())
+            .map(ProtocolType::String)
+            .collect(),
+    )
+    .serialize();
+    stream
+        .write_all(protocol_string.as_bytes())
         .ok()
         .ok_or("Failed to read from socket")
 }
