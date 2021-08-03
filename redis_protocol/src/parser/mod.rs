@@ -24,11 +24,11 @@ pub trait ProtocolParser {
 ///
 /// Parses a serialized RESP array into a Vec<ProtocolType>
 ///
-struct ParserFactory;
+pub struct ParserFactory;
 
 impl ParserFactory {
     /// Create a new parser from a RESP prefix/symbol (-, +, *, :, $)
-    fn create(symbol: char) -> Option<Box<dyn ProtocolParser>> {
+    pub fn create(symbol: char) -> Option<Box<dyn ProtocolParser>> {
         let options: Vec<Box<dyn ProtocolParser>> = vec![
             Box::new(IntegerParser::new()),
             Box::new(SimpleStringParser::new()),
