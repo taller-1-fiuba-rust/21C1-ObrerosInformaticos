@@ -26,11 +26,8 @@ function main () {
 
 function createRequest(command){
     let request = new XMLHttpRequest();
-    request.open("POST", "localhost:8080/eval", true);
-    request.setRequestHeader('Content-Type', 'application/json');
-    request.send(JSON.stringify({
-        value: command
-    }));
+    request.open("POST", "http://localhost:8080/eval", true);
+    request.send(command);
     return request;
 }
 
