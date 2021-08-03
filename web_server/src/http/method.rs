@@ -25,3 +25,18 @@ impl ToString for Method {
         .to_string()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_get() {
+        assert_eq!(Method::Get.to_string(), Method::parse("GET").unwrap().to_string());
+    }
+
+    #[test]
+    fn test_parse_post() {
+        assert_eq!(Method::Post.to_string(), Method::parse("POST").unwrap().to_string());
+    }
+}
