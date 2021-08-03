@@ -85,7 +85,7 @@ impl Client {
                     } else {
                         let l = &line[offset..offset + s];
                         offset += s;
-                        let result = request.feed(&l);
+                        let result = request.feed(l);
                         if let Ok(val) = result {
                             if val {
                                 commands.push(request.build());

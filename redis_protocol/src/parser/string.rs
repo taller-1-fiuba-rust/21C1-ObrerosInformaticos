@@ -9,6 +9,7 @@ pub struct SimpleStringParser {
 }
 
 impl SimpleStringParser {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         SimpleStringParser {
             data: String::new(),
@@ -37,10 +38,11 @@ impl ProtocolParser for SimpleStringParser {
 ///
 pub struct BulkStringParser {
     data: String,
-    length: usize,
+    length: i32,
 }
 
 impl BulkStringParser {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         BulkStringParser {
             data: String::new(),
@@ -60,21 +62,24 @@ impl ProtocolParser for BulkStringParser {
         let symbol = line.chars().next().unwrap();
         if symbol == self.get_prefix() {
             let slice_result = line[1..len - 2].to_string();
-            match slice_result.parse() {
+            match slice_result.parse::<i32>() {
                 Ok(val) => {
                     self.length = val;
-                    Ok(false)
+                    Ok(matches!(val, -1))
                 }
                 Err(_) => Err(format!("Invalid '{}' length received.", slice_result)),
             }
         } else {
-            self.data = line[0..self.length].to_string();
+            self.data = line[0..self.length as usize].to_string();
             Ok(true)
         }
     }
 
     fn build(&self) -> ProtocolType {
-        assert_eq!(self.length, self.data.len());
+        if self.length == -1 {
+            return ProtocolType::Nil();
+        }
+        assert_eq!(self.length as usize, self.data.len());
         ProtocolType::String(self.data.clone())
     }
 }

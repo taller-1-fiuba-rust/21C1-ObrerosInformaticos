@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 pub struct Response {
     status: u32,
-    body: String,
+    body: Vec<u8>,
     reason: String,
     headers: HashMap<String, String>,
 }
@@ -11,7 +11,7 @@ impl Response {
     pub fn new() -> Self {
         Response {
             status: 200,
-            body: String::new(),
+            body: Vec::new(),
             reason: "OK".to_string(),
             headers: HashMap::new(),
         }
@@ -34,12 +34,12 @@ impl Response {
         self
     }
 
-    pub fn with_body(mut self, body: &str) -> Self {
-        self.body = body.to_string();
+    pub fn with_body(mut self, body: Vec<u8>) -> Self {
+        self.body = body;
         self
     }
 
-    pub fn serialize(&self) -> String {
+    pub fn serialize(&self) -> Vec<u8> {
         let mut headers = self.headers.clone();
         let body = &self.body;
         if !body.is_empty() {
@@ -52,6 +52,11 @@ impl Response {
             .map(|x| format!("{}: {}", x.0.clone(), x.1.clone()))
             .collect::<Vec<String>>()
             .join("\r\n");
-        format!("{}\r\n{}\r\n\r\n{}\r\n", status_line, headers_str, body)
+        let partial_res = format!("{}\r\n{}\r\n\r\n", status_line, headers_str);
+        let mut res = Vec::new();
+        res.extend_from_slice(partial_res.as_bytes());
+        res.extend_from_slice(body);
+        res.extend_from_slice("\r\n".as_bytes());
+        res
     }
 }
