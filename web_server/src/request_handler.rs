@@ -42,8 +42,8 @@ impl RequestHandler {
 
         if request.endpoint() == "/eval" {
             if Self::valid_command(request.body()) {
-                let body = request.body().clone();
-                let response = client::send_request(connection_port, &body);
+                let body = request.body();
+                let response = client::send_request(connection_port, body);
                 match response {
                     Ok(resp) => Response::new().with_status(200).with_body(resp),
                     Err(_) => Response::new()

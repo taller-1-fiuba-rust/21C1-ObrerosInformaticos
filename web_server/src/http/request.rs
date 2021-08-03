@@ -97,7 +97,7 @@ impl ToString for Request<'_> {
         let mut headers = self
             .headers
             .iter()
-            .map(|x| format!("{}: {}", x.0.clone(), x.1.clone()))
+            .map(|x| format!("{}: {}", x.0.to_owned(), x.1.to_owned()))
             .collect::<Vec<String>>();
         headers.sort();
         format!(
