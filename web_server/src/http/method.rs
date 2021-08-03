@@ -8,7 +8,8 @@ impl Method {
         match method_str {
             "GET" => Ok(Method::Get),
             "POST" => Ok(Method::Post),
-            _ => Err("Not implemented"),
+            _ => { println!("Method str es {}", method_str);
+                Err("Not implemented")},
         }
     }
 }

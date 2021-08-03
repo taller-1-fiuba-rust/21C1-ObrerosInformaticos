@@ -1,7 +1,6 @@
 use crate::http::request::Request;
 use crate::http::response::Response;
 use crate::client;
-use std::str::from_utf8;
 use std::fs::File;
 use std::io::Read;
 use redis_protocol::types::ProtocolType;
@@ -23,33 +22,34 @@ impl RequestHandler {
         let method = request.method().to_string();
 
         if method == "GET".to_string() {
-            let mut file_path = "/front-end".to_string() + request.endpoint(); 
+            let mut file_path = "web_server/front-end".to_string() + request.endpoint(); 
             if file_path.chars().last().unwrap() == '/' {
                 file_path += "index.html";
             }
             let file_content = read_lines(&file_path);
             match file_content {
                 Ok(content) => {
-                    Response::new().with_status(200).with_body(&from_utf8(&content).unwrap().to_string())
+                    let s =  String::from_utf8(content).unwrap();
+                    Response::new().with_status(200).with_body(s.as_bytes())
                 }
-                Err(_) => Response::new().with_status(404).with_body(&"Not found".to_string())
+                Err(_) => Response::new().with_status(404).with_body(&"Not found".to_string().as_bytes())
             }
         } else if method == "POST".to_string(){
             if request.endpoint() == "/eval" && valid_command(request.body().clone()) {
                 let response = client::send_request(connection_port, request.body());
                 match response {
                     Ok(resp) => {
-                        Response::new().with_status(200).with_body(&resp)
+                        Response::new().with_status(200).with_body(&resp.as_bytes())
                     },
                     Err(_) => {
-                        Response::new().with_status(404).with_body(&ProtocolType::String("fail to get response".to_string()).to_string())
+                        Response::new().with_status(404).with_body(&ProtocolType::String("fail to get response".to_string()).to_string().as_bytes())
                     }
                 }
             } else {
-                Response::new().with_status(404).with_body(&ProtocolType::String("Request not correct".to_string()).to_string())
+                Response::new().with_status(404).with_body(&ProtocolType::String("Request not correct".to_string()).to_string().as_bytes())
             }
         }else {
-            Response::new().with_status(404).with_body(&ProtocolType::String("Request not correct".to_string()).to_string())
+            Response::new().with_status(404).with_body(&ProtocolType::String("Request not correct".to_string()).to_string().as_bytes())
         }
 
     }
@@ -69,8 +69,8 @@ pub fn read_lines(filename: &str) -> Result<Vec<u8>, &'static str> {
     let file = File::open(filename);
     match file {
         Ok(mut f) => {
-            let mut contents = vec![];
-            f.read_to_end(&mut contents).expect("Unable to read to bytes");
+            let mut contents: Vec<u8> = vec![];
+            f.read_to_end(&mut contents).expect("Unable to read bytes");
             Ok(contents)
         }
         Err(_i) => Err("Not existing file"), 

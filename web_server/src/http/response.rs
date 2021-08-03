@@ -1,17 +1,17 @@
 use std::collections::HashMap;
 
-pub struct Response {
+pub struct Response<'a> {
     status: u32,
-    body: String,
+    body: &'a[u8],
     reason: String,
     headers: HashMap<String, String>,
 }
 
-impl Response {
+impl Response<'_> {
     pub fn new() -> Self {
         Response {
             status: 200,
-            body: String::new(),
+            body: &[],
             reason: "OK".to_string(),
             headers: HashMap::new(),
         }
@@ -34,8 +34,8 @@ impl Response {
         self
     }
 
-    pub fn with_body(mut self, body: &str) -> Self {
-        self.body = body.to_string();
+    pub fn with_body(mut self, body: &'static [u8]) -> Self {
+        self.body = body;
         self
     }
 
@@ -52,6 +52,6 @@ impl Response {
             .map(|x| format!("{}: {}", x.0.clone(), x.1.clone()))
             .collect::<Vec<String>>()
             .join("\r\n");
-        format!("{}\r\n{}\r\n\r\n{}\r\n", status_line, headers_str, body)
+        format!("{}\r\n{}\r\n\r\n{:?}\r\n", status_line, headers_str, body)
     }
 }
