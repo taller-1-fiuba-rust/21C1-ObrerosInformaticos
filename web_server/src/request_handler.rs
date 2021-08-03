@@ -29,27 +29,27 @@ impl RequestHandler {
             let file_content = read_lines(&file_path);
             match file_content {
                 Ok(content) => {
-                    let s =  String::from_utf8(content).unwrap();
-                    Response::new().with_status(200).with_body(s.as_bytes())
+                    Response::new().with_status(200).with_body(content)
                 }
-                Err(_) => Response::new().with_status(404).with_body(&"Not found".to_string().as_bytes())
+                Err(_) => Response::new().with_status(404).with_body("Not found".to_string().as_bytes().to_vec())
             }
         } else if method == "POST".to_string(){
             if request.endpoint() == "/eval" && valid_command(request.body().clone()) {
-                let response = client::send_request(connection_port, request.body());
+                let body = request.body().clone();
+                let response = client::send_request(connection_port, &body);
                 match response {
                     Ok(resp) => {
-                        Response::new().with_status(200).with_body(&resp.as_bytes())
+                        Response::new().with_status(200).with_body(resp.to_vec())
                     },
                     Err(_) => {
-                        Response::new().with_status(404).with_body(&ProtocolType::String("fail to get response".to_string()).to_string().as_bytes())
+                        Response::new().with_status(404).with_body("fail to get response".as_bytes().to_vec())
                     }
                 }
             } else {
-                Response::new().with_status(404).with_body(&ProtocolType::String("Request not correct".to_string()).to_string().as_bytes())
+                Response::new().with_status(404).with_body("Request not correct".as_bytes().to_vec())
             }
         }else {
-            Response::new().with_status(404).with_body(&ProtocolType::String("Request not correct".to_string()).to_string().as_bytes())
+            Response::new().with_status(404).with_body("Request not correct".as_bytes().to_vec())
         }
 
     }

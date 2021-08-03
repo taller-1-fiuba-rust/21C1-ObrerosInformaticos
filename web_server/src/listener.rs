@@ -64,10 +64,9 @@ impl Listener {
         println!("Writing response to socket...");
 
         let response_str = response.serialize();
-        println!("{}", response_str);
-        let response_bytes = response_str.as_bytes();
+        let response_bytes = response_str;
         socket
-            .write_all(response_bytes)
+            .write_all(&response_bytes)
             .ok()
             .ok_or("Failed to write to socket")
     }
