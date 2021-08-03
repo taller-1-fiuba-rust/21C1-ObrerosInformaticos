@@ -45,18 +45,48 @@ impl Response {
         if !body.is_empty() {
             headers.insert("Content-Length".to_string(), body.len().to_string());
         }
-        headers.insert("hola".to_string(), "taller".to_string());
+
         let status_line = format!("HTTP/1.1 {} {}", self.status, self.reason);
         let headers_str = headers
             .iter()
             .map(|x| format!("{}: {}", x.0.clone(), x.1.clone()))
             .collect::<Vec<String>>()
             .join("\r\n");
+
         let partial_res = format!("{}\r\n{}\r\n\r\n", status_line, headers_str);
         let mut res = Vec::new();
         res.extend_from_slice(partial_res.as_bytes());
         res.extend_from_slice(body);
         res.extend_from_slice("\r\n".as_bytes());
         res
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_response_code() {
+        let response_str = String::from_utf8(Response::new().with_status(500).serialize()).unwrap();
+        assert_eq!(response_str, "HTTP/1.1 500 OK\r\n\r\n\r\n\r\n");
+    }
+
+    #[test]
+    fn test_response_reason() {
+        let response_str = String::from_utf8(Response::new().with_reason("NOT OK").serialize()).unwrap();
+        assert_eq!(response_str, "HTTP/1.1 200 NOT OK\r\n\r\n\r\n\r\n");
+    }
+
+    #[test]
+    fn test_response_body() {
+        let response_str = String::from_utf8(Response::new().with_body("This is a test body".as_bytes().to_owned()).serialize()).unwrap();
+        assert_eq!(response_str, "HTTP/1.1 200 OK\r\nContent-Length: 19\r\n\r\nThis is a test body\r\n");
+    }
+
+    #[test]
+    fn test_response_header() {
+        let response_str = String::from_utf8(Response::new().with_header("Good", "luck").serialize()).unwrap();
+        assert_eq!(response_str, "HTTP/1.1 200 OK\r\nGood: luck\r\n\r\n\r\n");
     }
 }
