@@ -2,35 +2,27 @@ use crate::http::method::Method;
 use std::collections::HashMap;
 use std::str::Split;
 
-pub struct Request {
+pub struct Request<'a> {
     method: Method,
-    endpoint: String,
-    headers: HashMap<String, String>,
+    endpoint: &'a str,
+    headers: HashMap<&'a str, &'a str>,
     body: String,
 }
 
-impl Request {
-    #[allow(dead_code)]
+impl<'a> Request<'a> {
     pub fn method(&self) -> &Method {
         &self.method
     }
 
-    #[allow(dead_code)]
-    pub fn endpoint(&self) -> &String {
-        &self.endpoint
+    pub fn endpoint(&self) -> &str {
+        self.endpoint
     }
 
-    #[allow(dead_code)]
-    pub fn body(&self) -> &String {
+    pub fn body(&self) -> &str {
         &self.body
     }
 
-    #[allow(dead_code)]
-    pub fn headers(&self) -> &HashMap<String, String> {
-        &self.headers
-    }
-
-    pub fn parse(request_str: String) -> Result<Request, &'static str> {
+    pub fn parse(request_str: &'a str) -> Result<Request, &'static str> {
         let mut lines = request_str.split("\r\n");
 
         let (method, endpoint) = Request::parse_method_and_endpoint(&mut lines)?;
@@ -42,7 +34,9 @@ impl Request {
                 .parse::<u32>()
                 .ok()
                 .ok_or("Invalid Content-Length header")?;
-            body = lines.collect::<Vec<&str>>().join("\r\n")[..length as usize].to_string();
+            // Si estuviéramos en Rust nightly podríamos usar lines.as_str() y evitar la allocation.
+            // https://github.com/rust-lang/rust/issues/77998
+            body = lines.collect::<Vec<&str>>().join("\r\n")[..length as usize].to_owned();
         }
 
         Ok(Request {
@@ -53,9 +47,14 @@ impl Request {
         })
     }
 
+    #[allow(dead_code)]
+    pub fn headers(&self) -> &HashMap<&str, &str> {
+        &self.headers
+    }
+
     fn parse_method_and_endpoint(
-        lines: &mut Split<&str>,
-    ) -> Result<(Method, String), &'static str> {
+        lines: &mut Split<'a, &'a str>,
+    ) -> Result<(Method, &'a str), &'static str> {
         match lines.next() {
             Some(l) => {
                 let parts = l.split(' ').collect::<Vec<&str>>();
@@ -64,13 +63,15 @@ impl Request {
                 }
 
                 let method = Method::parse(parts[0])?;
-                Ok((method, parts[1].to_string()))
+                Ok((method, parts[1]))
             }
             None => Err("Malformed HTTP request"),
         }
     }
 
-    fn parse_headers(lines: &mut Split<&str>) -> Result<HashMap<String, String>, &'static str> {
+    fn parse_headers(
+        lines: &mut Split<'a, &'a str>,
+    ) -> Result<HashMap<&'a str, &'a str>, &'static str> {
         let mut headers = HashMap::new();
 
         loop {
@@ -81,10 +82,7 @@ impl Request {
                         break;
                     }
                     let idx = maybe_idx.unwrap();
-                    headers.insert(
-                        l[..idx].trim().to_string(),
-                        l[(idx + 1_usize)..].trim().to_string(),
-                    );
+                    headers.insert(l[..idx].trim(), l[(idx + 1_usize)..].trim());
                 }
                 None => return Err("Malformed HTTP headers, none"),
             }
@@ -94,18 +92,44 @@ impl Request {
     }
 }
 
-impl ToString for Request {
+impl ToString for Request<'_> {
     fn to_string(&self) -> String {
+        let mut headers = self
+            .headers
+            .iter()
+            .map(|x| format!("{}: {}", x.0.to_owned(), x.1.to_owned()))
+            .collect::<Vec<String>>();
+        headers.sort();
         format!(
             "{} {}\n{}\n{}",
             self.method.to_string(),
             self.endpoint,
-            self.headers
-                .iter()
-                .map(|x| format!("{}: {}", x.0.clone(), x.1.clone()))
-                .collect::<Vec<String>>()
-                .join("\n"),
+            headers.join("\n"),
             self.body
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse() {
+        let mut headers = HashMap::new();
+        headers.insert("Key", "Value");
+        headers.insert("Test", "Header");
+        headers.insert("Content-Length", "9");
+        let request = Request::parse("POST /test HTTP/1.1\r\nContent-Length: 9\r\nKey: Value\r\nTest: Header\r\n\r\nTest body").unwrap();
+        assert_eq!(
+            request.to_string(),
+            Request {
+                method: Method::Post,
+                endpoint: "/test",
+                headers,
+                body: "Test body".to_owned()
+            }
+            .to_string()
+        );
     }
 }

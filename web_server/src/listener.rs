@@ -56,15 +56,15 @@ impl Listener {
         if request_str.is_empty() {
             return Ok(());
         }
+
         println!("Received HTTP request");
-        let request = http::request::Request::parse(request_str)?;
+        let request = http::request::Request::parse(&request_str)?;
         println!("{}", request.to_string());
         let response = handler.handle(&request);
 
         println!("Writing response to socket...");
 
-        let response_str = response.serialize();
-        let response_bytes = response_str;
+        let response_bytes = response.serialize();
         socket
             .write_all(&response_bytes)
             .ok()
@@ -75,7 +75,7 @@ impl Listener {
         let mut contents = Vec::new();
         let mut buffer = [0; 512];
         stream
-            .set_read_timeout(Some(Duration::from_millis(10)))
+            .set_read_timeout(Some(Duration::from_millis(1)))
             .ok()
             .ok_or("Failed to read from socket")?;
         while let Ok(r) = stream.read(&mut buffer) {
