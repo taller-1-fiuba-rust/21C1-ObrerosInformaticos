@@ -1,7 +1,7 @@
 use crate::listener::Listener;
+use redis_server::server::Server as RedisServer;
 use std::thread;
 use std::thread::JoinHandle;
-use redis_server::server::Server as RedisServer;
 
 pub const THREADS: usize = 32;
 
@@ -23,12 +23,12 @@ impl Server {
             handle: None,
             redis_sv,
             redis_port,
-        }   
+        }
     }
 
     pub fn run(&mut self) {
         let addr_and_port = self.get_addr_and_port();
-        let redis_port = self.redis_port.clone();
+        let redis_port = self.redis_port;
         let handle = thread::spawn(move || {
             let listener = Listener::new(addr_and_port, redis_port);
             listener.run();

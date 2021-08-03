@@ -9,6 +9,7 @@ pub struct SimpleStringParser {
 }
 
 impl SimpleStringParser {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         SimpleStringParser {
             data: String::new(),
@@ -41,6 +42,7 @@ pub struct BulkStringParser {
 }
 
 impl BulkStringParser {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         BulkStringParser {
             data: String::new(),
@@ -63,10 +65,7 @@ impl ProtocolParser for BulkStringParser {
             match slice_result.parse::<i32>() {
                 Ok(val) => {
                     self.length = val;
-                    Ok(match val {
-                        -1 => true,
-                        _ => false
-                    })
+                    Ok(matches!(val, -1))
                 }
                 Err(_) => Err(format!("Invalid '{}' length received.", slice_result)),
             }

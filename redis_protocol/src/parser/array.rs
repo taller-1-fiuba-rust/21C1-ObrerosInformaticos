@@ -13,6 +13,7 @@ pub struct ArrayParser {
 }
 
 impl ArrayParser {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         ArrayParser {
             count: 0,

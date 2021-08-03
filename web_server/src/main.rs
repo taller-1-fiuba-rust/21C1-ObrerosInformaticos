@@ -1,13 +1,13 @@
+mod client;
 mod http;
 mod listener;
 mod request_handler;
 mod server;
-mod client;
-use redis_server::server::Server;
 use redis_server::config::configuration::Configuration;
 use redis_server::logging::logger::Logger;
-use std::sync::Arc;
+use redis_server::server::Server;
 use std::sync::atomic::{AtomicU16, Ordering};
+use std::sync::Arc;
 
 static PORT: AtomicU16 = AtomicU16::new(10002);
 

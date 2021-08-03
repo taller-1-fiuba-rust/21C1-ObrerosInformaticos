@@ -10,6 +10,7 @@ pub struct ResponseBuilder {
 
 impl ResponseBuilder {
     /// Create a new ResponseBuilder
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         ResponseBuilder {
             results: Vec::new(),

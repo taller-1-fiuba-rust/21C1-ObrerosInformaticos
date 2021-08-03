@@ -9,6 +9,7 @@ pub struct IntegerParser {
 }
 
 impl IntegerParser {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         IntegerParser { data: 0 }
     }

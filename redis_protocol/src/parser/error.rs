@@ -10,6 +10,7 @@ pub struct ErrorParser {
 /// Parses a serialized RESP error into a ProtocolType::Error
 ///
 impl ErrorParser {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         ErrorParser {
             parser: SimpleStringParser::new(),

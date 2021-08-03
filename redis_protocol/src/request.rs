@@ -9,6 +9,7 @@ pub struct Request {
 
 impl Request {
     /// Create a new request parser
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Request {
             parser: ArrayParser::new(),
