@@ -1,12 +1,12 @@
 use crate::http::method::Method;
+use core::str::SplitInclusive;
 use std::collections::HashMap;
-use std::str::Split;
 
 pub struct Request<'a> {
     method: Method,
     endpoint: &'a str,
     headers: HashMap<&'a str, &'a str>,
-    body: String,
+    body: &'a str,
 }
 
 impl<'a> Request<'a> {
@@ -23,20 +23,18 @@ impl<'a> Request<'a> {
     }
 
     pub fn parse(request_str: &'a str) -> Result<Request, &'static str> {
-        let mut lines = request_str.split("\r\n");
+        let mut lines = request_str.split_inclusive("\r\n");
+        let mut offset = 0;
+        let (method, endpoint) = Request::parse_method_and_endpoint(&mut lines, &mut offset)?;
+        let headers = Request::parse_headers(&mut lines, &mut offset)?;
 
-        let (method, endpoint) = Request::parse_method_and_endpoint(&mut lines)?;
-        let headers = Request::parse_headers(&mut lines)?;
-
-        let mut body = String::new();
+        let mut body = "";
         if headers.contains_key("Content-Length") {
             let length = headers["Content-Length"]
                 .parse::<u32>()
                 .ok()
                 .ok_or("Invalid Content-Length header")?;
-            // Si estuviéramos en Rust nightly podríamos usar lines.as_str() y evitar la allocation.
-            // https://github.com/rust-lang/rust/issues/77998
-            body = lines.collect::<Vec<&str>>().join("\r\n")[..length as usize].to_owned();
+            body = &request_str[offset as usize..(offset + length) as usize];
         }
 
         Ok(Request {
@@ -53,10 +51,12 @@ impl<'a> Request<'a> {
     }
 
     fn parse_method_and_endpoint(
-        lines: &mut Split<'a, &'a str>,
+        lines: &mut SplitInclusive<'a, &'a str>,
+        offset: &mut u32,
     ) -> Result<(Method, &'a str), &'static str> {
         match lines.next() {
             Some(l) => {
+                *offset += l.len() as u32;
                 let parts = l.split(' ').collect::<Vec<&str>>();
                 if parts.len() != 3 {
                     return Err("Malformed HTTP");
@@ -70,13 +70,15 @@ impl<'a> Request<'a> {
     }
 
     fn parse_headers(
-        lines: &mut Split<'a, &'a str>,
+        lines: &mut SplitInclusive<'a, &'a str>,
+        offset: &mut u32,
     ) -> Result<HashMap<&'a str, &'a str>, &'static str> {
         let mut headers = HashMap::new();
 
         loop {
             match lines.next() {
                 Some(l) => {
+                    *offset += l.len() as u32;
                     let maybe_idx = l.find(':');
                     if maybe_idx.is_none() {
                         break;
@@ -127,7 +129,7 @@ mod tests {
                 method: Method::Post,
                 endpoint: "/test",
                 headers,
-                body: "Test body".to_owned()
+                body: "Test body"
             }
             .to_string()
         );
