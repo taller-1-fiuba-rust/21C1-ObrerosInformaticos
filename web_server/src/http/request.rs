@@ -19,7 +19,7 @@ impl<'a> Request<'a> {
     }
 
     pub fn body(&self) -> &str {
-        &self.body
+        self.body
     }
 
     pub fn parse(request_str: &'a str) -> Result<Request, &'static str> {
